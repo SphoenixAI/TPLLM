@@ -1,0 +1,17 @@
+"""External service integrations — connectors to the tools TPMs live in."""
+
+from lltpm.integrations.base import Integration, IntegrationError
+from lltpm.integrations.github_integration import GitHubIntegration
+from lltpm.integrations.jira_integration import JiraIntegration
+from lltpm.integrations.slack_integration import SlackIntegration
+from lltpm.integrations.linear_integration import LinearIntegration
+from lltpm.integrations.calendar_integration import CalendarIntegration
+
+__all__ = [
+    "Integration", "IntegrationError",
+    "GitHubIntegration",
+    "JiraIntegration",
+    "SlackIntegration",
+    "LinearIntegration",
+    "CalendarIntegration",
+]

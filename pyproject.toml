@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "lltpm"
+version = "0.1.0"
+description = "AI-powered Technical Program Manager agent that replaces meetings with insight"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+    "anthropic>=0.45.0",
+    "pydantic>=2.0",
+    "rich>=13.0",
+    "click>=8.0",
+    "python-dateutil>=2.8",
+]
+
+[project.optional-dependencies]
+integrations = [
+    "PyGithub>=2.0",
+    "jira>=3.0",
+    "slack-sdk>=3.0",
+]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+]
+
+[project.scripts]
+lltpm = "lltpm.main:cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lltpm"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
