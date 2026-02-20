@@ -17,6 +17,9 @@ from lltpm.tools.communication_tools import get_communication_tools
 from lltpm.tools.github_tools import get_github_tools
 from lltpm.tools.analytics_tools import get_analytics_tools
 from lltpm.tools.calendar_tools import get_calendar_tools
+from lltpm.tools.gchat_tools import get_gchat_tools
+from lltpm.tools.meeting_intel_tools import get_meeting_intel_tools
+from lltpm.tools.delegation_tools import get_delegation_tools
 
 
 class ToolRegistry:
@@ -70,9 +73,22 @@ def build_tool_registry(config: LLTPMConfig, store: ArtifactStore) -> ToolRegist
     for tool in get_analytics_tools(store):
         registry.register(**tool)
 
+    # Always available — meeting intelligence tools
+    for tool in get_meeting_intel_tools(store):
+        registry.register(**tool)
+
+    # Always available — delegation tools
+    for tool in get_delegation_tools(store):
+        registry.register(**tool)
+
     # Conditional — communication tools (need Slack)
     if config.slack.enabled:
         for tool in get_communication_tools(config):
+            registry.register(**tool)
+
+    # Conditional — Google Chat tools
+    if config.gchat.enabled:
+        for tool in get_gchat_tools(config):
             registry.register(**tool)
 
     # Conditional — GitHub tools

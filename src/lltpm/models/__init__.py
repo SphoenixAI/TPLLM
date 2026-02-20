@@ -5,6 +5,8 @@ from lltpm.models.risk import Risk, Assumption, Issue, Dependency, RAIDLog
 from lltpm.models.decision import Decision, DecisionOption, DecisionLog
 from lltpm.models.milestone import Milestone, MilestonePlan, GateCriterion
 from lltpm.models.update import StatusUpdate, ActionItem, UpdateSeverity
+from lltpm.models.meeting_intel import MeetingIntelligence, TopicInsight, ExtractedCommitment
+from lltpm.models.delegation import DelegationItem, DelegationPlan, TeamMemberProfile
 
 __all__ = [
     "Program", "Stakeholder", "SuccessMetric",
@@ -12,4 +14,6 @@ __all__ = [
     "Decision", "DecisionOption", "DecisionLog",
     "Milestone", "MilestonePlan", "GateCriterion",
     "StatusUpdate", "ActionItem", "UpdateSeverity",
+    "MeetingIntelligence", "TopicInsight", "ExtractedCommitment",
+    "DelegationItem", "DelegationPlan", "TeamMemberProfile",
 ]

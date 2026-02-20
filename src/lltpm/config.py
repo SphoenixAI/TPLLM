@@ -44,6 +44,7 @@ class LLTPMConfig:
     slack: IntegrationConfig = field(default_factory=IntegrationConfig)
     linear: IntegrationConfig = field(default_factory=IntegrationConfig)
     calendar: IntegrationConfig = field(default_factory=IntegrationConfig)
+    gchat: IntegrationConfig = field(default_factory=IntegrationConfig)
 
     # ── factories ──────────────────────────────────────────────
 
@@ -78,6 +79,15 @@ class LLTPMConfig:
         linear_token = os.getenv("LINEAR_API_KEY", "")
         if linear_token:
             cfg.linear = IntegrationConfig(enabled=True, api_key=linear_token)
+
+        # Google Chat (webhook URL or service account key path)
+        gchat_key = os.getenv("GCHAT_WEBHOOK_URL", "") or os.getenv("GCHAT_SERVICE_ACCOUNT_KEY", "")
+        if gchat_key:
+            cfg.gchat = IntegrationConfig(
+                enabled=True,
+                api_key=gchat_key,
+                extra={"service_account_key": os.getenv("GCHAT_SERVICE_ACCOUNT_KEY", "")},
+            )
 
         # Overlay a JSON config file if present
         config_path = cfg.data_dir / "config.json"

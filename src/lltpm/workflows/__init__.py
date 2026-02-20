@@ -7,6 +7,8 @@ from lltpm.workflows.risk_engine import RiskEngine
 from lltpm.workflows.daily_cadence import DailyCadence
 from lltpm.workflows.weekly_planner import WeeklyPlanner
 from lltpm.workflows.bug_triage import BugTriageEngine
+from lltpm.workflows.meeting_intelligence import MeetingIntelligenceEngine
+from lltpm.workflows.delegation_engine import DelegationEngine
 
 __all__ = [
     "MeetingGate", "MeetingProposal", "MeetingVerdict",
@@ -16,4 +18,6 @@ __all__ = [
     "DailyCadence",
     "WeeklyPlanner",
     "BugTriageEngine",
+    "MeetingIntelligenceEngine",
+    "DelegationEngine",
 ]

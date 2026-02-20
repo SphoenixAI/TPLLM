@@ -6,6 +6,7 @@ from lltpm.integrations.jira_integration import JiraIntegration
 from lltpm.integrations.slack_integration import SlackIntegration
 from lltpm.integrations.linear_integration import LinearIntegration
 from lltpm.integrations.calendar_integration import CalendarIntegration
+from lltpm.integrations.gchat_integration import GoogleChatIntegration
 
 __all__ = [
     "Integration", "IntegrationError",
@@ -14,4 +15,5 @@ __all__ = [
     "SlackIntegration",
     "LinearIntegration",
     "CalendarIntegration",
+    "GoogleChatIntegration",
 ]

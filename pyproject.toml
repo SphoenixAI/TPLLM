@@ -22,6 +22,8 @@ integrations = [
     "PyGithub>=2.0",
     "jira>=3.0",
     "slack-sdk>=3.0",
+    "google-auth>=2.0",
+    "google-api-python-client>=2.0",
 ]
 dev = [
     "pytest>=8.0",
