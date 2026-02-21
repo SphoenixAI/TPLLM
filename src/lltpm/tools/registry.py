@@ -20,6 +20,9 @@ from lltpm.tools.calendar_tools import get_calendar_tools
 from lltpm.tools.gchat_tools import get_gchat_tools
 from lltpm.tools.meeting_intel_tools import get_meeting_intel_tools
 from lltpm.tools.delegation_tools import get_delegation_tools
+from lltpm.tools.nudge_tools import get_nudge_tools
+from lltpm.tools.engagement_tools import get_engagement_tools
+from lltpm.tools.scope_tools import get_scope_tools
 
 
 class ToolRegistry:
@@ -79,6 +82,18 @@ def build_tool_registry(config: LLTPMConfig, store: ArtifactStore) -> ToolRegist
 
     # Always available — delegation tools
     for tool in get_delegation_tools(store):
+        registry.register(**tool)
+
+    # Always available — nudge engine tools
+    for tool in get_nudge_tools(store):
+        registry.register(**tool)
+
+    # Always available — engagement, quick response, briefing, transcript tools
+    for tool in get_engagement_tools(store):
+        registry.register(**tool)
+
+    # Always available — scope lock tools
+    for tool in get_scope_tools(store):
         registry.register(**tool)
 
     # Conditional — communication tools (need Slack)
