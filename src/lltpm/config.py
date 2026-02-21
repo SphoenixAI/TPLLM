@@ -45,6 +45,7 @@ class LLTPMConfig:
     linear: IntegrationConfig = field(default_factory=IntegrationConfig)
     calendar: IntegrationConfig = field(default_factory=IntegrationConfig)
     gchat: IntegrationConfig = field(default_factory=IntegrationConfig)
+    zoom: IntegrationConfig = field(default_factory=IntegrationConfig)
 
     # ── factories ──────────────────────────────────────────────
 
@@ -87,6 +88,26 @@ class LLTPMConfig:
                 enabled=True,
                 api_key=gchat_key,
                 extra={"service_account_key": os.getenv("GCHAT_SERVICE_ACCOUNT_KEY", "")},
+            )
+
+        # Google Calendar
+        gcal_key = os.getenv("GOOGLE_CALENDAR_SERVICE_ACCOUNT", "")
+        if gcal_key:
+            cfg.calendar = IntegrationConfig(
+                enabled=True,
+                api_key=gcal_key,
+            )
+
+        # Zoom
+        zoom_key = os.getenv("ZOOM_API_KEY", "") or os.getenv("ZOOM_ACCOUNT_ID", "")
+        if zoom_key:
+            cfg.zoom = IntegrationConfig(
+                enabled=True,
+                api_key=zoom_key,
+                extra={
+                    "account_id": os.getenv("ZOOM_ACCOUNT_ID", ""),
+                    "client_secret": os.getenv("ZOOM_CLIENT_SECRET", ""),
+                },
             )
 
         # Overlay a JSON config file if present

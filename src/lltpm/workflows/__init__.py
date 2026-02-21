@@ -15,6 +15,11 @@ from lltpm.workflows.scope_lock import ScopeLock
 from lltpm.workflows.personalized_briefing import PersonalizedBriefingEngine
 from lltpm.workflows.engagement_tracker import EngagementTracker
 from lltpm.workflows.transcript_processor import TranscriptProcessor
+from lltpm.workflows.persistent_memory import PersistentMemoryEngine
+from lltpm.workflows.smart_calendar import SmartCalendarEngine
+from lltpm.workflows.zoom_engine import ZoomEngine
+from lltpm.workflows.webhook_processor import WebhookProcessor
+from lltpm.workflows.agent_orchestrator import AgentOrchestrator
 
 __all__ = [
     "MeetingGate", "MeetingProposal", "MeetingVerdict",
@@ -32,4 +37,9 @@ __all__ = [
     "PersonalizedBriefingEngine",
     "EngagementTracker",
     "TranscriptProcessor",
+    "PersistentMemoryEngine",
+    "SmartCalendarEngine",
+    "ZoomEngine",
+    "WebhookProcessor",
+    "AgentOrchestrator",
 ]

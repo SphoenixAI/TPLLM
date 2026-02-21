@@ -23,6 +23,11 @@ from lltpm.tools.delegation_tools import get_delegation_tools
 from lltpm.tools.nudge_tools import get_nudge_tools
 from lltpm.tools.engagement_tools import get_engagement_tools
 from lltpm.tools.scope_tools import get_scope_tools
+from lltpm.tools.memory_tools import get_memory_tools
+from lltpm.tools.smart_calendar_tools import get_smart_calendar_tools
+from lltpm.tools.zoom_tools import get_zoom_tools
+from lltpm.tools.webhook_tools import get_webhook_tools
+from lltpm.tools.orchestrator_tools import get_orchestrator_tools
 
 
 class ToolRegistry:
@@ -96,6 +101,26 @@ def build_tool_registry(config: LLTPMConfig, store: ArtifactStore) -> ToolRegist
     for tool in get_scope_tools(store):
         registry.register(**tool)
 
+    # Always available — persistent memory tools
+    for tool in get_memory_tools(store):
+        registry.register(**tool)
+
+    # Always available — smart calendar tools
+    for tool in get_smart_calendar_tools(store):
+        registry.register(**tool)
+
+    # Always available — Zoom meeting tools
+    for tool in get_zoom_tools(store):
+        registry.register(**tool)
+
+    # Always available — webhook event processing tools
+    for tool in get_webhook_tools(store):
+        registry.register(**tool)
+
+    # Always available — multi-agent orchestrator tools
+    for tool in get_orchestrator_tools():
+        registry.register(**tool)
+
     # Conditional — communication tools (need Slack)
     if config.slack.enabled:
         for tool in get_communication_tools(config):
@@ -111,7 +136,7 @@ def build_tool_registry(config: LLTPMConfig, store: ArtifactStore) -> ToolRegist
         for tool in get_github_tools(config):
             registry.register(**tool)
 
-    # Conditional — calendar tools
+    # Conditional — calendar tools (legacy — use smart_calendar for new scheduling)
     if config.calendar.enabled:
         for tool in get_calendar_tools(config):
             registry.register(**tool)

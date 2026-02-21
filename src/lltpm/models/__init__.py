@@ -11,6 +11,10 @@ from lltpm.models.nudge import NudgeRecord, NudgeLog, EngagementBudget
 from lltpm.models.engagement import EngagementProfile, ResponseEvent
 from lltpm.models.scope import ScopeBaseline, ScopeChangeRequest, ScopeItem
 from lltpm.models.briefing import PersonalizedBriefing, RoleType
+from lltpm.models.memory import MemoryStore, ConversationTurn, ContextSnapshot, MemoryAnchor, GapDetection
+from lltpm.models.calendar import SmartScheduleRequest, ScheduleResult, AttendeeInfo, AvailabilitySlot
+from lltpm.models.zoom import ZoomMeeting, AINotesIngestion, ZoomWebhookEvent
+from lltpm.models.webhook import NormalizedEvent, WebhookSource, EventBatch
 
 __all__ = [
     "Program", "Stakeholder", "SuccessMetric",
@@ -24,4 +28,8 @@ __all__ = [
     "EngagementProfile", "ResponseEvent",
     "ScopeBaseline", "ScopeChangeRequest", "ScopeItem",
     "PersonalizedBriefing", "RoleType",
+    "MemoryStore", "ConversationTurn", "ContextSnapshot", "MemoryAnchor", "GapDetection",
+    "SmartScheduleRequest", "ScheduleResult", "AttendeeInfo", "AvailabilitySlot",
+    "ZoomMeeting", "AINotesIngestion", "ZoomWebhookEvent",
+    "NormalizedEvent", "WebhookSource", "EventBatch",
 ]
