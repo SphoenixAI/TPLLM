@@ -15,6 +15,7 @@ from lltpm.models.memory import MemoryStore, ConversationTurn, ContextSnapshot, 
 from lltpm.models.calendar import SmartScheduleRequest, ScheduleResult, AttendeeInfo, AvailabilitySlot
 from lltpm.models.zoom import ZoomMeeting, AINotesIngestion, ZoomWebhookEvent
 from lltpm.models.webhook import NormalizedEvent, WebhookSource, EventBatch
+from lltpm.models.prediction import RiskPrediction, QuarterlyEvaluation, PersonMetrics
 
 __all__ = [
     "Program", "Stakeholder", "SuccessMetric",
@@ -32,4 +33,5 @@ __all__ = [
     "SmartScheduleRequest", "ScheduleResult", "AttendeeInfo", "AvailabilitySlot",
     "ZoomMeeting", "AINotesIngestion", "ZoomWebhookEvent",
     "NormalizedEvent", "WebhookSource", "EventBatch",
+    "RiskPrediction", "QuarterlyEvaluation", "PersonMetrics",
 ]

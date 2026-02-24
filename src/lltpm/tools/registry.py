@@ -28,6 +28,8 @@ from lltpm.tools.smart_calendar_tools import get_smart_calendar_tools
 from lltpm.tools.zoom_tools import get_zoom_tools
 from lltpm.tools.webhook_tools import get_webhook_tools
 from lltpm.tools.orchestrator_tools import get_orchestrator_tools
+from lltpm.tools.document_tools import get_document_tools
+from lltpm.tools.prediction_tools import get_prediction_tools
 
 
 class ToolRegistry:
@@ -119,6 +121,14 @@ def build_tool_registry(config: LLTPMConfig, store: ArtifactStore) -> ToolRegist
 
     # Always available — multi-agent orchestrator tools
     for tool in get_orchestrator_tools():
+        registry.register(**tool)
+
+    # Always available — document generation tools
+    for tool in get_document_tools(store):
+        registry.register(**tool)
+
+    # Always available — risk prediction and evaluation tools
+    for tool in get_prediction_tools(store):
         registry.register(**tool)
 
     # Conditional — communication tools (need Slack)

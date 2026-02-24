@@ -20,6 +20,8 @@ from lltpm.workflows.smart_calendar import SmartCalendarEngine
 from lltpm.workflows.zoom_engine import ZoomEngine
 from lltpm.workflows.webhook_processor import WebhookProcessor
 from lltpm.workflows.agent_orchestrator import AgentOrchestrator
+from lltpm.workflows.document_generator import DocumentGenerator
+from lltpm.workflows.risk_predictor import RiskPredictor
 
 __all__ = [
     "MeetingGate", "MeetingProposal", "MeetingVerdict",
@@ -42,4 +44,6 @@ __all__ = [
     "ZoomEngine",
     "WebhookProcessor",
     "AgentOrchestrator",
+    "DocumentGenerator",
+    "RiskPredictor",
 ]
