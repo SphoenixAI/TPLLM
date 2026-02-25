@@ -30,6 +30,11 @@ from lltpm.tools.webhook_tools import get_webhook_tools
 from lltpm.tools.orchestrator_tools import get_orchestrator_tools
 from lltpm.tools.document_tools import get_document_tools
 from lltpm.tools.prediction_tools import get_prediction_tools
+from lltpm.tools.security_tools import get_security_tools
+from lltpm.tools.portfolio_tools import get_portfolio_tools
+from lltpm.tools.trend_tools import get_trend_tools
+from lltpm.tools.approval_tools import get_approval_tools
+from lltpm.tools.notification_tools import get_notification_tools
 
 
 class ToolRegistry:
@@ -129,6 +134,26 @@ def build_tool_registry(config: LLTPMConfig, store: ArtifactStore) -> ToolRegist
 
     # Always available — risk prediction and evaluation tools
     for tool in get_prediction_tools(store):
+        registry.register(**tool)
+
+    # Always available — security and auth tools
+    for tool in get_security_tools(store):
+        registry.register(**tool)
+
+    # Always available — cross-program intelligence tools
+    for tool in get_portfolio_tools(store):
+        registry.register(**tool)
+
+    # Always available — historical trend analysis tools
+    for tool in get_trend_tools(store):
+        registry.register(**tool)
+
+    # Always available — approval workflow tools
+    for tool in get_approval_tools(store):
+        registry.register(**tool)
+
+    # Always available — notification routing tools
+    for tool in get_notification_tools(store):
         registry.register(**tool)
 
     # Conditional — communication tools (need Slack)

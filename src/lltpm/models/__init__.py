@@ -16,6 +16,11 @@ from lltpm.models.calendar import SmartScheduleRequest, ScheduleResult, Attendee
 from lltpm.models.zoom import ZoomMeeting, AINotesIngestion, ZoomWebhookEvent
 from lltpm.models.webhook import NormalizedEvent, WebhookSource, EventBatch
 from lltpm.models.prediction import RiskPrediction, QuarterlyEvaluation, PersonMetrics
+from lltpm.models.security import APIKey, AuditEntry, AuditLog, Role, Permission
+from lltpm.models.portfolio import PortfolioView, ResourceConflict, SharedDependency, CrossProgramRisk
+from lltpm.models.trends import HealthSnapshot, TrendReport, TrendDirection, VelocityPoint
+from lltpm.models.approval import ApprovalRequest, ApprovalChain, ApprovalStatus
+from lltpm.models.notifications import Notification, NotificationPreference, NotificationChannel
 
 __all__ = [
     "Program", "Stakeholder", "SuccessMetric",
@@ -34,4 +39,9 @@ __all__ = [
     "ZoomMeeting", "AINotesIngestion", "ZoomWebhookEvent",
     "NormalizedEvent", "WebhookSource", "EventBatch",
     "RiskPrediction", "QuarterlyEvaluation", "PersonMetrics",
+    "APIKey", "AuditEntry", "AuditLog", "Role", "Permission",
+    "PortfolioView", "ResourceConflict", "SharedDependency", "CrossProgramRisk",
+    "HealthSnapshot", "TrendReport", "TrendDirection", "VelocityPoint",
+    "ApprovalRequest", "ApprovalChain", "ApprovalStatus",
+    "Notification", "NotificationPreference", "NotificationChannel",
 ]

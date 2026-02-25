@@ -22,6 +22,11 @@ from lltpm.workflows.webhook_processor import WebhookProcessor
 from lltpm.workflows.agent_orchestrator import AgentOrchestrator
 from lltpm.workflows.document_generator import DocumentGenerator
 from lltpm.workflows.risk_predictor import RiskPredictor
+from lltpm.workflows.security_manager import SecurityManager
+from lltpm.workflows.cross_program_intel import CrossProgramIntel
+from lltpm.workflows.trend_analyzer import TrendAnalyzer
+from lltpm.workflows.approval_engine import ApprovalEngine
+from lltpm.workflows.notification_router import NotificationRouter
 
 __all__ = [
     "MeetingGate", "MeetingProposal", "MeetingVerdict",
@@ -46,4 +51,9 @@ __all__ = [
     "AgentOrchestrator",
     "DocumentGenerator",
     "RiskPredictor",
+    "SecurityManager",
+    "CrossProgramIntel",
+    "TrendAnalyzer",
+    "ApprovalEngine",
+    "NotificationRouter",
 ]
