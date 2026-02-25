@@ -16,48 +16,56 @@ echo ""
 # ── Helper: install miniconda ────────────────────────────
 install_miniconda() {
     echo "  Installing Miniconda..."
-    local OS ARCH URL
+    local OS
     OS="$(uname -s)"
-    ARCH="$(uname -m)"
 
-    # Normalize arch for miniconda URL
-    # macOS (Darwin) uses arm64, Linux uses aarch64
     if [ "$OS" = "Darwin" ]; then
-        case "$ARCH" in
-            x86_64) ARCH="x86_64" ;;
-            arm64)  ARCH="arm64" ;;
-            *)      echo "  ERROR: Unsupported macOS architecture: $ARCH"; exit 1 ;;
-        esac
+        # macOS — use Homebrew
+        if ! command -v brew &>/dev/null; then
+            echo "  Homebrew not found — installing Homebrew first..."
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        fi
+        echo "  Running: brew install miniconda"
+        brew install miniconda
+        # Homebrew installs conda to its own prefix
+        CONDA_EXE="$(brew --prefix)/Caskroom/miniconda/base/bin/conda"
+        if [ ! -x "$CONDA_EXE" ]; then
+            # Newer brew versions install as a formula
+            CONDA_EXE="$(brew --prefix miniconda)/bin/conda"
+        fi
+        eval "$("$CONDA_EXE" shell.bash hook)"
+        conda init --quiet >/dev/null 2>&1 || true
     else
+        # Linux — download installer
+        local ARCH URL INSTALLER
+        ARCH="$(uname -m)"
         case "$ARCH" in
             x86_64)  ARCH="x86_64" ;;
             aarch64) ARCH="aarch64" ;;
             arm64)   ARCH="aarch64" ;;
             *)       echo "  ERROR: Unsupported architecture: $ARCH"; exit 1 ;;
         esac
+
+        URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-${ARCH}.sh"
+        echo "  Downloading from $URL ..."
+
+        INSTALLER="$(mktemp /tmp/miniconda-XXXXXX.sh)"
+        if command -v curl &>/dev/null; then
+            curl -fsSL "$URL" -o "$INSTALLER"
+        elif command -v wget &>/dev/null; then
+            wget -q "$URL" -O "$INSTALLER"
+        else
+            echo "  ERROR: Neither curl nor wget found. Install one and re-run."
+            exit 1
+        fi
+
+        bash "$INSTALLER" -b -p "$MINICONDA_DIR"
+        rm -f "$INSTALLER"
+
+        eval "$("$MINICONDA_DIR/bin/conda" shell.bash hook)"
+        conda init --quiet >/dev/null 2>&1 || true
     fi
-
-    URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-${OS}-${ARCH}.sh"
-    echo "  Downloading from $URL ..."
-
-    local INSTALLER
-    INSTALLER="$(mktemp /tmp/miniconda-XXXXXX.sh)"
-    if command -v curl &>/dev/null; then
-        curl -fsSL "$URL" -o "$INSTALLER"
-    elif command -v wget &>/dev/null; then
-        wget -q "$URL" -O "$INSTALLER"
-    else
-        echo "  ERROR: Neither curl nor wget found. Install one and re-run."
-        exit 1
-    fi
-
-    bash "$INSTALLER" -b -p "$MINICONDA_DIR"
-    rm -f "$INSTALLER"
-
-    # Make conda available in this script
-    eval "$("$MINICONDA_DIR/bin/conda" shell.bash hook)"
-    conda init --quiet >/dev/null 2>&1 || true
-    echo "  Miniconda installed to $MINICONDA_DIR ✓"
+    echo "  Miniconda installed ✓"
 }
 
 # ── Helper: check if system Python >= 3.11 ───────────────
