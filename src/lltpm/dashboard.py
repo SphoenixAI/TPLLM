@@ -6,6 +6,7 @@ FastAPI-based REST API that serves:
 - Document generation endpoints
 - Risk prediction data
 - Engagement and delegation summaries
+- JWT authentication with RBAC enforcement
 
 Run with: uvicorn lltpm.dashboard:app --reload
 """
@@ -17,14 +18,17 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from fastapi import FastAPI, HTTPException, Query
+    from fastapi import Depends, FastAPI, HTTPException, Query, Request
     from fastapi.responses import HTMLResponse, JSONResponse
+    from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
     HAS_FASTAPI = True
 except ImportError:
     HAS_FASTAPI = False
 
 from lltpm.artifacts.store import ArtifactStore
 from lltpm.config import LLTPMConfig
+from lltpm.models.security import JWTClaims, Permission, Role
+from lltpm.workflows.security_manager import SecurityManager
 
 
 def create_app(config: LLTPMConfig | None = None) -> Any:
@@ -38,6 +42,49 @@ def create_app(config: LLTPMConfig | None = None) -> Any:
     cfg = config or LLTPMConfig.from_env()
     cfg.ensure_data_dir()
     store = ArtifactStore(cfg.data_dir)
+    security = SecurityManager(store)
+    bearer_scheme = HTTPBearer(auto_error=False)
+
+    # ── Auth helpers ──────────────────────────────────────
+
+    async def get_current_user(
+        request: Request,
+        credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+    ) -> JWTClaims | None:
+        """Extract and validate JWT from Authorization header.
+
+        Returns None if no token provided (allows public endpoints).
+        Raises 401 if token is invalid.
+        """
+        if credentials is None:
+            return None
+
+        claims = security.validate_jwt(credentials.credentials)
+        if claims is None:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid or expired token",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        return claims
+
+    def require_auth(claims: JWTClaims | None) -> JWTClaims:
+        """Ensure user is authenticated."""
+        if claims is None:
+            raise HTTPException(
+                status_code=401,
+                detail="Authentication required",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        return claims
+
+    def require_permission(claims: JWTClaims, permission: Permission, program_id: str = "") -> None:
+        """Check RBAC permission or raise 403."""
+        if not security.check_permission(claims.role, permission, program_id, claims.scopes):
+            raise HTTPException(
+                status_code=403,
+                detail=f"Insufficient permissions: {permission.value} required",
+            )
 
     app = FastAPI(
         title="LLTPM Dashboard",
@@ -45,11 +92,63 @@ def create_app(config: LLTPMConfig | None = None) -> Any:
         version="0.1.0",
     )
 
-    # ── Health ────────────────────────────────────────────
+    # ── Health (public) ───────────────────────────────────
 
     @app.get("/health")
     def health():
         return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
+
+    # ── Auth endpoints ────────────────────────────────────
+
+    @app.post("/api/auth/token")
+    async def login(request: Request):
+        """Exchange an API key for a JWT token pair.
+
+        Body: {"api_key": "lltpm_..."}
+        Returns: {"access_token": "...", "refresh_token": "...", "expires_in": ...}
+        """
+        body = await request.json()
+        api_key = body.get("api_key", "")
+        if not api_key:
+            raise HTTPException(400, "api_key is required")
+
+        ip = request.client.host if request.client else ""
+        token_pair = security.authenticate_api_key_to_jwt(api_key, ip_address=ip)
+        if not token_pair:
+            raise HTTPException(401, "Invalid API key")
+
+        return token_pair.model_dump()
+
+    @app.post("/api/auth/refresh")
+    async def refresh_token(request: Request):
+        """Exchange a refresh token for a new token pair.
+
+        Body: {"refresh_token": "..."}
+        """
+        body = await request.json()
+        refresh = body.get("refresh_token", "")
+        if not refresh:
+            raise HTTPException(400, "refresh_token is required")
+
+        token_pair = security.refresh_access_token(refresh)
+        if not token_pair:
+            raise HTTPException(401, "Invalid or expired refresh token")
+
+        return token_pair.model_dump()
+
+    @app.get("/api/auth/me")
+    async def get_current_user_info(
+        claims: JWTClaims | None = Depends(get_current_user),
+    ):
+        """Get current authenticated user info."""
+        user = require_auth(claims)
+        return {
+            "subject": user.sub,
+            "role": user.role.value,
+            "scopes": user.scopes,
+            "permissions": security.get_role_permissions(user.role),
+            "expires_at": user.exp.isoformat(),
+        }
 
     # ── Programs ──────────────────────────────────────────
 
@@ -301,6 +400,59 @@ def create_app(config: LLTPMConfig | None = None) -> Any:
         from lltpm.workflows.agent_orchestrator import AgentOrchestrator
         orch = AgentOrchestrator()
         return orch.get_deployment_config()
+
+    # ── Security & Audit (auth required) ─────────────────
+
+    @app.get("/api/security/audit")
+    async def get_audit_log(
+        actor: str = "",
+        limit: int = Query(default=50, le=500),
+        claims: JWTClaims | None = Depends(get_current_user),
+    ):
+        """Get audit log (requires AUDIT_READ permission)."""
+        user = require_auth(claims)
+        require_permission(user, Permission.AUDIT_READ)
+        entries = security.get_audit_log(actor=actor, limit=limit)
+        return {
+            "entries": [
+                {
+                    "id": e.id,
+                    "timestamp": e.timestamp.isoformat(),
+                    "action": e.action.value,
+                    "actor": e.actor,
+                    "resource_type": e.resource_type,
+                    "resource_id": e.resource_id,
+                    "detail": e.detail,
+                    "success": e.success,
+                }
+                for e in entries
+            ],
+            "count": len(entries),
+        }
+
+    @app.get("/api/security/keys")
+    async def list_api_keys(
+        claims: JWTClaims | None = Depends(get_current_user),
+    ):
+        """List API keys (requires DASHBOARD_ADMIN permission)."""
+        user = require_auth(claims)
+        require_permission(user, Permission.DASHBOARD_ADMIN)
+        keys = security.list_api_keys()
+        return {
+            "keys": [
+                {
+                    "id": k.id,
+                    "name": k.name,
+                    "role": k.role.value,
+                    "owner": k.owner,
+                    "key_prefix": k.key_prefix,
+                    "created_at": k.created_at.isoformat(),
+                    "is_valid": k.is_valid,
+                    "revoked": k.revoked,
+                }
+                for k in keys
+            ],
+        }
 
     return app
 

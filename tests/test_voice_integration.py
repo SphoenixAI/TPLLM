@@ -130,12 +130,16 @@ def test_cache_key_different_for_different_style():
 def test_list_available_backends():
     voice = VoiceIntegration(_make_config())
     backends = voice.list_available_backends()
-    assert len(backends) == 4
+    assert len(backends) == 5
     names = [b["backend"] for b in backends]
+    assert "chatterbox" in names
     assert "system" in names
     assert "piper" in names
     assert "kokoro" in names
     assert "elevenlabs" in names
+    # Chatterbox should be marked as recommended
+    cb = next(b for b in backends if b["backend"] == "chatterbox")
+    assert cb.get("recommended") is True
 
 
 def test_elevenlabs_available_with_key():
@@ -239,3 +243,23 @@ def test_no_config_defaults():
     voice = VoiceIntegration()
     assert voice.backend == VoiceBackend.SYSTEM
     assert voice.name == "voice"
+
+
+def test_chatterbox_backend_selection():
+    """Chatterbox backend can be selected."""
+    voice = VoiceIntegration(_make_config("chatterbox"))
+    assert voice.backend == VoiceBackend.CHATTERBOX
+
+
+def test_synthesize_chatterbox_not_installed():
+    """Chatterbox returns error when not installed."""
+    voice = VoiceIntegration(_make_config("chatterbox"))
+    result = voice._synthesize_chatterbox("Hello world", "")
+    assert not result.ok
+    assert "not installed" in result.error.lower() or "chatterbox" in result.error.lower()
+
+
+def test_check_chatterbox_returns_bool():
+    """_check_chatterbox returns bool regardless of install state."""
+    result = VoiceIntegration._check_chatterbox()
+    assert isinstance(result, bool)

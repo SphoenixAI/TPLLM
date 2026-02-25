@@ -1,10 +1,10 @@
-"""Security models — RBAC, API keys, audit logging, session management."""
+"""Security models — RBAC, API keys, JWT tokens, audit logging, session management."""
 
 from __future__ import annotations
 
 import hashlib
 import secrets
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import Optional
 
@@ -128,6 +128,62 @@ class OAuthToken(BaseModel):
         return self.expires_at < datetime.utcnow()
 
 
+class JWTConfig(BaseModel):
+    """JWT authentication configuration."""
+
+    secret_key: str = Field(default_factory=lambda: secrets.token_urlsafe(32))
+    algorithm: str = "HS256"
+    access_token_ttl_minutes: int = 30  # short-lived access tokens
+    refresh_token_ttl_days: int = 7
+    issuer: str = "lltpm"
+    audience: str = "lltpm-api"
+
+
+class JWTClaims(BaseModel):
+    """Standard + custom JWT claims."""
+
+    sub: str  # subject (user or key ID)
+    role: Role
+    scopes: list[str] = Field(default_factory=list)
+    iss: str = "lltpm"
+    aud: str = "lltpm-api"
+    iat: datetime = Field(default_factory=datetime.utcnow)
+    exp: datetime = Field(
+        default_factory=lambda: datetime.utcnow() + timedelta(minutes=30)
+    )
+    jti: str = Field(default_factory=lambda: secrets.token_hex(8))  # JWT ID for revocation
+    token_type: str = "access"  # "access" or "refresh"
+
+    @property
+    def is_expired(self) -> bool:
+        return datetime.utcnow() > self.exp
+
+    def to_payload(self) -> dict:
+        """Convert to JWT-encodable dict."""
+        return {
+            "sub": self.sub,
+            "role": self.role.value,
+            "scopes": self.scopes,
+            "iss": self.iss,
+            "aud": self.aud,
+            "iat": int(self.iat.timestamp()),
+            "exp": int(self.exp.timestamp()),
+            "jti": self.jti,
+            "token_type": self.token_type,
+        }
+
+
+class TokenPair(BaseModel):
+    """Access + refresh token pair."""
+
+    access_token: str
+    refresh_token: str
+    token_type: str = "Bearer"
+    expires_in: int  # seconds until access token expires
+    role: Role
+    scopes: list[str] = Field(default_factory=list)
+
+
 class AuditAction(str, Enum):
     """Types of auditable actions."""
 
@@ -147,6 +203,9 @@ class AuditAction(str, Enum):
     LOGOUT = "logout"
     KEY_CREATED = "key_created"
     KEY_REVOKED = "key_revoked"
+    TOKEN_ISSUED = "token_issued"
+    TOKEN_REVOKED = "token_revoked"
+    TOKEN_REFRESHED = "token_refreshed"
 
     # Configuration
     CONFIG_CHANGE = "config_change"

@@ -1,7 +1,8 @@
-"""Security Manager — RBAC, API key management, audit logging.
+"""Security Manager — RBAC, API key management, JWT auth, audit logging.
 
 Provides:
 - API key generation, validation, and revocation
+- JWT token issuance, validation, and refresh (PyJWT 2.11+)
 - Role-based access control with permission checks
 - Immutable audit logging for all agent actions
 - OAuth token lifecycle management (store, refresh, revoke)
@@ -21,18 +22,22 @@ from lltpm.models.security import (
     AuditAction,
     AuditEntry,
     AuditLog,
+    JWTClaims,
+    JWTConfig,
     OAuthToken,
     Permission,
     Role,
     ROLE_PERMISSIONS,
+    TokenPair,
 )
 
 
 class SecurityManager:
     """Manages authentication, authorization, and audit logging."""
 
-    def __init__(self, store: ArtifactStore) -> None:
+    def __init__(self, store: ArtifactStore, jwt_config: JWTConfig | None = None) -> None:
         self._store = store
+        self._jwt_config = jwt_config or self._load_jwt_config()
 
     # ── API Key Management ────────────────────────────────────
 
@@ -143,6 +148,220 @@ class SecurityManager:
     def get_role_permissions(self, role: Role) -> list[str]:
         """Get all permissions for a role."""
         return [p.value for p in ROLE_PERMISSIONS.get(role, set())]
+
+    # ── JWT Token Management ─────────────────────────────────
+
+    def issue_token_pair(
+        self,
+        subject: str,
+        role: Role,
+        scopes: list[str] | None = None,
+        ip_address: str = "",
+    ) -> TokenPair:
+        """Issue a JWT access + refresh token pair.
+
+        Access tokens are short-lived (default 30min).
+        Refresh tokens are longer-lived (default 7 days).
+        Both carry role and scope claims for RBAC enforcement.
+        """
+        try:
+            import jwt
+        except ImportError:
+            raise ImportError(
+                "PyJWT is required for JWT auth. Install with: pip install PyJWT>=2.11.0"
+            )
+
+        now = datetime.utcnow()
+        access_exp = now + timedelta(minutes=self._jwt_config.access_token_ttl_minutes)
+        refresh_exp = now + timedelta(days=self._jwt_config.refresh_token_ttl_days)
+        token_scopes = scopes or []
+
+        # Access token
+        access_claims = JWTClaims(
+            sub=subject,
+            role=role,
+            scopes=token_scopes,
+            iss=self._jwt_config.issuer,
+            aud=self._jwt_config.audience,
+            iat=now,
+            exp=access_exp,
+            token_type="access",
+        )
+        access_token = jwt.encode(
+            access_claims.to_payload(),
+            self._jwt_config.secret_key,
+            algorithm=self._jwt_config.algorithm,
+        )
+
+        # Refresh token — longer TTL, separate jti
+        refresh_claims = JWTClaims(
+            sub=subject,
+            role=role,
+            scopes=token_scopes,
+            iss=self._jwt_config.issuer,
+            aud=self._jwt_config.audience,
+            iat=now,
+            exp=refresh_exp,
+            token_type="refresh",
+        )
+        refresh_token = jwt.encode(
+            refresh_claims.to_payload(),
+            self._jwt_config.secret_key,
+            algorithm=self._jwt_config.algorithm,
+        )
+
+        self.log_action(
+            AuditAction.TOKEN_ISSUED,
+            actor=subject,
+            resource_type="jwt",
+            resource_id=access_claims.jti,
+            detail=f"Issued token pair for role {role.value}",
+            ip_address=ip_address,
+        )
+
+        return TokenPair(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            expires_in=self._jwt_config.access_token_ttl_minutes * 60,
+            role=role,
+            scopes=token_scopes,
+        )
+
+    def validate_jwt(self, token: str) -> JWTClaims | None:
+        """Validate a JWT and return its claims, or None if invalid.
+
+        Checks: signature, expiration, issuer, audience.
+        """
+        try:
+            import jwt
+        except ImportError:
+            return None
+
+        try:
+            payload = jwt.decode(
+                token,
+                self._jwt_config.secret_key,
+                algorithms=[self._jwt_config.algorithm],
+                issuer=self._jwt_config.issuer,
+                audience=self._jwt_config.audience,
+                options={"require": ["exp", "iat", "sub", "iss", "aud"]},
+            )
+
+            # Check if token has been revoked
+            jti = payload.get("jti", "")
+            if jti and self._is_token_revoked(jti):
+                return None
+
+            return JWTClaims(
+                sub=payload["sub"],
+                role=Role(payload["role"]),
+                scopes=payload.get("scopes", []),
+                iss=payload["iss"],
+                aud=payload["aud"],
+                iat=datetime.utcfromtimestamp(payload["iat"]),
+                exp=datetime.utcfromtimestamp(payload["exp"]),
+                jti=jti,
+                token_type=payload.get("token_type", "access"),
+            )
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError, KeyError, ValueError):
+            return None
+
+    def refresh_access_token(self, refresh_token: str) -> TokenPair | None:
+        """Exchange a valid refresh token for a new token pair.
+
+        The old refresh token's jti is revoked after use (rotation).
+        """
+        claims = self.validate_jwt(refresh_token)
+        if not claims:
+            return None
+
+        if claims.token_type != "refresh":
+            return None
+
+        # Revoke the old refresh token (rotation prevents replay)
+        self.revoke_token(claims.jti)
+
+        self.log_action(
+            AuditAction.TOKEN_REFRESHED,
+            actor=claims.sub,
+            resource_type="jwt",
+            resource_id=claims.jti,
+            detail="Refreshed token pair",
+        )
+
+        return self.issue_token_pair(
+            subject=claims.sub,
+            role=claims.role,
+            scopes=claims.scopes,
+        )
+
+    def revoke_token(self, jti: str) -> None:
+        """Add a JWT ID to the revocation list."""
+        revoked = self._load_revoked_tokens()
+        revoked[jti] = datetime.utcnow().isoformat()
+        self._save_revoked_tokens(revoked)
+
+    def authenticate_api_key_to_jwt(
+        self,
+        raw_key: str,
+        ip_address: str = "",
+    ) -> TokenPair | None:
+        """Authenticate with an API key, return a JWT token pair.
+
+        This bridges API key auth → JWT auth, letting clients use short-lived
+        JWTs after initial API key validation.
+        """
+        key = self.validate_api_key(raw_key)
+        if not key:
+            self.log_action(
+                AuditAction.LOGIN,
+                actor="unknown",
+                detail="API key authentication failed",
+                ip_address=ip_address,
+                success=False,
+                error="Invalid API key",
+            )
+            return None
+
+        return self.issue_token_pair(
+            subject=key.id,
+            role=key.role,
+            scopes=key.scopes,
+            ip_address=ip_address,
+        )
+
+    def _is_token_revoked(self, jti: str) -> bool:
+        """Check if a JWT has been revoked."""
+        revoked = self._load_revoked_tokens()
+        return jti in revoked
+
+    def _load_revoked_tokens(self) -> dict[str, str]:
+        raw = self._store.load_raw("_system", "revoked_tokens")
+        if not raw:
+            return {}
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            return {}
+
+    def _save_revoked_tokens(self, tokens: dict[str, str]) -> None:
+        self._store.save_raw("_system", "revoked_tokens", json.dumps(tokens))
+
+    def _load_jwt_config(self) -> JWTConfig:
+        """Load or create JWT configuration."""
+        raw = self._store.load_raw("_system", "jwt_config")
+        if raw:
+            try:
+                return JWTConfig.model_validate(json.loads(raw))
+            except (json.JSONDecodeError, TypeError):
+                pass
+        # Generate and persist a new config
+        config = JWTConfig()
+        self._store.save_raw(
+            "_system", "jwt_config",
+            json.dumps(config.model_dump(), default=str),
+        )
+        return config
 
     # ── Audit Logging ─────────────────────────────────────────
 

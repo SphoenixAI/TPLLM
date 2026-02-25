@@ -1,8 +1,9 @@
 """Voice / TTS integration — text-to-speech synthesis for LLTPM.
 
 Supports multiple backends:
-- Piper (local, fast, offline-capable)
-- Kokoro (local, high-quality neural TTS)
+- Chatterbox (MIT, Resemble AI — beats ElevenLabs in blind tests, emotion control)
+- Piper (local, fast, offline-capable, 900+ voices)
+- Kokoro (local, 82M params, Apache 2.0, 8 languages)
 - ElevenLabs (cloud API, production-grade voice cloning)
 - System TTS (macOS say, espeak on Linux — zero-dependency fallback)
 
@@ -29,6 +30,7 @@ from lltpm.config import IntegrationConfig
 
 
 class VoiceBackend(str, Enum):
+    CHATTERBOX = "chatterbox"
     PIPER = "piper"
     KOKORO = "kokoro"
     ELEVENLABS = "elevenlabs"
@@ -142,7 +144,9 @@ class VoiceIntegration:
         processed_text = self._apply_style(text, style)
 
         # Route to backend
-        if self._voice_config.backend == VoiceBackend.PIPER:
+        if self._voice_config.backend == VoiceBackend.CHATTERBOX:
+            result = self._synthesize_chatterbox(processed_text, output_path)
+        elif self._voice_config.backend == VoiceBackend.PIPER:
             result = self._synthesize_piper(processed_text, output_path)
         elif self._voice_config.backend == VoiceBackend.KOKORO:
             result = self._synthesize_kokoro(processed_text, output_path)
@@ -182,6 +186,15 @@ class VoiceIntegration:
         """Check which TTS backends are available on this system."""
         backends = []
 
+        # Chatterbox (recommended — MIT, best quality in blind tests)
+        chatterbox_available = self._check_chatterbox()
+        backends.append({
+            "backend": "chatterbox",
+            "available": chatterbox_available,
+            "description": "MIT licensed, Resemble AI — beats ElevenLabs in blind tests, emotion control",
+            "recommended": True,
+        })
+
         # System TTS
         system_available = self._check_system_tts()
         backends.append({
@@ -195,7 +208,7 @@ class VoiceIntegration:
         backends.append({
             "backend": "piper",
             "available": piper_available,
-            "description": "Fast local neural TTS",
+            "description": "Fast local neural TTS, 900+ voices, 47 languages",
         })
 
         # Kokoro
@@ -203,7 +216,7 @@ class VoiceIntegration:
         backends.append({
             "backend": "kokoro",
             "available": kokoro_available,
-            "description": "High-quality local neural TTS",
+            "description": "Lightweight neural TTS (82M params), Apache 2.0, 8 languages",
         })
 
         # ElevenLabs
@@ -211,7 +224,7 @@ class VoiceIntegration:
         backends.append({
             "backend": "elevenlabs",
             "available": elevenlabs_available,
-            "description": "Cloud API with voice cloning",
+            "description": "Cloud API with voice cloning (~$206/M chars)",
             "requires_api_key": True,
         })
 
@@ -277,6 +290,40 @@ class VoiceIntegration:
         except Exception as e:
             return SynthesisResult(
                 text=text, audio_path="", backend="system",
+                error=str(e),
+            )
+
+    def _synthesize_chatterbox(self, text: str, output_path: str) -> SynthesisResult:
+        """Synthesize using Chatterbox TTS (Resemble AI, MIT licensed).
+
+        Chatterbox beats ElevenLabs in blind tests (63.75% preference),
+        supports emotion control and zero-shot voice cloning from 7-20s audio.
+        """
+        out_path = output_path or str(self._get_output_path(text, "wav"))
+
+        try:
+            import chatterbox.tts
+            import torch
+            import soundfile as sf
+
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            model = chatterbox.tts.ChatterboxTTS.from_pretrained(device=device)
+
+            wav = model.generate(text)
+            sf.write(out_path, wav.squeeze().cpu().numpy(), model.sr)
+
+            return SynthesisResult(
+                text=text, audio_path=out_path, backend="chatterbox",
+                duration_seconds=len(wav.squeeze()) / model.sr,
+            )
+        except ImportError:
+            return SynthesisResult(
+                text=text, audio_path="", backend="chatterbox",
+                error="Chatterbox not installed. Install: pip install chatterbox-tts",
+            )
+        except Exception as e:
+            return SynthesisResult(
+                text=text, audio_path="", backend="chatterbox",
                 error=str(e),
             )
 
@@ -493,6 +540,15 @@ class VoiceIntegration:
         """Check if Kokoro TTS is available."""
         try:
             import kokoro  # noqa: F401
+            return True
+        except ImportError:
+            return False
+
+    @staticmethod
+    def _check_chatterbox() -> bool:
+        """Check if Chatterbox TTS is available."""
+        try:
+            import chatterbox  # noqa: F401
             return True
         except ImportError:
             return False
