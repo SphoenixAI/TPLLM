@@ -107,6 +107,8 @@ class LLTPMConfig:
     email: IntegrationConfig = field(default_factory=IntegrationConfig)
     voice: IntegrationConfig = field(default_factory=IntegrationConfig)
     gdrive: IntegrationConfig = field(default_factory=IntegrationConfig)
+    asana: IntegrationConfig = field(default_factory=IntegrationConfig)
+    notion: IntegrationConfig = field(default_factory=IntegrationConfig)
 
     # ── factories ──────────────────────────────────────────────
 
@@ -154,12 +156,22 @@ class LLTPMConfig:
                 extra={"service_account_key": os.getenv("GCHAT_SERVICE_ACCOUNT_KEY", "")},
             )
 
-        # Google Calendar
+        # Google Calendar / Microsoft Graph
         gcal_key = os.getenv("GOOGLE_CALENDAR_SERVICE_ACCOUNT", "")
-        if gcal_key:
+        ms_client_id = os.getenv("MS_GRAPH_CLIENT_ID", "")
+        if gcal_key or ms_client_id:
+            backend = "microsoft" if ms_client_id and not gcal_key else "google"
             cfg.calendar = IntegrationConfig(
                 enabled=True,
                 api_key=gcal_key,
+                extra={
+                    "backend": backend,
+                    "calendar_id": os.getenv("GOOGLE_CALENDAR_CALENDAR_ID", "primary"),
+                    "delegate_email": os.getenv("GOOGLE_CALENDAR_DELEGATE_EMAIL", ""),
+                    "ms_client_id": ms_client_id,
+                    "ms_client_secret": os.getenv("MS_GRAPH_CLIENT_SECRET", ""),
+                    "ms_tenant_id": os.getenv("MS_GRAPH_TENANT_ID", ""),
+                },
             )
 
         # Zoom
@@ -217,6 +229,25 @@ class LLTPMConfig:
                     "service_account_key": gdrive_sa,
                     "folder_id": gdrive_folder,
                 },
+            )
+
+        # Asana
+        asana_token = os.getenv("ASANA_ACCESS_TOKEN", "")
+        if asana_token:
+            cfg.asana = IntegrationConfig(
+                enabled=True,
+                api_key=asana_token,
+                extra={
+                    "workspace_gid": os.getenv("ASANA_WORKSPACE_GID", ""),
+                },
+            )
+
+        # Notion
+        notion_token = os.getenv("NOTION_API_KEY", "")
+        if notion_token:
+            cfg.notion = IntegrationConfig(
+                enabled=True,
+                api_key=notion_token,
             )
 
         # Overlay a JSON config file if present
