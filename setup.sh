@@ -21,12 +21,21 @@ install_miniconda() {
     ARCH="$(uname -m)"
 
     # Normalize arch for miniconda URL
-    case "$ARCH" in
-        x86_64)  ARCH="x86_64" ;;
-        aarch64) ARCH="aarch64" ;;
-        arm64)   ARCH="aarch64" ;;  # macOS ARM
-        *)       echo "  ERROR: Unsupported architecture: $ARCH"; exit 1 ;;
-    esac
+    # macOS (Darwin) uses arm64, Linux uses aarch64
+    if [ "$OS" = "Darwin" ]; then
+        case "$ARCH" in
+            x86_64) ARCH="x86_64" ;;
+            arm64)  ARCH="arm64" ;;
+            *)      echo "  ERROR: Unsupported macOS architecture: $ARCH"; exit 1 ;;
+        esac
+    else
+        case "$ARCH" in
+            x86_64)  ARCH="x86_64" ;;
+            aarch64) ARCH="aarch64" ;;
+            arm64)   ARCH="aarch64" ;;
+            *)       echo "  ERROR: Unsupported architecture: $ARCH"; exit 1 ;;
+        esac
+    fi
 
     URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-${OS}-${ARCH}.sh"
     echo "  Downloading from $URL ..."
