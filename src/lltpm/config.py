@@ -8,6 +8,56 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+# ── Providers ─────────────────────────────────────────────
+# "anthropic" uses the native Anthropic SDK (tool_use, thinking).
+# "openai" uses the OpenAI-compatible chat/completions API,
+#   which most third-party providers expose (DeepSeek, Together,
+#   Fireworks, Gemini via OpenAI compat, Ollama, etc.).
+
+PROVIDER_ANTHROPIC = "anthropic"
+PROVIDER_OPENAI = "openai"
+SUPPORTED_PROVIDERS = [PROVIDER_ANTHROPIC, PROVIDER_OPENAI]
+
+# ── Models ────────────────────────────────────────────────
+# Curated list shown in the config wizard.  Any model ID the
+# provider accepts will work — these are just the defaults.
+
+SUPPORTED_MODELS: list[dict[str, str]] = [
+    # Anthropic
+    {"id": "claude-opus-4-6", "provider": "anthropic", "label": "Opus 4.6 — most capable, highest cost"},
+    {"id": "claude-opus-4-5-20250520", "provider": "anthropic", "label": "Opus 4.5 — strong reasoning, previous gen"},
+    {"id": "claude-sonnet-4-6", "provider": "anthropic", "label": "Sonnet 4.6 — best cost/capability balance"},
+    {"id": "claude-sonnet-4-5-20250514", "provider": "anthropic", "label": "Sonnet 4.5 — capable, previous gen"},
+    {"id": "claude-haiku-4-5-20251001", "provider": "anthropic", "label": "Haiku 4.5 — fastest Anthropic option"},
+    # OpenAI-compatible (cheap / open-source)
+    {"id": "deepseek-chat", "provider": "openai", "label": "DeepSeek V3 — very cheap, strong reasoning"},
+    {"id": "deepseek-reasoner", "provider": "openai", "label": "DeepSeek R1 — deep reasoning, low cost"},
+    {"id": "google/gemini-2.5-flash", "provider": "openai", "label": "Gemini 2.5 Flash — ultra-cheap, fast"},
+    {"id": "meta-llama/llama-4-maverick", "provider": "openai", "label": "Llama 4 Maverick — open-weight, self-hostable"},
+    {"id": "qwen/qwen3-235b", "provider": "openai", "label": "Qwen 3 235B — open-weight, very capable"},
+    {"id": "mistralai/mistral-large-latest", "provider": "openai", "label": "Mistral Large — strong European option"},
+]
+
+ANTHROPIC_MODEL_IDS: list[str] = [
+    m["id"] for m in SUPPORTED_MODELS if m["provider"] == "anthropic"
+]
+OPENAI_MODEL_IDS: list[str] = [
+    m["id"] for m in SUPPORTED_MODELS if m["provider"] == "openai"
+]
+MODEL_IDS: list[str] = [m["id"] for m in SUPPORTED_MODELS]
+
+DEFAULT_MODEL: str = "claude-sonnet-4-6"
+DEFAULT_PROVIDER: str = PROVIDER_ANTHROPIC
+
+# Well-known base URLs for OpenAI-compatible providers.
+KNOWN_OPENAI_BASE_URLS: dict[str, str] = {
+    "deepseek": "https://api.deepseek.com/v1",
+    "together": "https://api.together.xyz/v1",
+    "fireworks": "https://api.fireworks.ai/inference/v1",
+    "openrouter": "https://openrouter.ai/api/v1",
+    "ollama": "http://localhost:11434/v1",
+}
+
 
 @dataclass
 class IntegrationConfig:
@@ -23,9 +73,12 @@ class IntegrationConfig:
 class LLTPMConfig:
     """Top-level configuration for the LLTPM agent."""
 
-    # Claude API
+    # LLM provider ("anthropic" or "openai" for OpenAI-compatible APIs)
+    provider: str = DEFAULT_PROVIDER
     anthropic_api_key: str = ""
-    model: str = "claude-opus-4-6"
+    openai_api_key: str = ""
+    openai_base_url: str = ""  # required for non-OpenAI providers
+    model: str = DEFAULT_MODEL
     max_tokens: int = 16384
 
     # Agent behaviour
@@ -56,7 +109,10 @@ class LLTPMConfig:
     def from_env(cls) -> LLTPMConfig:
         """Build config from environment variables and an optional JSON file."""
         cfg = cls()
+        cfg.provider = os.getenv("LLTPM_PROVIDER", cfg.provider)
         cfg.anthropic_api_key = os.getenv("ANTHROPIC_API_KEY", "")
+        cfg.openai_api_key = os.getenv("OPENAI_API_KEY", "")
+        cfg.openai_base_url = os.getenv("OPENAI_BASE_URL", "")
         cfg.model = os.getenv("LLTPM_MODEL", cfg.model)
         cfg.data_dir = Path(os.getenv("LLTPM_DATA_DIR", str(cfg.data_dir)))
 

@@ -36,6 +36,9 @@ voice = [
     "kokoro>=0.9",
     "soundfile>=0.12",
 ]
+openai = [
+    "openai>=1.0",
+]
 pdf = [
     "weasyprint>=61.0",
 ]
@@ -44,7 +47,7 @@ dashboard = [
     "uvicorn>=0.30.0",
 ]
 all = [
-    "lltpm[integrations,email,dashboard]",
+    "lltpm[integrations,email,openai,dashboard]",
 ]
 dev = [
     "pytest>=8.0",
