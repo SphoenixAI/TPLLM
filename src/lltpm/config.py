@@ -36,6 +36,7 @@ SUPPORTED_MODELS: list[dict[str, str]] = [
     {"id": "meta-llama/llama-4-maverick", "provider": "openai", "label": "Llama 4 Maverick — open-weight, self-hostable"},
     {"id": "qwen/qwen3-235b", "provider": "openai", "label": "Qwen 3 235B — open-weight, very capable"},
     {"id": "mistralai/mistral-large-latest", "provider": "openai", "label": "Mistral Large — strong European option"},
+    {"id": "moonshotai/kimi-k2.5", "provider": "openai", "label": "Kimi K2.5 — strong agentic tool-calling, low cost"},
 ]
 
 ANTHROPIC_MODEL_IDS: list[str] = [
@@ -55,6 +56,7 @@ KNOWN_OPENAI_BASE_URLS: dict[str, str] = {
     "together": "https://api.together.xyz/v1",
     "fireworks": "https://api.fireworks.ai/inference/v1",
     "openrouter": "https://openrouter.ai/api/v1",
+    "kimi": "https://api.moonshot.ai/v1",
     "ollama": "http://localhost:11434/v1",
 }
 
