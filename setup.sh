@@ -4,22 +4,121 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$REPO_DIR"
 
+ENV_NAME="lltpm"
+PYTHON_VERSION="3.11"
+MINICONDA_DIR="$HOME/miniconda3"
+
 echo "=========================================="
 echo "  LLTPM — AI Technical Program Manager"
 echo "=========================================="
 echo ""
 
-# ── 1. Python version check ─────────────────────────────
-echo "[1/5] Checking Python version..."
-PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-PYTHON_MAJOR=$(echo "$PYTHON_VERSION" | cut -d. -f1)
-PYTHON_MINOR=$(echo "$PYTHON_VERSION" | cut -d. -f2)
+# ── Helper: install miniconda ────────────────────────────
+install_miniconda() {
+    echo "  Installing Miniconda..."
+    local OS ARCH URL
+    OS="$(uname -s)"
+    ARCH="$(uname -m)"
 
-if [ "$PYTHON_MAJOR" -lt 3 ] || { [ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -lt 11 ]; }; then
-    echo "ERROR: Python >=3.11 required (found $PYTHON_VERSION)"
-    exit 1
+    # Normalize arch for miniconda URL
+    case "$ARCH" in
+        x86_64)  ARCH="x86_64" ;;
+        aarch64) ARCH="aarch64" ;;
+        arm64)   ARCH="aarch64" ;;  # macOS ARM
+        *)       echo "  ERROR: Unsupported architecture: $ARCH"; exit 1 ;;
+    esac
+
+    URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-${OS}-${ARCH}.sh"
+    echo "  Downloading from $URL ..."
+
+    local INSTALLER
+    INSTALLER="$(mktemp /tmp/miniconda-XXXXXX.sh)"
+    if command -v curl &>/dev/null; then
+        curl -fsSL "$URL" -o "$INSTALLER"
+    elif command -v wget &>/dev/null; then
+        wget -q "$URL" -O "$INSTALLER"
+    else
+        echo "  ERROR: Neither curl nor wget found. Install one and re-run."
+        exit 1
+    fi
+
+    bash "$INSTALLER" -b -p "$MINICONDA_DIR"
+    rm -f "$INSTALLER"
+
+    # Make conda available in this script
+    eval "$("$MINICONDA_DIR/bin/conda" shell.bash hook)"
+    conda init --quiet >/dev/null 2>&1 || true
+    echo "  Miniconda installed to $MINICONDA_DIR ✓"
+}
+
+# ── Helper: check if system Python >= 3.11 ───────────────
+system_python_ok() {
+    if ! command -v python3 &>/dev/null; then
+        return 1
+    fi
+    local PY_MAJOR PY_MINOR
+    PY_MAJOR=$(python3 -c "import sys; print(sys.version_info.major)")
+    PY_MINOR=$(python3 -c "import sys; print(sys.version_info.minor)")
+    [ "$PY_MAJOR" -ge 3 ] && [ "$PY_MINOR" -ge 11 ]
+}
+
+# ── 1. Set up Python environment ─────────────────────────
+echo "[1/5] Setting up Python environment..."
+
+USE_CONDA=false
+
+# Check for existing conda install (including our own miniconda)
+if command -v conda &>/dev/null; then
+    USE_CONDA=true
+elif [ -x "$MINICONDA_DIR/bin/conda" ]; then
+    eval "$("$MINICONDA_DIR/bin/conda" shell.bash hook)"
+    USE_CONDA=true
 fi
-echo "  Python $PYTHON_VERSION ✓"
+
+if $USE_CONDA; then
+    # Source conda shell hooks so activate works in scripts
+    CONDA_BASE="$(conda info --base)"
+    source "$CONDA_BASE/etc/profile.d/conda.sh"
+
+    if conda env list | grep -q "^${ENV_NAME} "; then
+        echo "  Conda env '$ENV_NAME' already exists, activating..."
+        conda activate "$ENV_NAME"
+    else
+        echo "  Creating conda env '$ENV_NAME' (Python $PYTHON_VERSION)..."
+        conda create -y -n "$ENV_NAME" python="$PYTHON_VERSION" --quiet
+        conda activate "$ENV_NAME"
+    fi
+    echo "  Conda env '$ENV_NAME' active ✓"
+elif system_python_ok; then
+    # System Python is fine — use venv
+    ACTUAL_PY_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+    echo "  conda not found, but Python $ACTUAL_PY_VERSION is sufficient — using venv"
+
+    if [ -d ".venv" ]; then
+        echo "  venv already exists, activating..."
+    else
+        echo "  Creating venv (.venv)..."
+        python3 -m venv .venv
+    fi
+    source .venv/bin/activate
+    echo "  venv active (Python $ACTUAL_PY_VERSION) ✓"
+else
+    # No conda, no suitable Python — install miniconda automatically
+    ACTUAL_PY_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>/dev/null || echo "none")
+    echo "  conda not found, system Python ($ACTUAL_PY_VERSION) < 3.11"
+    echo "  Miniconda is required — installing automatically..."
+    echo ""
+    install_miniconda
+
+    # Now create the conda env
+    echo "  Creating conda env '$ENV_NAME' (Python $PYTHON_VERSION)..."
+    conda create -y -n "$ENV_NAME" python="$PYTHON_VERSION" --quiet
+    conda activate "$ENV_NAME"
+    echo "  Conda env '$ENV_NAME' active ✓"
+fi
+
+ACTIVE_PY=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+echo "  Python $ACTIVE_PY ✓"
 
 # ── 2. Install package + dev deps ────────────────────────
 echo ""
@@ -27,7 +126,7 @@ echo "[2/5] Installing LLTPM and dependencies..."
 pip install -e ".[dev,dashboard]" --quiet 2>&1 | tail -3
 echo "  Package installed ✓"
 
-# ── 3. Install PyJWT (needed for JWT auth) ───────────────
+# ── 3. Verify PyJWT ──────────────────────────────────────
 echo ""
 echo "[3/5] Verifying PyJWT..."
 python3 -c "import jwt; print(f'  PyJWT {jwt.__version__} ✓')" 2>/dev/null || {
@@ -92,6 +191,15 @@ echo ""
 echo "=========================================="
 echo "  Setup complete!"
 echo "=========================================="
+echo ""
+echo "Environment: $(if command -v conda &>/dev/null && conda env list | grep -q "^${ENV_NAME} "; then echo "conda ($ENV_NAME)"; else echo "venv (.venv)"; fi)"
+echo ""
+echo "Activate the environment in new terminals:"
+if command -v conda &>/dev/null && conda env list | grep -q "^${ENV_NAME} "; then
+    echo "  conda activate $ENV_NAME"
+else
+    echo "  source .venv/bin/activate"
+fi
 echo ""
 echo "Quick start commands:"
 echo ""

@@ -9,3 +9,4 @@ build/
 .lltpm/
 .lltpm-example/
 *.egg
+.venv/
