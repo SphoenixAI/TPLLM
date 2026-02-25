@@ -27,6 +27,7 @@ from lltpm.workflows.cross_program_intel import CrossProgramIntel
 from lltpm.workflows.trend_analyzer import TrendAnalyzer
 from lltpm.workflows.approval_engine import ApprovalEngine
 from lltpm.workflows.notification_router import NotificationRouter
+from lltpm.workflows.pdf_exporter import PDFExporter
 
 __all__ = [
     "MeetingGate", "MeetingProposal", "MeetingVerdict",
@@ -56,4 +57,5 @@ __all__ = [
     "TrendAnalyzer",
     "ApprovalEngine",
     "NotificationRouter",
+    "PDFExporter",
 ]

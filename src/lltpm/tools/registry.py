@@ -35,6 +35,11 @@ from lltpm.tools.portfolio_tools import get_portfolio_tools
 from lltpm.tools.trend_tools import get_trend_tools
 from lltpm.tools.approval_tools import get_approval_tools
 from lltpm.tools.notification_tools import get_notification_tools
+from lltpm.tools.email_tools import get_email_tools
+from lltpm.tools.slack_bot_tools import get_slack_bot_tools
+from lltpm.tools.voice_tools import get_voice_tools
+from lltpm.tools.gdrive_tools import get_gdrive_tools
+from lltpm.tools.pdf_tools import get_pdf_tools
 
 
 class ToolRegistry:
@@ -156,9 +161,27 @@ def build_tool_registry(config: LLTPMConfig, store: ArtifactStore) -> ToolRegist
     for tool in get_notification_tools(store):
         registry.register(**tool)
 
+    # Always available — PDF export tools
+    for tool in get_pdf_tools(store):
+        registry.register(**tool)
+
+    # Conditional — email tools
+    if config.email.enabled:
+        for tool in get_email_tools(config):
+            registry.register(**tool)
+
+    # Conditional — voice/TTS tools
+    if config.voice.enabled:
+        for tool in get_voice_tools(config):
+            registry.register(**tool)
+
     # Conditional — communication tools (need Slack)
     if config.slack.enabled:
         for tool in get_communication_tools(config):
+            registry.register(**tool)
+
+        # Slack bot interactive tools
+        for tool in get_slack_bot_tools(config):
             registry.register(**tool)
 
     # Conditional — Google Chat tools
@@ -174,6 +197,11 @@ def build_tool_registry(config: LLTPMConfig, store: ArtifactStore) -> ToolRegist
     # Conditional — calendar tools (legacy — use smart_calendar for new scheduling)
     if config.calendar.enabled:
         for tool in get_calendar_tools(config):
+            registry.register(**tool)
+
+    # Conditional — Google Drive export tools
+    if config.gdrive.enabled:
+        for tool in get_gdrive_tools(config, store):
             registry.register(**tool)
 
     return registry

@@ -46,6 +46,9 @@ class LLTPMConfig:
     calendar: IntegrationConfig = field(default_factory=IntegrationConfig)
     gchat: IntegrationConfig = field(default_factory=IntegrationConfig)
     zoom: IntegrationConfig = field(default_factory=IntegrationConfig)
+    email: IntegrationConfig = field(default_factory=IntegrationConfig)
+    voice: IntegrationConfig = field(default_factory=IntegrationConfig)
+    gdrive: IntegrationConfig = field(default_factory=IntegrationConfig)
 
     # ── factories ──────────────────────────────────────────────
 
@@ -107,6 +110,51 @@ class LLTPMConfig:
                 extra={
                     "account_id": os.getenv("ZOOM_ACCOUNT_ID", ""),
                     "client_secret": os.getenv("ZOOM_CLIENT_SECRET", ""),
+                },
+            )
+
+        # Email (SMTP or SendGrid)
+        smtp_host = os.getenv("SMTP_HOST", "")
+        sendgrid_key = os.getenv("SENDGRID_API_KEY", "")
+        smtp_password = os.getenv("SMTP_PASSWORD", "")
+        if smtp_host or sendgrid_key:
+            backend = "sendgrid" if sendgrid_key else "smtp"
+            cfg.email = IntegrationConfig(
+                enabled=True,
+                api_key=sendgrid_key or smtp_password,
+                extra={
+                    "backend": backend,
+                    "smtp_host": smtp_host or "smtp.gmail.com",
+                    "smtp_port": os.getenv("SMTP_PORT", "587"),
+                    "smtp_user": os.getenv("SMTP_USER", ""),
+                    "from_email": os.getenv("EMAIL_FROM", "lltpm@example.com"),
+                    "from_name": os.getenv("EMAIL_FROM_NAME", "LLTPM Agent"),
+                },
+            )
+
+        # Voice / TTS
+        elevenlabs_key = os.getenv("ELEVENLABS_API_KEY", "")
+        voice_backend = os.getenv("VOICE_BACKEND", "")
+        if elevenlabs_key or voice_backend:
+            cfg.voice = IntegrationConfig(
+                enabled=True,
+                api_key=elevenlabs_key,
+                extra={
+                    "backend": voice_backend or ("elevenlabs" if elevenlabs_key else "system"),
+                    "voice_id": os.getenv("VOICE_ID", ""),
+                    "speed": os.getenv("VOICE_SPEED", "1.0"),
+                },
+            )
+
+        # Google Drive
+        gdrive_sa = os.getenv("GOOGLE_DRIVE_SERVICE_ACCOUNT", "")
+        gdrive_folder = os.getenv("GOOGLE_DRIVE_FOLDER_ID", "")
+        if gdrive_sa or gdrive_folder:
+            cfg.gdrive = IntegrationConfig(
+                enabled=True,
+                extra={
+                    "service_account_key": gdrive_sa,
+                    "folder_id": gdrive_folder,
                 },
             )
 

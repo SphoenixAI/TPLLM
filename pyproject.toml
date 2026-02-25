@@ -25,9 +25,23 @@ integrations = [
     "google-auth>=2.0",
     "google-api-python-client>=2.0",
 ]
+email = [
+    "sendgrid>=6.0",
+]
+voice = [
+    "piper-tts>=1.0",
+    "kokoro>=0.9",
+    "soundfile>=0.12",
+]
+pdf = [
+    "weasyprint>=61.0",
+]
 dashboard = [
     "fastapi>=0.115.0",
     "uvicorn>=0.30.0",
+]
+all = [
+    "lltpm[integrations,email,dashboard]",
 ]
 dev = [
     "pytest>=8.0",
