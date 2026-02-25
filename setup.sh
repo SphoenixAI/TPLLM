@@ -34,7 +34,11 @@ install_miniconda() {
             CONDA_EXE="$(brew --prefix miniconda)/bin/conda"
         fi
         eval "$("$CONDA_EXE" shell.bash hook)"
-        conda init --quiet >/dev/null 2>&1 || true
+        # Init conda for the user's actual shell (zsh on modern macOS)
+        local USER_SHELL
+        USER_SHELL="$(basename "$SHELL")"
+        conda init "$USER_SHELL" --quiet >/dev/null 2>&1 || true
+        echo "  Ran 'conda init $USER_SHELL' — restart your terminal after setup"
     else
         # Linux — download installer
         local ARCH URL INSTALLER
@@ -63,7 +67,9 @@ install_miniconda() {
         rm -f "$INSTALLER"
 
         eval "$("$MINICONDA_DIR/bin/conda" shell.bash hook)"
-        conda init --quiet >/dev/null 2>&1 || true
+        local USER_SHELL
+        USER_SHELL="$(basename "$SHELL")"
+        conda init "$USER_SHELL" --quiet >/dev/null 2>&1 || true
     fi
     echo "  Miniconda installed ✓"
 }
