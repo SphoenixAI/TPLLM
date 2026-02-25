@@ -21,6 +21,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
+from lltpm.config import DEFAULT_MODEL
+
 
 class AgentRole(str, Enum):
     """Specialized agent roles in the multi-agent system."""
@@ -38,7 +40,7 @@ class AgentConfig:
     """Configuration for a specialized sub-agent."""
     role: AgentRole
     name: str
-    model: str = "claude-sonnet-4-6"  # sub-agents use faster model
+    model: str = DEFAULT_MODEL  # sub-agents default to the project default
     max_tokens: int = 4096
     tools: list[str] = field(default_factory=list)
     system_prompt_addition: str = ""
@@ -250,7 +252,7 @@ class AgentOrchestrator:
             "name": "LLTPM Multi-Agent System",
             "version": "0.1.0",
             "orchestrator": {
-                "model": "claude-opus-4-6",
+                "model": DEFAULT_MODEL,
                 "max_tokens": 16384,
             },
             "agents": [

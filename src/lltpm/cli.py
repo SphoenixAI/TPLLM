@@ -16,7 +16,19 @@ from rich.prompt import Confirm, Prompt
 from rich.table import Table
 from rich.markdown import Markdown
 
-from lltpm.config import IntegrationConfig, LLTPMConfig
+from lltpm.config import (
+    ANTHROPIC_MODEL_IDS,
+    DEFAULT_MODEL,
+    DEFAULT_PROVIDER,
+    KNOWN_OPENAI_BASE_URLS,
+    MODEL_IDS,
+    OPENAI_MODEL_IDS,
+    PROVIDER_ANTHROPIC,
+    PROVIDER_OPENAI,
+    SUPPORTED_PROVIDERS,
+    IntegrationConfig,
+    LLTPMConfig,
+)
 
 console = Console()
 
@@ -25,15 +37,6 @@ console = Console()
 
 
 INTEGRATION_PROMPTS: list[dict[str, Any]] = [
-    {
-        "name": "anthropic",
-        "display": "Anthropic API (required)",
-        "env_var": "ANTHROPIC_API_KEY",
-        "required": True,
-        "fields": [
-            {"key": "ANTHROPIC_API_KEY", "prompt": "Anthropic API key", "secret": True},
-        ],
-    },
     {
         "name": "github",
         "display": "GitHub",
@@ -118,13 +121,50 @@ def run_config_wizard(data_dir: Path | None = None) -> dict[str, str]:
     dir_choice = Prompt.ask("Data directory", default=default_dir)
     env_vars["LLTPM_DATA_DIR"] = dir_choice
 
-    # Model selection
-    model = Prompt.ask(
-        "Claude model",
-        choices=["claude-opus-4-6", "claude-sonnet-4-6", "claude-haiku-4-5-20251001"],
-        default="claude-opus-4-6",
+    # Provider selection
+    provider = Prompt.ask(
+        "LLM provider",
+        choices=SUPPORTED_PROVIDERS,
+        default=DEFAULT_PROVIDER,
     )
-    env_vars["LLTPM_MODEL"] = model
+    env_vars["LLTPM_PROVIDER"] = provider
+
+    if provider == PROVIDER_ANTHROPIC:
+        # Anthropic API key
+        console.print(f"\n[bold yellow]Anthropic API[/bold yellow]")
+        api_key = Prompt.ask("  Anthropic API key", password=True)
+        if api_key:
+            env_vars["ANTHROPIC_API_KEY"] = api_key
+
+        model = Prompt.ask(
+            "Claude model",
+            choices=ANTHROPIC_MODEL_IDS,
+            default=DEFAULT_MODEL,
+        )
+        env_vars["LLTPM_MODEL"] = model
+    else:
+        # OpenAI-compatible provider
+        console.print(f"\n[bold yellow]OpenAI-compatible API[/bold yellow]")
+        console.print("  [dim]Works with DeepSeek, Together, Fireworks, OpenRouter, Ollama, etc.[/dim]")
+
+        api_key = Prompt.ask("  API key", password=True, default="")
+        if api_key:
+            env_vars["OPENAI_API_KEY"] = api_key
+
+        console.print("\n  [dim]Known providers: " + ", ".join(KNOWN_OPENAI_BASE_URLS) + "[/dim]")
+        base_url = Prompt.ask(
+            "  Base URL (e.g. https://api.deepseek.com/v1)",
+            default="",
+        )
+        if base_url:
+            env_vars["OPENAI_BASE_URL"] = base_url
+
+        model = Prompt.ask(
+            "Model ID",
+            choices=OPENAI_MODEL_IDS,
+            default=OPENAI_MODEL_IDS[0],
+        )
+        env_vars["LLTPM_MODEL"] = model
 
     console.print()
 
@@ -168,7 +208,7 @@ def save_json_config(env_vars: dict[str, str], data_dir: Path) -> None:
     config_path = data_dir / "config.json"
 
     config_data = {
-        "model": env_vars.get("LLTPM_MODEL", "claude-opus-4-6"),
+        "model": env_vars.get("LLTPM_MODEL", DEFAULT_MODEL),
     }
 
     with open(config_path, "w") as f:
