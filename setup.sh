@@ -4,22 +4,63 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$REPO_DIR"
 
+ENV_NAME="lltpm"
+PYTHON_VERSION="3.11"
+
 echo "=========================================="
 echo "  LLTPM — AI Technical Program Manager"
 echo "=========================================="
 echo ""
 
-# ── 1. Python version check ─────────────────────────────
-echo "[1/5] Checking Python version..."
-PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-PYTHON_MAJOR=$(echo "$PYTHON_VERSION" | cut -d. -f1)
-PYTHON_MINOR=$(echo "$PYTHON_VERSION" | cut -d. -f2)
+# ── 1. Create / activate conda environment ──────────────
+echo "[1/5] Setting up Python environment..."
 
-if [ "$PYTHON_MAJOR" -lt 3 ] || { [ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -lt 11 ]; }; then
-    echo "ERROR: Python >=3.11 required (found $PYTHON_VERSION)"
-    exit 1
+if command -v conda &>/dev/null; then
+    # Source conda shell hooks so activate works in scripts
+    CONDA_BASE="$(conda info --base)"
+    source "$CONDA_BASE/etc/profile.d/conda.sh"
+
+    if conda env list | grep -q "^${ENV_NAME} "; then
+        echo "  Conda env '$ENV_NAME' already exists, activating..."
+        conda activate "$ENV_NAME"
+    else
+        echo "  Creating conda env '$ENV_NAME' (Python $PYTHON_VERSION)..."
+        conda create -y -n "$ENV_NAME" python="$PYTHON_VERSION" --quiet
+        conda activate "$ENV_NAME"
+    fi
+    echo "  Conda env '$ENV_NAME' active ✓"
+else
+    echo "  conda not found — falling back to venv"
+    ACTUAL_PY_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+    PY_MAJOR=$(echo "$ACTUAL_PY_VERSION" | cut -d. -f1)
+    PY_MINOR=$(echo "$ACTUAL_PY_VERSION" | cut -d. -f2)
+
+    if [ "$PY_MAJOR" -lt 3 ] || { [ "$PY_MAJOR" -eq 3 ] && [ "$PY_MINOR" -lt 11 ]; }; then
+        echo ""
+        echo "  ERROR: Python >=3.11 required (found $ACTUAL_PY_VERSION)"
+        echo ""
+        echo "  Install conda to get the right Python version automatically:"
+        echo "    curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-$(uname -s)-$(uname -m).sh -o miniconda.sh"
+        echo "    bash miniconda.sh -b -p \$HOME/miniconda3"
+        echo "    eval \"\$(\$HOME/miniconda3/bin/conda shell.bash hook)\""
+        echo "    conda init"
+        echo ""
+        echo "  Then re-run: bash setup.sh"
+        exit 1
+    fi
+
+    if [ -d ".venv" ]; then
+        echo "  venv already exists, activating..."
+    else
+        echo "  Creating venv (.venv) with Python $ACTUAL_PY_VERSION..."
+        python3 -m venv .venv
+    fi
+    source .venv/bin/activate
+    echo "  venv active (Python $ACTUAL_PY_VERSION) ✓"
 fi
-echo "  Python $PYTHON_VERSION ✓"
+
+ACTIVE_PY=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+echo "  Python $ACTIVE_PY ✓"
 
 # ── 2. Install package + dev deps ────────────────────────
 echo ""
@@ -27,7 +68,7 @@ echo "[2/5] Installing LLTPM and dependencies..."
 pip install -e ".[dev,dashboard]" --quiet 2>&1 | tail -3
 echo "  Package installed ✓"
 
-# ── 3. Install PyJWT (needed for JWT auth) ───────────────
+# ── 3. Verify PyJWT ──────────────────────────────────────
 echo ""
 echo "[3/5] Verifying PyJWT..."
 python3 -c "import jwt; print(f'  PyJWT {jwt.__version__} ✓')" 2>/dev/null || {
@@ -92,6 +133,15 @@ echo ""
 echo "=========================================="
 echo "  Setup complete!"
 echo "=========================================="
+echo ""
+echo "Environment: $(if command -v conda &>/dev/null && conda env list | grep -q "^${ENV_NAME} "; then echo "conda ($ENV_NAME)"; else echo "venv (.venv)"; fi)"
+echo ""
+echo "Activate the environment in new terminals:"
+if command -v conda &>/dev/null && conda env list | grep -q "^${ENV_NAME} "; then
+    echo "  conda activate $ENV_NAME"
+else
+    echo "  source .venv/bin/activate"
+fi
 echo ""
 echo "Quick start commands:"
 echo ""
