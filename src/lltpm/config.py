@@ -32,7 +32,8 @@ SUPPORTED_MODELS: list[dict[str, str]] = [
     # OpenAI-compatible (cheap / open-source)
     {"id": "deepseek-chat", "provider": "openai", "label": "DeepSeek V3 — very cheap, strong reasoning"},
     {"id": "deepseek-reasoner", "provider": "openai", "label": "DeepSeek R1 — deep reasoning, low cost"},
-    {"id": "google/gemini-2.5-flash", "provider": "openai", "label": "Gemini 2.5 Flash — ultra-cheap, fast"},
+    {"id": "gemini-2.5-flash", "provider": "openai", "label": "Gemini 2.5 Flash — ultra-cheap, fast (Google direct)"},
+    {"id": "google/gemini-2.5-flash", "provider": "openai", "label": "Gemini 2.5 Flash — via OpenRouter/DeepInfra/Together"},
     {"id": "meta-llama/llama-4-maverick", "provider": "openai", "label": "Llama 4 Maverick — open-weight, self-hostable"},
     {"id": "qwen/qwen3-235b", "provider": "openai", "label": "Qwen 3 235B — open-weight, very capable"},
     {"id": "mistralai/mistral-large-latest", "provider": "openai", "label": "Mistral Large — strong European option"},
@@ -52,9 +53,11 @@ DEFAULT_PROVIDER: str = PROVIDER_ANTHROPIC
 
 # Well-known base URLs for OpenAI-compatible providers.
 KNOWN_OPENAI_BASE_URLS: dict[str, str] = {
+    "gemini": "https://generativelanguage.googleapis.com/v1beta/openai/",
     "deepseek": "https://api.deepseek.com/v1",
     "together": "https://api.together.xyz/v1",
     "fireworks": "https://api.fireworks.ai/inference/v1",
+    "deepinfra": "https://api.deepinfra.com/v1/openai/",
     "openrouter": "https://openrouter.ai/api/v1",
     "kimi": "https://api.moonshot.ai/v1",
     "ollama": "http://localhost:11434/v1",

@@ -240,5 +240,7 @@ class TPMAgent:
             tool_calls=tool_calls_out,
             tool_results=tool_results,
         )
-        done = choice.finish_reason != "tool_calls"
+        # Done when the model didn't ask to call any tools.
+        # (finish_reason varies across providers: "stop", "end_turn", etc.)
+        done = not message.tool_calls
         return turn, done
