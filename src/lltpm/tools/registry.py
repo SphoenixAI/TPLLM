@@ -40,8 +40,8 @@ from lltpm.tools.slack_bot_tools import get_slack_bot_tools
 from lltpm.tools.voice_tools import get_voice_tools
 from lltpm.tools.gdrive_tools import get_gdrive_tools
 from lltpm.tools.pdf_tools import get_pdf_tools
-from lltpm.tools.asana_tools import get_asana_tools
 from lltpm.tools.notion_tools import get_notion_tools
+from lltpm.tools.task_board_tools import get_task_board_tools
 
 
 class ToolRegistry:
@@ -206,10 +206,9 @@ def build_tool_registry(config: LLTPMConfig, store: ArtifactStore) -> ToolRegist
         for tool in get_gdrive_tools(config, store):
             registry.register(**tool)
 
-    # Conditional — Asana tools
-    if config.asana.enabled:
-        for tool in get_asana_tools(config):
-            registry.register(**tool)
+    # Always available — intelligent task board tools
+    for tool in get_task_board_tools(store):
+        registry.register(**tool)
 
     # Conditional — Notion tools
     if config.notion.enabled:

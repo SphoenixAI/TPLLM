@@ -107,7 +107,6 @@ class LLTPMConfig:
     email: IntegrationConfig = field(default_factory=IntegrationConfig)
     voice: IntegrationConfig = field(default_factory=IntegrationConfig)
     gdrive: IntegrationConfig = field(default_factory=IntegrationConfig)
-    asana: IntegrationConfig = field(default_factory=IntegrationConfig)
     notion: IntegrationConfig = field(default_factory=IntegrationConfig)
 
     # ── factories ──────────────────────────────────────────────
@@ -228,17 +227,6 @@ class LLTPMConfig:
                 extra={
                     "service_account_key": gdrive_sa,
                     "folder_id": gdrive_folder,
-                },
-            )
-
-        # Asana
-        asana_token = os.getenv("ASANA_ACCESS_TOKEN", "")
-        if asana_token:
-            cfg.asana = IntegrationConfig(
-                enabled=True,
-                api_key=asana_token,
-                extra={
-                    "workspace_gid": os.getenv("ASANA_WORKSPACE_GID", ""),
                 },
             )
 

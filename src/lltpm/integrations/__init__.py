@@ -12,7 +12,6 @@ from lltpm.integrations.email_integration import EmailIntegration
 from lltpm.integrations.slack_bot import SlackBot
 from lltpm.integrations.voice_integration import VoiceIntegration
 from lltpm.integrations.gdrive_integration import GoogleDriveIntegration
-from lltpm.integrations.asana_integration import AsanaIntegration
 from lltpm.integrations.notion_integration import NotionIntegration
 
 __all__ = [
@@ -28,6 +27,5 @@ __all__ = [
     "SlackBot",
     "VoiceIntegration",
     "GoogleDriveIntegration",
-    "AsanaIntegration",
     "NotionIntegration",
 ]
