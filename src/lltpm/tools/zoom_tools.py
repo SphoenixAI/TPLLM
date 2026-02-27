@@ -6,11 +6,13 @@ import json
 from typing import Any
 
 from lltpm.artifacts.store import ArtifactStore
+from lltpm.workflows.task_board_engine import TaskBoardEngine
 from lltpm.workflows.zoom_engine import ZoomEngine
 
 
 def get_zoom_tools(store: ArtifactStore) -> list[dict[str, Any]]:
     engine = ZoomEngine(store)
+    task_engine = TaskBoardEngine(store)
 
     def register_zoom_meeting(
         program_id: str,
@@ -44,13 +46,30 @@ def get_zoom_tools(store: ArtifactStore) -> list[dict[str, Any]]:
             program_id, meeting_id, provider, raw_notes, summary,
             action_items, key_decisions, topics_discussed, follow_ups,
         )
+
+        # Auto-extract tasks from the ingested notes onto the task board
+        extracted_tasks = task_engine.extract_tasks_from_zoom_notes(
+            program_id,
+            meeting_id=ingestion.meeting_id,
+            raw_notes=raw_notes,
+            action_items=action_items,
+            key_decisions=key_decisions,
+            follow_ups=follow_ups,
+            meeting_topic=summary or ingestion.meeting_id,
+        )
+
         return json.dumps({
             "meeting_id": ingestion.meeting_id,
             "provider": ingestion.provider.value,
             "sentiment": ingestion.sentiment,
             "action_items_count": len(ingestion.action_items),
             "decisions_count": len(ingestion.key_decisions),
-            "message": "Notes ingested. Use get_zoom_analysis_prompt to generate analysis.",
+            "tasks_extracted": len(extracted_tasks),
+            "task_ids": [t.id for t in extracted_tasks],
+            "message": (
+                f"Notes ingested and {len(extracted_tasks)} task(s) auto-extracted to the task board. "
+                "Use get_zoom_analysis_prompt for deeper analysis."
+            ),
         })
 
     def get_zoom_analysis_prompt(
@@ -103,7 +122,9 @@ def get_zoom_tools(store: ArtifactStore) -> list[dict[str, Any]]:
             "name": "ingest_zoom_notes",
             "description": (
                 "Ingest AI-generated meeting notes from Zoom AI Companion, Otter.ai, "
-                "Fireflies, Fathom, or manual entry. Extracts structured data for analysis."
+                "Fireflies, Fathom, or manual entry. Extracts structured data for analysis "
+                "and automatically creates tasks on the task board from action items, "
+                "follow-ups, implicit commitments, and key decisions."
             ),
             "input_schema": {
                 "type": "object",

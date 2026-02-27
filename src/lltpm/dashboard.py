@@ -385,6 +385,102 @@ def create_app(config: LLTPMConfig | None = None) -> Any:
         processor = WebhookProcessor(store)
         return {"summary": processor.get_summary(program_id)}
 
+    # ── Task Board ─────────────────────────────────────────
+
+    @app.get("/api/programs/{program_id}/tasks")
+    def get_tasks(
+        program_id: str,
+        status: str = "",
+        assignee: str = "",
+        sprint_id: str = "",
+    ):
+        """Get tasks from the task board, with optional filters."""
+        from lltpm.workflows.task_board_engine import TaskBoardEngine
+        engine = TaskBoardEngine(store)
+        board = engine._load(program_id)
+
+        tasks = board.tasks
+        if status:
+            tasks = [t for t in tasks if t.status.value == status]
+        if assignee:
+            tasks = [t for t in tasks if t.assignee == assignee]
+        if sprint_id:
+            tasks = [t for t in tasks if t.sprint_id == sprint_id]
+
+        return {
+            "total": len(tasks),
+            "tasks": [
+                {
+                    "id": t.id,
+                    "title": t.title,
+                    "description": t.description,
+                    "status": t.status.value,
+                    "priority": t.priority.value,
+                    "assignee": t.assignee,
+                    "due_date": t.due_date.isoformat() if t.due_date else None,
+                    "effort_hours": t.effort_hours,
+                    "source": t.source.value,
+                    "sprint_id": t.sprint_id,
+                    "is_overdue": t.is_overdue,
+                    "tags": t.tags,
+                    "confidence": t.confidence,
+                    "created_at": t.created_at.isoformat(),
+                }
+                for t in tasks
+            ],
+        }
+
+    @app.get("/api/programs/{program_id}/tasks/board")
+    def get_task_board_view(program_id: str, sprint_id: str = ""):
+        """Get the kanban board view — tasks grouped by status."""
+        from lltpm.workflows.task_board_engine import TaskBoardEngine
+        engine = TaskBoardEngine(store)
+        return {"board": engine.get_board(program_id, sprint_id)}
+
+    @app.get("/api/programs/{program_id}/tasks/workload")
+    def get_task_workload(program_id: str):
+        """Get workload analysis across team members."""
+        from lltpm.workflows.task_board_engine import TaskBoardEngine
+        engine = TaskBoardEngine(store)
+        workload = engine.get_workload(program_id)
+        if not workload:
+            return {"message": "No tasks assigned yet."}
+        return {"workload": workload}
+
+    @app.get("/api/programs/{program_id}/sprints")
+    def get_sprints(program_id: str):
+        """List all sprints for a program."""
+        from lltpm.workflows.task_board_engine import TaskBoardEngine
+        engine = TaskBoardEngine(store)
+        board = engine._load(program_id)
+
+        return {
+            "sprints": [
+                {
+                    "id": s.id,
+                    "name": s.name,
+                    "goal": s.goal,
+                    "start_date": s.start_date.isoformat(),
+                    "end_date": s.end_date.isoformat(),
+                    "is_active": s.is_active,
+                    "days_remaining": s.days_remaining,
+                    "team_capacity_hours": s.team_capacity_hours,
+                    "committed_hours": s.committed_hours,
+                    "utilization": s.utilization,
+                    "is_over_capacity": s.is_over_capacity,
+                }
+                for s in board.sprints
+            ],
+            "active_sprint": board.active_sprint.id if board.active_sprint else None,
+        }
+
+    @app.get("/api/programs/{program_id}/sprints/{sprint_id}/metrics")
+    def get_sprint_metrics_endpoint(program_id: str, sprint_id: str):
+        """Get sprint health metrics — completion rate, velocity, on-track."""
+        from lltpm.workflows.task_board_engine import TaskBoardEngine
+        engine = TaskBoardEngine(store)
+        return engine.get_sprint_metrics(program_id, sprint_id)
+
     # ── Agent Orchestrator ────────────────────────────────
 
     @app.get("/api/agents")

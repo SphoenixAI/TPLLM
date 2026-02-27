@@ -13,16 +13,40 @@ from lltpm.artifacts.milestone_plan import MilestonePlanManager
 from lltpm.artifacts.launch_checklist import LaunchChecklistManager
 from lltpm.artifacts.meeting_notes import MeetingNotesManager
 from lltpm.artifacts.status_update import StatusUpdateGenerator
+from lltpm.workflows.task_board_engine import TaskBoardEngine
 
 
 def get_project_tools(store: ArtifactStore) -> list[dict[str, Any]]:
     briefs = ProgramBriefGenerator(store)
     raid = RAIDLogManager(store)
+    task_engine = TaskBoardEngine(store)
     decisions = DecisionLogManager(store)
     milestones = MilestonePlanManager(store)
     launch = LaunchChecklistManager(store)
     meetings = MeetingNotesManager(store)
     status = StatusUpdateGenerator(store)
+
+    _severity_to_priority = {
+        "CRITICAL": "CRITICAL", "HIGH": "HIGH", "MEDIUM": "MEDIUM", "LOW": "LOW",
+    }
+
+    def _add_risk_with_task(**kw: Any) -> str:
+        risk = raid.add_risk(**kw)
+        # Auto-create a mitigation task on the board if there's a mitigation plan
+        mitigation = kw.get("mitigation", "")
+        if mitigation:
+            severity = kw.get("severity", "MEDIUM")
+            task_engine.create_task(
+                kw["program_id"],
+                title=f"Mitigate risk: {kw.get('title', '')}",
+                description=mitigation,
+                priority=_severity_to_priority.get(severity, "MEDIUM"),
+                assignee=kw.get("owner", ""),
+                source="RISK_MITIGATION",
+                source_id=risk.id if hasattr(risk, "id") else "",
+                source_context=f"Auto-created from RAID risk: {kw.get('title', '')}",
+            )
+        return json.dumps(risk.model_dump(), default=str)
 
     return [
         # ── Program Brief ──────────────────────────────────────
@@ -100,7 +124,7 @@ def get_project_tools(store: ArtifactStore) -> list[dict[str, Any]]:
                 },
                 "required": ["program_id", "title"],
             },
-            "executor": lambda **kw: json.dumps(raid.add_risk(**kw).model_dump(), default=str),
+            "executor": lambda **kw: _add_risk_with_task(**kw),
         },
         {
             "name": "add_issue",

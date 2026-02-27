@@ -387,6 +387,110 @@ def approvals(ctx: click.Context, program_id: str) -> None:
 
 
 @cli.command()
+@click.argument("program_id")
+@click.option("--sprint", "sprint_id", default="", help="Filter to a specific sprint")
+@click.option("--assignee", default="", help="Filter by assignee")
+@click.option("--status", default="", help="Filter by status (BACKLOG, TODO, IN_PROGRESS, etc.)")
+@click.pass_context
+def tasks(ctx: click.Context, program_id: str, sprint_id: str, assignee: str, status: str) -> None:
+    """Show the task board for a program."""
+    config: LLTPMConfig = ctx.obj["config"]
+
+    from lltpm.artifacts.store import ArtifactStore
+    from lltpm.workflows.task_board_engine import TaskBoardEngine
+
+    store = ArtifactStore(config.ensure_data_dir())
+    engine = TaskBoardEngine(store)
+
+    if sprint_id or not (assignee or status):
+        # Show full board view
+        board_text = engine.get_board(program_id, sprint_id)
+        _print_md(board_text)
+    else:
+        # Filtered view
+        board = engine._load(program_id)
+        filtered = board.tasks
+        if status:
+            filtered = [t for t in filtered if t.status.value == status.upper()]
+        if assignee:
+            filtered = [t for t in filtered if t.assignee.lower() == assignee.lower()]
+
+        if not filtered:
+            console.print("[dim]No tasks match the filters.[/dim]")
+            return
+
+        lines = [f"# Task Board — {program_id}"]
+        for t in sorted(filtered, key=lambda x: x.priority.value):
+            owner = f" → {t.assignee}" if t.assignee else ""
+            due = f" (due {t.due_date})" if t.due_date else ""
+            lines.append(f"- [{t.priority.value}] {t.title}{owner}{due} [{t.status.value}]")
+        _print_md("\n".join(lines))
+
+
+@cli.command()
+@click.argument("program_id")
+@click.pass_context
+def sprints(ctx: click.Context, program_id: str) -> None:
+    """Show sprints and active sprint metrics for a program."""
+    config: LLTPMConfig = ctx.obj["config"]
+
+    from lltpm.artifacts.store import ArtifactStore
+    from lltpm.workflows.task_board_engine import TaskBoardEngine
+
+    store = ArtifactStore(config.ensure_data_dir())
+    engine = TaskBoardEngine(store)
+    board = engine._load(program_id)
+
+    if not board.sprints:
+        console.print("[dim]No sprints created yet.[/dim]")
+        return
+
+    lines = ["# Sprints"]
+    for s in board.sprints:
+        active_tag = " [bold green][ACTIVE][/bold green]" if s.is_active else ""
+        lines.append(
+            f"\n## {s.name}{active_tag}\n"
+            f"  {s.start_date} → {s.end_date} | "
+            f"Days remaining: {s.days_remaining} | "
+            f"Capacity: {s.utilization:.0%}"
+        )
+        if s.goal:
+            lines.append(f"  Goal: {s.goal}")
+
+    active = board.active_sprint
+    if active:
+        metrics = engine.get_sprint_metrics(program_id, active.id)
+        if "error" not in metrics:
+            lines.append(
+                f"\n## Active Sprint Metrics\n"
+                f"  Done: {metrics['done']}/{metrics['total_tasks']} | "
+                f"In progress: {metrics['in_progress']} | "
+                f"Blocked: {metrics['blocked']} | "
+                f"Completion: {metrics['completion_rate']:.0%}"
+            )
+            on_track = "On track" if metrics.get("on_track") else "At risk"
+            lines.append(f"  Status: {on_track}")
+
+    _print_md("\n".join(lines))
+
+
+@cli.command()
+@click.argument("program_id")
+@click.pass_context
+def workload(ctx: click.Context, program_id: str) -> None:
+    """Show workload analysis across team members."""
+    config: LLTPMConfig = ctx.obj["config"]
+
+    from lltpm.artifacts.store import ArtifactStore
+    from lltpm.tools.task_board_tools import get_task_board_tools
+
+    store = ArtifactStore(config.ensure_data_dir())
+    tools = {t["name"]: t["executor"] for t in get_task_board_tools(store)}
+    result = tools["get_workload_analysis"](program_id=program_id)
+    _print_md(result)
+
+
+@cli.command()
 @click.pass_context
 def dashboard(ctx: click.Context) -> None:
     """Launch the web dashboard (requires dashboard extras)."""

@@ -8,11 +8,13 @@ from typing import Any
 from lltpm.artifacts.store import ArtifactStore
 from lltpm.workflows.delegation_engine import DelegationEngine
 from lltpm.workflows.meeting_intelligence import MeetingIntelligenceEngine
+from lltpm.workflows.task_board_engine import TaskBoardEngine
 
 
 def get_delegation_tools(store: ArtifactStore) -> list[dict[str, Any]]:
     engine = DelegationEngine(store)
     intel_engine = MeetingIntelligenceEngine(store)
+    task_engine = TaskBoardEngine(store)
 
     def register_team_member(
         program_id: str,
@@ -39,6 +41,11 @@ def get_delegation_tools(store: ArtifactStore) -> list[dict[str, Any]]:
             )
         return "\n".join(lines)
 
+    # Map delegation priority codes to task board priorities
+    _delegation_priority_map = {
+        "P0": "CRITICAL", "P1": "HIGH", "P2": "MEDIUM", "P3": "LOW", "P4": "LOW",
+    }
+
     def delegate_task(
         program_id: str,
         title: str,
@@ -54,6 +61,20 @@ def get_delegation_tools(store: ArtifactStore) -> list[dict[str, Any]]:
         item = engine.delegate(
             program_id, title, description, category, priority,
             assigned_to, due_date, source, "", context, success_criteria,
+        )
+        # Auto-create a corresponding task on the board
+        board_priority = _delegation_priority_map.get(priority, "MEDIUM")
+        source_type = "RISK_MITIGATION" if category == "RISK_MITIGATION" else "MANUAL"
+        task_engine.create_task(
+            program_id,
+            title=title,
+            description=description or context or success_criteria,
+            priority=board_priority,
+            assignee=assigned_to,
+            due_date=due_date or "",
+            source=source_type,
+            source_id=item.id,
+            source_context=f"Delegation: {category}",
         )
         return json.dumps(item.model_dump(), default=str)
 
@@ -76,12 +97,27 @@ def get_delegation_tools(store: ArtifactStore) -> list[dict[str, Any]]:
         items = engine.delegate_from_risks(program_id)
         if not items:
             return "No unmitigated risks to delegate."
+        # Auto-create board tasks for risk mitigation delegations
+        for item in items:
+            board_priority = _delegation_priority_map.get(item.priority.value, "MEDIUM")
+            task_engine.create_task(
+                program_id,
+                title=item.title,
+                description=item.description,
+                priority=board_priority,
+                assignee=item.assigned_to,
+                due_date=item.due_date.isoformat() if item.due_date else "",
+                source="RISK_MITIGATION",
+                source_id=item.id,
+                source_context=f"Auto-created from risk delegation",
+            )
         lines = [f"# Risk Mitigation Delegations ({len(items)} items)"]
         for item in items:
             lines.append(
                 f"- [{item.priority.value}] **{item.title}** → {item.assigned_to or 'UNASSIGNED'} "
                 f"— Due: {item.due_date}"
             )
+        lines.append(f"\n{len(items)} task(s) also added to the task board.")
         return "\n".join(lines)
 
     def delegate_from_overdue(program_id: str) -> str:
