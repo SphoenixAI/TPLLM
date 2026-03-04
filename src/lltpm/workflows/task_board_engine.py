@@ -623,3 +623,161 @@ class TaskBoardEngine:
         if total >= 6:
             return "heavy"
         return "healthy"
+
+    # ── Sprint auto-planning ───────────────────────────────────────
+
+    def auto_plan_sprint(
+        self,
+        program_id: str,
+        sprint_id: str,
+        max_hours: float | None = None,
+    ) -> dict[str, Any]:
+        """Intelligently select backlog tasks for a sprint.
+
+        Selection strategy:
+        1. Critical/overdue tasks first (must-do)
+        2. High priority tasks with due dates in sprint window
+        3. Blocked tasks that might unblock others
+        4. Remaining backlog by priority, filling up to capacity
+        """
+        board = self._load(program_id)
+        sprint = None
+        for s in board.sprints:
+            if s.id == sprint_id:
+                sprint = s
+                break
+        if not sprint:
+            return {"error": "Sprint not found."}
+
+        capacity = max_hours or sprint.team_capacity_hours
+        if capacity <= 0:
+            capacity = 40.0  # default 1 week for 1 person
+
+        backlog = [t for t in board.tasks if t.status == TaskStatus.BACKLOG and not t.sprint_id]
+        if not backlog:
+            return {"planned": 0, "message": "No backlog tasks available."}
+
+        # Score each task for sprint suitability
+        scored: list[tuple[float, BoardTask]] = []
+        for t in backlog:
+            score = 0.0
+            # Overdue tasks are must-do
+            if t.is_overdue:
+                score += 1000
+            # Priority scoring
+            priority_scores = {
+                TaskPriority.CRITICAL: 100,
+                TaskPriority.HIGH: 50,
+                TaskPriority.MEDIUM: 20,
+                TaskPriority.LOW: 5,
+            }
+            score += priority_scores.get(t.priority, 10)
+            # Due date within sprint window
+            if t.due_date and t.due_date <= sprint.end_date:
+                days_until = (t.due_date - date.today()).days
+                score += max(0, 50 - days_until * 5)
+            # Tasks that unblock others get a boost
+            if t.blocks:
+                score += len(t.blocks) * 15
+            # Higher confidence tasks preferred
+            score *= t.confidence
+            scored.append((score, t))
+
+        scored.sort(key=lambda x: x[0], reverse=True)
+
+        # Fill sprint up to capacity
+        planned: list[BoardTask] = []
+        committed = 0.0
+        for _score, task in scored:
+            effort = task.effort_hours or 2.0  # default 2h if unestimated
+            if committed + effort <= capacity:
+                task.sprint_id = sprint_id
+                task.status = TaskStatus.TODO
+                planned.append(task)
+                committed += effort
+
+        if planned:
+            self._save(program_id, board)
+
+        return {
+            "planned": len(planned),
+            "committed_hours": committed,
+            "capacity_hours": capacity,
+            "utilization": committed / capacity if capacity > 0 else 0,
+            "tasks": [
+                {"id": t.id, "title": t.title, "priority": t.priority.value, "effort": t.effort_hours}
+                for t in planned
+            ],
+        }
+
+    # ── Board alerts / health checks ───────────────────────────────
+
+    def get_alerts(self, program_id: str) -> list[dict[str, str]]:
+        """Detect actionable alerts from the task board.
+
+        Returns alerts for:
+        - Overdue tasks
+        - Blocked tasks
+        - Sprint at risk (low completion, days running out)
+        - Overloaded team members
+        """
+        board = self._load(program_id)
+        alerts: list[dict[str, str]] = []
+
+        # Overdue tasks
+        overdue = [t for t in board.open_tasks if t.is_overdue]
+        for t in overdue:
+            days = abs(t.days_until_due or 0)
+            alerts.append({
+                "type": "overdue",
+                "severity": "critical" if days > 3 else "high",
+                "title": f"Overdue: {t.title}",
+                "detail": f"Task is {days} day(s) overdue. Assignee: {t.assignee or 'unassigned'}",
+                "task_id": t.id,
+            })
+
+        # Blocked tasks
+        blocked = [t for t in board.open_tasks if t.status == TaskStatus.BLOCKED]
+        for t in blocked:
+            alerts.append({
+                "type": "blocked",
+                "severity": "high",
+                "title": f"Blocked: {t.title}",
+                "detail": f"Blocked by: {', '.join(t.blocked_by)}. Assignee: {t.assignee or 'unassigned'}",
+                "task_id": t.id,
+            })
+
+        # Sprint at risk
+        sprint = board.active_sprint
+        if sprint:
+            tasks = board.sprint_tasks(sprint.id)
+            done = [t for t in tasks if t.status == TaskStatus.DONE]
+            remaining = [t for t in tasks if t.is_open]
+            if tasks and sprint.days_remaining <= 2 and len(done) < len(tasks) * 0.5:
+                alerts.append({
+                    "type": "sprint_at_risk",
+                    "severity": "critical",
+                    "title": f"Sprint at risk: {sprint.name}",
+                    "detail": (
+                        f"Only {len(done)}/{len(tasks)} tasks done with "
+                        f"{sprint.days_remaining} day(s) remaining"
+                    ),
+                    "task_id": sprint.id,
+                })
+
+        # Overloaded people
+        workload = self.get_workload(program_id)
+        for person, stats in workload.items():
+            if stats["health"] in ("overloaded", "at_risk"):
+                alerts.append({
+                    "type": "workload",
+                    "severity": "high" if stats["health"] == "overloaded" else "medium",
+                    "title": f"Workload alert: {person}",
+                    "detail": (
+                        f"{stats['total_tasks']} tasks, {stats['overdue_count']} overdue, "
+                        f"{stats['blocked_count']} blocked"
+                    ),
+                    "task_id": "",
+                })
+
+        return alerts

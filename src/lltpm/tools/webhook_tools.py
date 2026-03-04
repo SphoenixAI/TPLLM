@@ -6,11 +6,13 @@ import json
 from typing import Any
 
 from lltpm.artifacts.store import ArtifactStore
+from lltpm.workflows.task_board_engine import TaskBoardEngine
 from lltpm.workflows.webhook_processor import WebhookProcessor
 
 
 def get_webhook_tools(store: ArtifactStore) -> list[dict[str, Any]]:
     processor = WebhookProcessor(store)
+    task_engine = TaskBoardEngine(store)
 
     def ingest_slack_event(
         program_id: str,
@@ -75,11 +77,32 @@ def get_webhook_tools(store: ArtifactStore) -> list[dict[str, Any]]:
             program_id, event_type, meeting_id, host,
         )
         actions = processor.get_event_actions(event)
-        return json.dumps({
+        result: dict[str, Any] = {
             "event_id": event.id,
             "priority": event.priority.value,
             "recommended_actions": actions,
-        })
+        }
+
+        # Auto-trigger: when a meeting ends or recording completes,
+        # check for ingested notes and extract tasks to the board
+        if event_type in ("meeting.ended", "recording.completed") and meeting_id:
+            from lltpm.workflows.zoom_engine import ZoomEngine
+            zoom = ZoomEngine(store)
+            ingestion = zoom._load_ingestion(program_id, meeting_id)
+            if ingestion:
+                extracted = task_engine.extract_tasks_from_zoom_notes(
+                    program_id,
+                    meeting_id=meeting_id,
+                    raw_notes=ingestion.raw_notes,
+                    action_items=ingestion.action_items,
+                    key_decisions=ingestion.key_decisions,
+                    follow_ups=ingestion.follow_ups,
+                    meeting_topic=ingestion.summary or meeting_id,
+                )
+                result["tasks_auto_extracted"] = len(extracted)
+                result["task_ids"] = [t.id for t in extracted]
+
+        return json.dumps(result)
 
     def get_pending_events(
         program_id: str,

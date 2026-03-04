@@ -98,6 +98,13 @@ def create_app(config: LLTPMConfig | None = None) -> Any:
     def health():
         return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
 
+    # ── Dashboard frontend (public) ──────────────────────
+
+    @app.get("/", response_class=HTMLResponse)
+    def dashboard_home():
+        """Serve the main dashboard HTML frontend."""
+        return HTMLResponse(content=_DASHBOARD_HTML)
+
     # ── Auth endpoints ────────────────────────────────────
 
     @app.post("/api/auth/token")
@@ -352,6 +359,7 @@ def create_app(config: LLTPMConfig | None = None) -> Any:
             "launch_checklist": gen.render_launch_checklist,
             "action_tracker": gen.render_action_tracker,
             "delegation_plan": gen.render_delegation_plan,
+            "task_board": gen.render_task_board,
             "full_report": gen.render_full_report,
         }
 
@@ -551,6 +559,226 @@ def create_app(config: LLTPMConfig | None = None) -> Any:
         }
 
     return app
+
+
+# ── Dashboard HTML Frontend ────────────────────────────────────────
+
+_DASHBOARD_HTML = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LLTPM Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+     background:#0f172a;color:#e2e8f0;line-height:1.5}
+.container{max-width:1200px;margin:0 auto;padding:20px}
+header{display:flex;justify-content:space-between;align-items:center;padding:16px 0;
+       border-bottom:1px solid #1e293b;margin-bottom:24px}
+header h1{font-size:20px;color:#f8fafc}
+header .health{padding:4px 12px;border-radius:6px;font-size:13px;font-weight:600}
+.green{background:#166534;color:#dcfce7}
+.yellow{background:#854d0e;color:#fef9c3}
+.red{background:#991b1b;color:#fee2e2}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:24px}
+.card{background:#1e293b;border-radius:10px;padding:20px;border:1px solid #334155}
+.card h2{font-size:14px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px}
+.card .value{font-size:28px;font-weight:700;color:#f8fafc}
+.card .sub{font-size:12px;color:#64748b;margin-top:4px}
+.section{background:#1e293b;border-radius:10px;padding:20px;border:1px solid #334155;margin-bottom:16px}
+.section h2{font-size:16px;margin-bottom:12px;color:#f1f5f9}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 12px;border-bottom:1px solid #334155;color:#94a3b8;font-weight:500}
+td{padding:8px 12px;border-bottom:1px solid #1e293b}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.badge.CRITICAL{background:#7f1d1d;color:#fecaca}
+.badge.HIGH{background:#991b1b;color:#fee2e2}
+.badge.MEDIUM{background:#854d0e;color:#fef9c3}
+.badge.LOW{background:#1e3a5f;color:#bfdbfe}
+.badge.DONE{background:#166534;color:#dcfce7}
+.badge.IN_PROGRESS{background:#1e40af;color:#dbeafe}
+.badge.BLOCKED{background:#7f1d1d;color:#fecaca}
+.badge.TODO{background:#475569;color:#e2e8f0}
+.badge.BACKLOG{background:#334155;color:#94a3b8}
+.badge.IN_REVIEW{background:#854d0e;color:#fef9c3}
+.empty{color:#475569;font-style:italic;padding:20px;text-align:center}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tab{padding:6px 16px;border-radius:6px;cursor:pointer;font-size:13px;
+     background:#334155;color:#94a3b8;border:none}
+.tab.active{background:#2563eb;color:#fff}
+#alerts .alert{padding:8px 12px;border-radius:6px;margin-bottom:8px;font-size:13px}
+.alert.critical{background:#450a0a;border:1px solid #7f1d1d}
+.alert.high{background:#451a03;border:1px solid #854d0e}
+.alert.medium{background:#172554;border:1px solid #1e40af}
+select{background:#334155;color:#e2e8f0;border:1px solid #475569;border-radius:6px;
+       padding:6px 12px;font-size:13px}
+.refresh-btn{background:#2563eb;color:#fff;border:none;padding:6px 16px;
+             border-radius:6px;cursor:pointer;font-size:13px}
+.refresh-btn:hover{background:#1d4ed8}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <h1>LLTPM Dashboard</h1>
+  <div>
+    <select id="program-select" onchange="loadProgram()"><option value="">Select program...</option></select>
+    <button class="refresh-btn" onclick="loadProgram()">Refresh</button>
+  </div>
+</header>
+
+<div class="grid" id="stats">
+  <div class="card"><h2>Open Tasks</h2><div class="value" id="stat-open">—</div><div class="sub" id="stat-open-sub"></div></div>
+  <div class="card"><h2>Overdue</h2><div class="value" id="stat-overdue">—</div><div class="sub" id="stat-overdue-sub"></div></div>
+  <div class="card"><h2>Blocked</h2><div class="value" id="stat-blocked">—</div></div>
+  <div class="card"><h2>Sprint Progress</h2><div class="value" id="stat-sprint">—</div><div class="sub" id="stat-sprint-sub"></div></div>
+</div>
+
+<div id="alerts" class="section" style="display:none">
+  <h2>Alerts</h2>
+  <div id="alerts-list"></div>
+</div>
+
+<div class="section">
+  <h2>Task Board</h2>
+  <div class="tabs">
+    <button class="tab active" onclick="filterTasks('')" data-f="">All</button>
+    <button class="tab" onclick="filterTasks('TODO')" data-f="TODO">To Do</button>
+    <button class="tab" onclick="filterTasks('IN_PROGRESS')" data-f="IN_PROGRESS">In Progress</button>
+    <button class="tab" onclick="filterTasks('BLOCKED')" data-f="BLOCKED">Blocked</button>
+    <button class="tab" onclick="filterTasks('DONE')" data-f="DONE">Done</button>
+  </div>
+  <table>
+    <thead><tr><th>ID</th><th>Title</th><th>Priority</th><th>Status</th><th>Assignee</th><th>Due</th></tr></thead>
+    <tbody id="task-table"><tr><td colspan="6" class="empty">Select a program to view tasks</td></tr></tbody>
+  </table>
+</div>
+
+<div class="grid">
+  <div class="section">
+    <h2>Workload</h2>
+    <table>
+      <thead><tr><th>Person</th><th>Tasks</th><th>Health</th></tr></thead>
+      <tbody id="workload-table"><tr><td colspan="3" class="empty">—</td></tr></tbody>
+    </table>
+  </div>
+  <div class="section">
+    <h2>Sprints</h2>
+    <div id="sprint-info" class="empty">—</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>RAID Summary</h2>
+  <div id="raid-summary" class="empty">—</div>
+</div>
+</div>
+
+<script>
+let allTasks = [];
+const api = path => fetch(path).then(r => r.json());
+
+async function init() {
+  const data = await api('/api/programs');
+  const sel = document.getElementById('program-select');
+  (data.programs || []).forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id; opt.textContent = p.name || p.id;
+    sel.appendChild(opt);
+  });
+}
+
+async function loadProgram() {
+  const pid = document.getElementById('program-select').value;
+  if (!pid) return;
+
+  const [tasks, workload, sprints, raid] = await Promise.all([
+    api(`/api/programs/${pid}/tasks`),
+    api(`/api/programs/${pid}/tasks/workload`),
+    api(`/api/programs/${pid}/sprints`),
+    api(`/api/programs/${pid}/raid`),
+  ]);
+
+  allTasks = tasks.tasks || [];
+  const open = allTasks.filter(t => !['DONE','CANCELLED'].includes(t.status));
+  const overdue = allTasks.filter(t => t.is_overdue);
+  const blocked = allTasks.filter(t => t.status === 'BLOCKED');
+
+  document.getElementById('stat-open').textContent = open.length;
+  document.getElementById('stat-open-sub').textContent = `${allTasks.length} total`;
+  document.getElementById('stat-overdue').textContent = overdue.length;
+  document.getElementById('stat-overdue-sub').textContent = overdue.length > 0 ? 'Needs attention' : 'All clear';
+  document.getElementById('stat-blocked').textContent = blocked.length;
+
+  // Sprint
+  const active = (sprints.sprints || []).find(s => s.is_active);
+  if (active) {
+    const metrics = await api(`/api/programs/${pid}/sprints/${active.id}/metrics`);
+    const pct = Math.round((metrics.completion_rate || 0) * 100);
+    document.getElementById('stat-sprint').textContent = pct + '%';
+    document.getElementById('stat-sprint-sub').textContent =
+      `${active.name} — ${metrics.days_remaining}d left`;
+    document.getElementById('sprint-info').innerHTML =
+      `<strong>${active.name}</strong><br>` +
+      `Done: ${metrics.done}/${metrics.total_tasks} | ` +
+      `Blocked: ${metrics.blocked} | ` +
+      `${metrics.on_track ? '<span class="badge DONE">On Track</span>' : '<span class="badge CRITICAL">At Risk</span>'}`;
+  } else {
+    document.getElementById('stat-sprint').textContent = '—';
+    document.getElementById('stat-sprint-sub').textContent = 'No active sprint';
+    document.getElementById('sprint-info').innerHTML = '<span class="empty">No active sprint</span>';
+  }
+
+  // Alerts (overdue + blocked)
+  const alertsDiv = document.getElementById('alerts');
+  const alertsList = document.getElementById('alerts-list');
+  const alertItems = [];
+  overdue.forEach(t => alertItems.push({sev:'critical',msg:`Overdue: ${t.title} (${t.assignee||'unassigned'})`}));
+  blocked.forEach(t => alertItems.push({sev:'high',msg:`Blocked: ${t.title} (${t.assignee||'unassigned'})`}));
+  if (alertItems.length) {
+    alertsDiv.style.display = 'block';
+    alertsList.innerHTML = alertItems.map(a =>
+      `<div class="alert ${a.sev}">${a.msg}</div>`
+    ).join('');
+  } else { alertsDiv.style.display = 'none'; }
+
+  filterTasks('');
+
+  // Workload
+  const wt = document.getElementById('workload-table');
+  const wl = workload.workload || {};
+  if (Object.keys(wl).length) {
+    wt.innerHTML = Object.entries(wl).map(([p, d]) =>
+      `<tr><td>${p}</td><td>${d.total_tasks}</td><td><span class="badge ${
+        d.health==='healthy'?'DONE':d.health==='heavy'?'MEDIUM':d.health==='at_risk'?'HIGH':'CRITICAL'
+      }">${d.health.toUpperCase()}</span></td></tr>`
+    ).join('');
+  } else { wt.innerHTML = '<tr><td colspan="3" class="empty">No assigned tasks</td></tr>'; }
+
+  // RAID
+  const rs = document.getElementById('raid-summary');
+  if (raid.message) { rs.textContent = raid.message; }
+  else { rs.innerHTML = `Risks: <strong>${raid.open_risks||0}</strong> open | Issues: <strong>${raid.open_issues||0}</strong> | Dependencies: <strong>${raid.open_dependencies||0}</strong>`; }
+}
+
+function filterTasks(status) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.f === status));
+  const filtered = status ? allTasks.filter(t => t.status === status) : allTasks;
+  const tbody = document.getElementById('task-table');
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">No tasks</td></tr>'; return; }
+  tbody.innerHTML = filtered.map(t =>
+    `<tr><td>${t.id}</td><td>${t.title}</td>` +
+    `<td><span class="badge ${t.priority}">${t.priority}</span></td>` +
+    `<td><span class="badge ${t.status}">${t.status}</span></td>` +
+    `<td>${t.assignee||'—'}</td><td>${t.due_date||'—'}</td></tr>`
+  ).join('');
+}
+
+init();
+</script>
+</body>
+</html>"""
 
 
 # Default app instance for uvicorn

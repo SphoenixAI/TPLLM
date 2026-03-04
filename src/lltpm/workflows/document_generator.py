@@ -355,6 +355,93 @@ class DocumentGenerator:
 
     # ── Combined Program Report ───────────────────────────────
 
+    # ── Task Board Report ────────────────────────────────────
+
+    def render_task_board(self, program_id: str, fmt: str = "html") -> str:
+        """Render the task board as a formatted document."""
+        from lltpm.workflows.task_board_engine import TaskBoardEngine
+        engine = TaskBoardEngine(store=self._store)
+        board = engine._load(program_id)
+
+        if not board.tasks:
+            return self._empty("No tasks on the board", fmt)
+
+        if fmt == "html":
+            # Task summary
+            open_tasks = board.open_tasks
+            done_tasks = [t for t in board.tasks if t.status.value == "DONE"]
+            overdue = [t for t in open_tasks if t.is_overdue]
+
+            # Sprint section
+            sprint_html = ""
+            sprint = board.active_sprint
+            if sprint:
+                metrics = engine.get_sprint_metrics(program_id, sprint.id)
+                rate = metrics.get("completion_rate", 0)
+                on_track_class = "green" if metrics.get("on_track") else "red"
+                on_track_text = "On Track" if metrics.get("on_track") else "At Risk"
+                sprint_html = f"""
+<h2>Active Sprint: {sprint.name}</h2>
+<table>
+  <tr><th>Days Remaining</th><td>{sprint.days_remaining}</td></tr>
+  <tr><th>Completion</th><td>{rate:.0%}</td></tr>
+  <tr><th>Status</th><td><span class="badge {on_track_class}">{on_track_text}</span></td></tr>
+  <tr><th>Done</th><td>{metrics.get('done', 0)}/{metrics.get('total_tasks', 0)}</td></tr>
+  <tr><th>Blocked</th><td>{metrics.get('blocked', 0)}</td></tr>
+</table>"""
+
+            # Task table
+            task_rows = ""
+            for t in sorted(board.tasks, key=lambda x: (x.status.value, x.priority.value)):
+                priority_class = {"CRITICAL": "critical", "HIGH": "red", "MEDIUM": "yellow", "LOW": "gray"}.get(
+                    t.priority.value, "gray"
+                )
+                status_class = {"DONE": "green", "IN_PROGRESS": "blue", "BLOCKED": "red", "IN_REVIEW": "yellow"}.get(
+                    t.status.value, "gray"
+                )
+                due_str = t.due_date.isoformat() if t.due_date else "—"
+                task_rows += (
+                    f"<tr><td>{t.id}</td><td>{t.title}</td>"
+                    f"<td><span class='badge {priority_class}'>{t.priority.value}</span></td>"
+                    f"<td><span class='badge {status_class}'>{t.status.value}</span></td>"
+                    f"<td>{t.assignee or '—'}</td>"
+                    f"<td>{due_str}</td></tr>"
+                )
+
+            # Workload summary
+            workload = engine.get_workload(program_id)
+            workload_rows = ""
+            for person, data in workload.items():
+                health_class = {"healthy": "green", "heavy": "yellow", "at_risk": "red", "overloaded": "critical"}.get(
+                    data["health"], "gray"
+                )
+                workload_rows += (
+                    f"<tr><td>{person}</td>"
+                    f"<td>{data['total_tasks']}</td>"
+                    f"<td>{data['total_hours']:.0f}h</td>"
+                    f"<td>{data['overdue_count']}</td>"
+                    f"<td><span class='badge {health_class}'>{data['health'].upper()}</span></td></tr>"
+                )
+
+            return self._html_wrap(f"Task Board — {program_id}", f"""
+<h1>Task Board</h1>
+<p class="meta">Generated {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}</p>
+<p>Total: {len(board.tasks)} | Open: {len(open_tasks)} | Done: {len(done_tasks)} | Overdue: {len(overdue)}</p>
+{sprint_html}
+
+<h2>All Tasks ({len(board.tasks)})</h2>
+<table>
+<tr><th>ID</th><th>Title</th><th>Priority</th><th>Status</th><th>Assignee</th><th>Due</th></tr>
+{task_rows}
+</table>
+
+{"<h2>Workload</h2><table><tr><th>Person</th><th>Tasks</th><th>Hours</th><th>Overdue</th><th>Health</th></tr>" + workload_rows + "</table>" if workload_rows else ""}
+{self._footer()}""")
+        else:
+            return engine.get_board(program_id)
+
+    # ── Combined Program Report ───────────────────────────────
+
     def render_full_report(self, program_id: str, fmt: str = "html") -> str:
         """Render a comprehensive program report combining all artifacts."""
         sections = [
@@ -365,6 +452,7 @@ class DocumentGenerator:
             ("Decision Log", self.render_decision_log(program_id, "markdown")),
             ("Action Tracker", self.render_action_tracker(program_id, "markdown")),
             ("Delegation Plan", self.render_delegation_plan(program_id, "markdown")),
+            ("Task Board", self.render_task_board(program_id, "markdown")),
         ]
 
         if fmt == "html":
@@ -397,6 +485,7 @@ class DocumentGenerator:
             "milestone_plan": ("Milestone Plan", "render_milestone_plan"),
             "launch_checklist": ("Launch Checklist", "render_launch_checklist"),
             "action_tracker": ("Action Tracker", "render_action_tracker"),
+            "task_board": ("Task Board", "render_task_board"),
         }
         for artifact_name, (doc_name, method) in doc_map.items():
             if artifact_name in artifacts:

@@ -166,6 +166,24 @@ def get_task_board_tools(store: ArtifactStore) -> list[dict[str, Any]]:
         metrics = engine.get_sprint_metrics(program_id, sprint_id)
         return json.dumps(metrics)
 
+    def auto_plan_sprint(
+        program_id: str,
+        sprint_id: str,
+        max_hours: float | None = None,
+    ) -> str:
+        result = engine.auto_plan_sprint(program_id, sprint_id, max_hours)
+        return json.dumps(result)
+
+    def get_board_alerts(program_id: str) -> str:
+        alerts = engine.get_alerts(program_id)
+        if not alerts:
+            return json.dumps({"message": "No alerts — board is healthy."})
+        lines = ["# Task Board Alerts"]
+        for a in alerts:
+            sev = a["severity"].upper()
+            lines.append(f"- [{sev}] **{a['title']}**: {a['detail']}")
+        return "\n".join(lines)
+
     return [
         {
             "name": "create_board_task",
@@ -369,5 +387,39 @@ def get_task_board_tools(store: ArtifactStore) -> list[dict[str, Any]]:
                 "required": ["program_id"],
             },
             "executor": get_sprint_metrics,
+        },
+        {
+            "name": "auto_plan_sprint",
+            "description": (
+                "Intelligently auto-populate a sprint from the backlog. "
+                "Selects tasks by priority, due date, blocker chains, and capacity. "
+                "Critical/overdue tasks are always included first."
+            ),
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "program_id": {"type": "string"},
+                    "sprint_id": {"type": "string", "description": "Target sprint to fill"},
+                    "max_hours": {"type": "number", "description": "Override capacity limit (hours)"},
+                },
+                "required": ["program_id", "sprint_id"],
+            },
+            "executor": auto_plan_sprint,
+        },
+        {
+            "name": "get_board_alerts",
+            "description": (
+                "Get actionable alerts from the task board — overdue tasks, blocked items, "
+                "sprint-at-risk warnings, and workload problems. "
+                "Use this for daily stand-up briefings and Slack notifications."
+            ),
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "program_id": {"type": "string"},
+                },
+                "required": ["program_id"],
+            },
+            "executor": get_board_alerts,
         },
     ]

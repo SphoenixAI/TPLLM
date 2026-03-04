@@ -123,13 +123,19 @@ class CrossProgramIntel:
         scope = self._store.load(program_id, "scope_baseline", ScopeBaseline)
         scope_pending = len(scope.pending_changes) if scope else 0
 
-        # Health
+        # Task board
+        from lltpm.models.task_board import TaskBoard
+        board = self._store.load(program_id, "task_board", TaskBoard)
+        board_blocked = len([t for t in board.tasks if t.status.value == "BLOCKED"]) if board else 0
+        board_overdue = len([t for t in board.open_tasks if t.is_overdue]) if board else 0
+
+        # Health — factor in task board signals
         health = "GREEN"
         if program and hasattr(program, "health"):
             health = program.health.value if hasattr(program.health, "value") else str(program.health)
-        if at_risk_ms > 0 or open_risks > 2:
+        if at_risk_ms > 0 or open_risks > 2 or board_overdue > 0:
             health = "YELLOW"
-        if at_risk_ms > 2 or open_risks > 5:
+        if at_risk_ms > 2 or open_risks > 5 or board_overdue > 3 or board_blocked > 3:
             health = "RED"
 
         return ProgramSnapshot(
@@ -139,6 +145,7 @@ class CrossProgramIntel:
             milestone_progress=completed_ms / total_ms if total_ms > 0 else 0.0,
             at_risk_milestones=at_risk_ms,
             open_risks=open_risks,
+            open_blockers=board_blocked,
             active_delegations=active_delegations,
             pending_decisions=pending_decisions,
             scope_changes_pending=scope_pending,
@@ -147,21 +154,35 @@ class CrossProgramIntel:
     def _detect_resource_conflicts(
         self, program_ids: list[str]
     ) -> list[ResourceConflict]:
-        """Detect people overloaded across multiple programs."""
+        """Detect people overloaded across multiple programs.
+
+        Combines delegation items AND task board assignments for a
+        complete picture of each person's workload.
+        """
         from lltpm.models.delegation import DelegationPlan
+        from lltpm.models.task_board import TaskBoard
 
         # person -> {program_id: count}
         person_load: dict[str, dict[str, int]] = {}
 
         for pid in program_ids:
+            # Count from delegation plans
             plan = self._store.load(pid, "delegation_plan", DelegationPlan)
-            if not plan:
-                continue
-            for item in plan.open_items:
-                if item.assigned_to:
-                    person_load.setdefault(item.assigned_to, {})
-                    person_load[item.assigned_to].setdefault(pid, 0)
-                    person_load[item.assigned_to][pid] += 1
+            if plan:
+                for item in plan.open_items:
+                    if item.assigned_to:
+                        person_load.setdefault(item.assigned_to, {})
+                        person_load[item.assigned_to].setdefault(pid, 0)
+                        person_load[item.assigned_to][pid] += 1
+
+            # Count from task board (open tasks only)
+            board = self._store.load(pid, "task_board", TaskBoard)
+            if board:
+                for task in board.open_tasks:
+                    if task.assignee:
+                        person_load.setdefault(task.assignee, {})
+                        person_load[task.assignee].setdefault(pid, 0)
+                        person_load[task.assignee][pid] += 1
 
         conflicts = []
         for person, programs in person_load.items():

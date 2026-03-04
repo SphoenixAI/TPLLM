@@ -40,6 +40,7 @@ from lltpm.tools.slack_bot_tools import get_slack_bot_tools
 from lltpm.tools.voice_tools import get_voice_tools
 from lltpm.tools.gdrive_tools import get_gdrive_tools
 from lltpm.tools.pdf_tools import get_pdf_tools
+from lltpm.tools.linear_tools import get_linear_tools
 from lltpm.tools.notion_tools import get_notion_tools
 from lltpm.tools.task_board_tools import get_task_board_tools
 
@@ -213,6 +214,11 @@ def build_tool_registry(config: LLTPMConfig, store: ArtifactStore) -> ToolRegist
     # Conditional — Notion tools
     if config.notion.enabled:
         for tool in get_notion_tools(config):
+            registry.register(**tool)
+
+    # Conditional — Linear tools
+    if config.linear.enabled:
+        for tool in get_linear_tools(config):
             registry.register(**tool)
 
     return registry
