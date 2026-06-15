@@ -206,20 +206,34 @@ class KPITrend(BaseModel):
 
 # ── KPI Insight ─────────────────────────────────────────────────────
 
+class InsightSeverity(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+
 class KPIInsight(EvidenceBacked):
     """Cross-KPI analysis that explains WHY a metric changed.
 
     Connects multiple observations into a narrative: "The project is
     not blocked by engineering execution — it's blocked by unresolved
     product/security decisions."
+
+    The severity and human_review_required fields form the validation
+    gate between insights and recommendations. High-severity insights
+    with low confidence require human review before the agent acts.
     """
     id: str = ""
     insight_type: InsightType = InsightType.EXECUTION_SLOWDOWN
     title: str = ""
     summary: str = ""
+    severity: InsightSeverity = InsightSeverity.MEDIUM
     related_kpi_observation_ids: list[str] = Field(default_factory=list)
+    supporting_evidence_claim_ids: list[str] = Field(default_factory=list)
     affected_object_ids: list[str] = Field(default_factory=list)
     recommended_action_ids: list[str] = Field(default_factory=list)
+    human_review_required: bool = False
     detected_at: datetime = Field(default_factory=datetime.utcnow)
 
 

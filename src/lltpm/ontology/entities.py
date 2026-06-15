@@ -354,18 +354,51 @@ class Signal(EvidenceBacked):
     promoted_to_claim_id: str = ""
 
 
+class RecommendationType(str, Enum):
+    CREATE_ACTION_ITEM = "create_action_item"
+    ESCALATE_ISSUE = "escalate_issue"
+    REQUEST_UPDATE = "request_update"
+    SCHEDULE_MEETING = "schedule_meeting"
+    CONFIRM_DECISION = "confirm_decision"
+    RESOLVE_CONTRADICTION = "resolve_contradiction"
+    REASSIGN_OWNER = "reassign_owner"
+    ADJUST_SPRINT_PLAN = "adjust_sprint_plan"
+    UPDATE_STATUS_REPORT = "update_status_report"
+    MERGE_DUPLICATES = "merge_duplicates"
+    FLAG_FOR_REVIEW = "flag_for_review"
+
+
+class RecommendationStatus(str, Enum):
+    PROPOSED = "proposed"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    EXECUTED = "executed"
+    EXPIRED = "expired"
+
+
 class AgentRecommendation(EvidenceBacked, Trackable):
-    """An AI-generated recommendation for human review."""
+    """An AI-generated recommendation grounded in insights and evidence.
+
+    The validation layer ensures recommendations are traceable:
+    insight → supporting evidence → recommendation → action.
+    High-impact recommendations require approval before execution.
+    """
     id: str = ""
+    insight_id: str = ""
+    recommendation_type: str = RecommendationType.FLAG_FOR_REVIEW.value
     title: str = ""
     recommendation_text: str = ""
-    rationale: str = ""
+    reasoning_summary: str = ""
     impact: str = ""
     urgency: str = Priority.MEDIUM.value
     target_object_ids: list[str] = Field(default_factory=list)
+    approval_required: bool = False
+    recommendation_status: str = RecommendationStatus.PROPOSED.value
     accepted: bool | None = None
     accepted_by_id: str = ""
     accepted_at: datetime | None = None
+    rejected_reason: str = ""
+    executed_action_ids: list[str] = Field(default_factory=list)
 
 
 # ── Reports & Notifications ────────────────────────────────────────

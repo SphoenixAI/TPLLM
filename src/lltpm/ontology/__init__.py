@@ -44,6 +44,8 @@ from lltpm.ontology.interfaces import (
 from lltpm.ontology.entities import (
     ActionItem,
     AgentRecommendation,
+    RecommendationStatus,
+    RecommendationType,
     Artifact,
     Decision,
     DecisionStatus,
@@ -127,6 +129,7 @@ from lltpm.ontology.measurement import (
     CalculationType,
     HealthScore,
     HealthStatus,
+    InsightSeverity,
     InsightType,
     KPICategory,
     KPIDefinition,
@@ -138,6 +141,15 @@ from lltpm.ontology.measurement import (
     TrendDirection,
     get_builtin_definitions,
     get_definitions_by_category,
+)
+
+# Validation layer
+from lltpm.ontology.validation import (
+    DEFAULT_POLICY,
+    ValidationOutcome,
+    ValidationPolicy,
+    ValidationResult,
+    validate_insight,
 )
 
 __all__ = [
@@ -170,11 +182,16 @@ __all__ = [
     "PrecedenceField", "PRECEDENCE_RULES",
     "get_precedence_rank", "resolve_conflict", "explain_precedence",
     # Measurement & Operational Health
-    "KPICategory", "KPIUnit", "CalculationType", "HealthStatus",
+    "KPICategory", "KPIUnit", "CalculationType", "HealthStatus", "InsightSeverity",
     "TrendDirection", "InsightType", "MeasuredObjectType",
     "KPIDefinition", "KPIObservation", "KPITrend", "KPIInsight",
     "HealthScore", "BUILTIN_KPI_DEFINITIONS",
     "get_builtin_definitions", "get_definitions_by_category",
+    # Validation
+    "ValidationOutcome", "ValidationPolicy", "ValidationResult",
+    "DEFAULT_POLICY", "validate_insight",
+    # Entities (new enums)
+    "RecommendationType", "RecommendationStatus",
     # Mapper
     "map_linear_issue", "map_jira_ticket", "map_github_pr",
     "map_github_pr_to_signal", "map_slack_message_to_signal",
