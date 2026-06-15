@@ -6,13 +6,15 @@ Architecture layers:
     3. Semantic Extraction → Evidence claims, signals, contradictions
     4. Canonical Ontology (this package) → WorkItem, Decision, Risk, etc.
     5. Interface / Capability Layer → Trackable, Assignable, EvidenceBacked
-    6. Reasoning Layer → Precedence rules, contradiction detection
-    7. Agentic Action Layer → Triage, escalate, plan, confirm
-    8. Human Review Layer → Approve ontology changes, resolve contradictions
-    9. Dashboard / Board Layer → Command surface
+    6. Measurement & Operational Health → KPIs, trends, insights, health scores
+    7. Reasoning Layer → Precedence rules, contradiction detection
+    8. Agentic Action Layer → Triage, escalate, plan, confirm
+    9. Human Review Layer → Approve ontology changes, resolve contradictions
+   10. Dashboard / Board Layer → Command surface
 
 The board is the UI. The ontology is the brain.
-The integrations are senses. The agentic layer is the nervous system.
+The integrations are senses. The measurement layer is the nervous system.
+The agentic layer is the motor cortex.
 """
 
 # Core primitives
@@ -119,6 +121,25 @@ from lltpm.ontology.mapper import (
     map_zoom_meeting,
 )
 
+# Measurement & Operational Health
+from lltpm.ontology.measurement import (
+    BUILTIN_KPI_DEFINITIONS,
+    CalculationType,
+    HealthScore,
+    HealthStatus,
+    InsightType,
+    KPICategory,
+    KPIDefinition,
+    KPIInsight,
+    KPIObservation,
+    KPITrend,
+    KPIUnit,
+    MeasuredObjectType,
+    TrendDirection,
+    get_builtin_definitions,
+    get_definitions_by_category,
+)
+
 __all__ = [
     # Core
     "SourceSystem", "SourceRef", "AIExtractedValue",
@@ -148,6 +169,12 @@ __all__ = [
     # Precedence
     "PrecedenceField", "PRECEDENCE_RULES",
     "get_precedence_rank", "resolve_conflict", "explain_precedence",
+    # Measurement & Operational Health
+    "KPICategory", "KPIUnit", "CalculationType", "HealthStatus",
+    "TrendDirection", "InsightType", "MeasuredObjectType",
+    "KPIDefinition", "KPIObservation", "KPITrend", "KPIInsight",
+    "HealthScore", "BUILTIN_KPI_DEFINITIONS",
+    "get_builtin_definitions", "get_definitions_by_category",
     # Mapper
     "map_linear_issue", "map_jira_ticket", "map_github_pr",
     "map_github_pr_to_signal", "map_slack_message_to_signal",
