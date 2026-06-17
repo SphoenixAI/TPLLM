@@ -66,6 +66,32 @@ from lltpm.structural.intervention import (
     rank_options,
     simulate_intervention,
 )
+from lltpm.structural.feedback import (
+    HumanDecisionRecord,
+    HumanDecisionType,
+    OverrideReason,
+    ParsedOverrideReason,
+    parse_override_reason,
+    post_recommendation_hook,
+    record_human_decision,
+)
+from lltpm.structural.outcomes import (
+    DecisionDiscrepancy,
+    DecisionOutcomeLog,
+    DecisionOutcomeType,
+    DiscrepancyType,
+    calculate_prediction_error,
+    derive_decision_discrepancy,
+    record_decision_outcome,
+)
+from lltpm.structural.calibration import (
+    CalibrationHypothesis,
+    CalibrationHypothesisStatus,
+    CalibrationHypothesisType,
+    FeedbackKPISummary,
+    generate_calibration_hypothesis,
+    summarize_feedback_kpis,
+)
 from lltpm.structural.engine import StructuralEngine
 
 __all__ = [
@@ -89,6 +115,19 @@ __all__ = [
     "mutate_resequence_milestone", "mutate_split_node",
     "simulate_intervention", "rank_options",
     "option_to_recommendation",
+    # Feedback (Flight Data Recorder)
+    "HumanDecisionRecord", "HumanDecisionType",
+    "OverrideReason", "ParsedOverrideReason",
+    "parse_override_reason", "post_recommendation_hook", "record_human_decision",
+    # Outcomes
+    "DecisionDiscrepancy", "DecisionOutcomeLog",
+    "DecisionOutcomeType", "DiscrepancyType",
+    "calculate_prediction_error", "derive_decision_discrepancy",
+    "record_decision_outcome",
+    # Calibration
+    "CalibrationHypothesis", "CalibrationHypothesisStatus",
+    "CalibrationHypothesisType", "FeedbackKPISummary",
+    "generate_calibration_hypothesis", "summarize_feedback_kpis",
     # Engine
     "StructuralEngine",
 ]
