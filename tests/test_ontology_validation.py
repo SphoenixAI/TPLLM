@@ -59,9 +59,11 @@ from lltpm.ontology.measurement import (
 from lltpm.ontology.precedence import PrecedenceField, resolve_conflict
 from lltpm.ontology.validation import (
     DEFAULT_POLICY,
+    MergedRecommendationPair,
     ValidationOutcome,
     ValidationPolicy,
     ValidationResult,
+    deduplicate_recommendations,
     validate_insight,
 )
 
@@ -842,3 +844,281 @@ class TestClosedLoop:
 
         # The loop continues: escalation creates new activity,
         # which updates ontology, which updates KPIs...
+
+
+# ── 7. Edge-Case Scenarios ──────────────────────────────────────────
+
+
+class TestEdgeCaseScenarios:
+    """Scenarios where agents commonly become overconfident: false-positive
+    blockers, confidence without evidence, supersession mistaken for
+    contradiction, critical-but-uncertain insights, and alert fatigue from
+    duplicate recommendations. Each asserts the validation telemetry and
+    dedup behavior that keep the agent honest."""
+
+    def test_false_positive_blocker_rejected_when_newer_sources_show_done(self):
+        # Slack says "blocked" but two newer, higher-confidence sources
+        # contradict it (Linear "done", GitHub "PR merged").
+        slack_claim = EvidenceClaim(
+            id="ec-slack-blocked",
+            claim_text="Still blocked on the migration",
+            claim_type=ClaimType.BLOCKER,
+            confidence=0.6,
+            source_refs=[SourceRef(system=SourceSystem.SLACK, external_id="C-eng:1")],
+            contradicted_by_claim_ids=["ec-linear-done", "ec-github-merged"],
+        )
+        linear_claim = EvidenceClaim(
+            id="ec-linear-done",
+            claim_text="Issue marked done",
+            claim_type=ClaimType.STATUS_UPDATE,
+            confidence=0.85,
+            source_refs=[SourceRef(system=SourceSystem.LINEAR, external_id="ENG-1")],
+        )
+        github_claim = EvidenceClaim(
+            id="ec-github-merged",
+            claim_text="PR merged",
+            claim_type=ClaimType.STATUS_UPDATE,
+            confidence=0.95,
+            source_refs=[SourceRef(system=SourceSystem.GITHUB, external_id="PR-1")],
+        )
+
+        insight = KPIInsight(
+            id="ins-false-blocker",
+            insight_type=InsightType.DEPENDENCY_DRAG,
+            severity=InsightSeverity.HIGH,
+            related_kpi_observation_ids=["obs-1"],
+            supporting_evidence_claim_ids=[
+                slack_claim.id, linear_claim.id, github_claim.id,
+            ],
+            confidence=0.7,
+        )
+
+        # 1 of 3 claims is contradicted → 33% > 30% max_contradiction_ratio.
+        result = validate_insight(
+            insight,
+            evidence_claims=[slack_claim, linear_claim, github_claim],
+        )
+        assert result.outcome == ValidationOutcome.CONTRADICTED
+        assert result.passed is False
+        assert result.failed_check == "contradiction"
+
+    def test_high_confidence_insight_rejected_without_sufficient_evidence(self):
+        # Confidence alone must never bypass the evidence requirement.
+        insight = KPIInsight(
+            id="ins-overconfident",
+            severity=InsightSeverity.MEDIUM,
+            confidence=0.94,
+            related_kpi_observation_ids=[],
+            supporting_evidence_claim_ids=[],
+        )
+        result = validate_insight(insight)
+        assert result.outcome == ValidationOutcome.INSUFFICIENT_EVIDENCE
+        assert result.passed is False
+        assert result.failed_check == "evidence_sufficiency"
+        assert result.confidence_before_validation == 0.94
+
+    def test_superseded_decision_does_not_create_false_contradiction(self):
+        # Meeting A: launch June 28, valid only until June 14 (superseded).
+        # Meeting B: launch July 12, current. Supersession is modeled via
+        # valid_until, NOT contradiction — neither claim contradicts the other.
+        meeting_a = EvidenceClaim(
+            id="ec-mtg-a",
+            claim_text="Launch June 28",
+            claim_type=ClaimType.TIMELINE,
+            confidence=0.8,
+            source_refs=[SourceRef(system=SourceSystem.ZOOM, external_id="mtg-a")],
+            observed_at=datetime(2026, 6, 10),
+            valid_from=datetime(2026, 6, 10),
+            valid_until=datetime(2026, 6, 14),
+        )
+        meeting_b = EvidenceClaim(
+            id="ec-mtg-b",
+            claim_text="Launch July 12",
+            claim_type=ClaimType.TIMELINE,
+            confidence=0.85,
+            source_refs=[SourceRef(system=SourceSystem.ZOOM, external_id="mtg-b")],
+            observed_at=datetime(2026, 6, 14),
+            valid_from=datetime(2026, 6, 14),
+        )
+
+        insight = KPIInsight(
+            id="ins-superseded",
+            insight_type=InsightType.SCOPE_CHURN,
+            severity=InsightSeverity.LOW,
+            related_kpi_observation_ids=["obs-1"],
+            supporting_evidence_claim_ids=[meeting_a.id, meeting_b.id],
+            confidence=0.85,
+        )
+        result = validate_insight(
+            insight,
+            evidence_claims=[meeting_a, meeting_b],
+        )
+        assert result.outcome == ValidationOutcome.APPROVED
+        assert result.passed is True
+        assert result.failed_check is None
+
+    def test_critical_medium_confidence_insight_requires_human_review(self):
+        # Above review threshold (0.4) but below auto-action (0.75);
+        # CRITICAL severity always requires human sign-off.
+        claim = EvidenceClaim(
+            id="ec-crit",
+            claim_text="Production incident risk",
+            claim_type=ClaimType.RISK,
+            confidence=0.7,
+        )
+        insight = KPIInsight(
+            id="ins-critical-uncertain",
+            insight_type=InsightType.RISK_ACCELERATION,
+            severity=InsightSeverity.CRITICAL,
+            related_kpi_observation_ids=["obs-1"],
+            supporting_evidence_claim_ids=[claim.id],
+            confidence=0.68,
+        )
+        result = validate_insight(insight, evidence_claims=[claim])
+        assert result.outcome == ValidationOutcome.NEEDS_HUMAN_REVIEW
+        assert result.passed is True
+        assert result.human_review_required is True
+        assert result.failed_check == "severity_gate"
+
+    def test_repeated_low_severity_insights_are_batched_to_prevent_alert_fatigue(self):
+        # 12 valid LOW-severity insights all auto-approve individually, but
+        # they target the same object with the same intent — dedup collapses
+        # them into one recommendation so the human sees one action, not 12.
+        recs = []
+        base = datetime(2026, 6, 17, 9, 0, 0)
+        for i in range(12):
+            insight = KPIInsight(
+                id=f"ins-low-{i}",
+                severity=InsightSeverity.LOW,
+                related_kpi_observation_ids=["obs-1"],
+                supporting_evidence_claim_ids=[f"ec-{i}"],
+                confidence=0.85,
+            )
+            result = validate_insight(insight)
+            assert result.outcome == ValidationOutcome.APPROVED
+
+            recs.append(
+                AgentRecommendation(
+                    id=f"rec-low-{i}",
+                    insight_id=insight.id,
+                    recommendation_type=RecommendationType.REQUEST_UPDATE.value,
+                    title="Request status update",
+                    target_object_ids=["wi-shared"],
+                    confidence=0.85,
+                    created_at=base + timedelta(minutes=i),
+                    evidence_claim_ids=[f"ec-{i}"],
+                )
+            )
+
+        canonical, merged = deduplicate_recommendations(recs)
+        assert len(canonical) == 1
+        assert len(merged) == 11
+        # All 12 evidence claims survive on the single canonical rec.
+        assert len(canonical[0].evidence_claim_ids) == 12
+
+    def test_high_severity_insight_without_owner_creates_assign_owner_recommendation(self):
+        # Can't escalate what has no accountable owner — the right move is to
+        # assign ownership first, gated behind approval (HIGH severity).
+        wi = WorkItem(
+            id="wi-unowned",
+            title="Critical migration task",
+            status=WorkItemStatus.IN_PROGRESS.value,
+            owner_id="",
+        )
+        claim = EvidenceClaim(
+            id="ec-unowned",
+            claim_text="No one has picked up the migration task",
+            claim_type=ClaimType.OWNERSHIP,
+            confidence=0.8,
+        )
+        insight = KPIInsight(
+            id="ins-unowned",
+            insight_type=InsightType.OWNERSHIP_GAP,
+            severity=InsightSeverity.HIGH,
+            related_kpi_observation_ids=["obs-1"],
+            supporting_evidence_claim_ids=[claim.id],
+            confidence=0.82,
+        )
+        result = validate_insight(insight, evidence_claims=[claim])
+        assert result.passed is True
+        assert result.human_review_required is True
+
+        rec = AgentRecommendation(
+            id="rec-assign",
+            insight_id=insight.id,
+            recommendation_type=RecommendationType.REASSIGN_OWNER.value,
+            title="Assign an accountable owner",
+            target_object_ids=[wi.id],
+            approval_required=True,
+        )
+        assert rec.recommendation_type == "reassign_owner"
+        assert rec.approval_required is True
+
+    def test_duplicate_recommendations_are_merged_or_suppressed(self):
+        # Two recommendations from nearby Slack messages — same type, same
+        # target. The higher-confidence one wins; evidence is unioned.
+        rec1 = AgentRecommendation(
+            id="rec-1",
+            recommendation_type=RecommendationType.ESCALATE_ISSUE.value,
+            title="Escalate blocker",
+            target_object_ids=["wi-x"],
+            confidence=0.85,
+            evidence_claim_ids=["ec-1", "ec-2"],
+            created_at=datetime(2026, 6, 17, 9, 0, 0),
+        )
+        rec2 = AgentRecommendation(
+            id="rec-2",
+            recommendation_type=RecommendationType.ESCALATE_ISSUE.value,
+            title="Escalate the blocker",
+            target_object_ids=["wi-x"],
+            confidence=0.80,
+            evidence_claim_ids=["ec-2", "ec-3"],
+            created_at=datetime(2026, 6, 17, 9, 5, 0),
+        )
+
+        canonical, merged = deduplicate_recommendations([rec1, rec2])
+        assert len(canonical) == 1
+        assert canonical[0].id == "rec-1"
+        assert sorted(canonical[0].evidence_claim_ids) == ["ec-1", "ec-2", "ec-3"]
+        assert len(merged) == 1
+        assert merged[0].canonical_id == "rec-1"
+        assert merged[0].duplicate_id == "rec-2"
+
+    def test_unresolved_contradiction_routes_to_clarification_not_execution(self):
+        # Three claims each contradicting the others (100% contradiction).
+        # Don't premature truth-update — route to RESOLVE_CONTRADICTION.
+        claims = [
+            EvidenceClaim(
+                id=f"ec-conflict-{i}",
+                claim_text=f"Conflicting account {i}",
+                claim_type=ClaimType.TIMELINE,
+                confidence=0.7,
+                contradicted_by_claim_ids=[
+                    f"ec-conflict-{j}" for j in range(3) if j != i
+                ],
+            )
+            for i in range(3)
+        ]
+        insight = KPIInsight(
+            id="ins-three-way-conflict",
+            insight_type=InsightType.SCOPE_CHURN,
+            severity=InsightSeverity.HIGH,
+            related_kpi_observation_ids=["obs-1"],
+            supporting_evidence_claim_ids=[c.id for c in claims],
+            confidence=0.75,
+        )
+        result = validate_insight(insight, evidence_claims=claims)
+        assert result.outcome == ValidationOutcome.CONTRADICTED
+        assert result.passed is False
+        assert result.failed_check == "contradiction"
+
+        rec = AgentRecommendation(
+            id="rec-resolve",
+            insight_id=insight.id,
+            recommendation_type=RecommendationType.RESOLVE_CONTRADICTION.value,
+            title="Resolve conflicting accounts",
+            target_object_ids=["ms-launch"],
+            approval_required=True,
+        )
+        assert rec.recommendation_type == "resolve_contradiction"
+        assert rec.approval_required is True

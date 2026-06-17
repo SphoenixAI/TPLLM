@@ -44,6 +44,8 @@ from lltpm.ontology.interfaces import (
 from lltpm.ontology.entities import (
     ActionItem,
     AgentRecommendation,
+    AuthorizedBridge,
+    BridgeReason,
     RecommendationStatus,
     RecommendationType,
     Artifact,
@@ -146,9 +148,11 @@ from lltpm.ontology.measurement import (
 # Validation layer
 from lltpm.ontology.validation import (
     DEFAULT_POLICY,
+    MergedRecommendationPair,
     ValidationOutcome,
     ValidationPolicy,
     ValidationResult,
+    deduplicate_recommendations,
     validate_insight,
 )
 
@@ -169,6 +173,7 @@ __all__ = [
     "Meeting", "Artifact", "Signal", "SignalType",
     "AgentRecommendation", "StatusReport",
     "OntologyNotification", "OntologyChangeProposal",
+    "AuthorizedBridge", "BridgeReason",
     # Actions
     "ActionType", "OntologyAction",
     "TriageIssueAction", "EscalateBlockerAction",
@@ -190,6 +195,7 @@ __all__ = [
     # Validation
     "ValidationOutcome", "ValidationPolicy", "ValidationResult",
     "DEFAULT_POLICY", "validate_insight",
+    "MergedRecommendationPair", "deduplicate_recommendations",
     # Entities (new enums)
     "RecommendationType", "RecommendationStatus",
     # Mapper

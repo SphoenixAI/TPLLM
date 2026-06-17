@@ -131,6 +131,38 @@ class Team(BaseModel):
     linked_sources: list[SourceRef] = Field(default_factory=list)
 
 
+class BridgeReason(str, Enum):
+    """Why a person is authorized to work outside their baseline ownership."""
+    CROSS_TEAM_PROJECT = "cross_team_project"
+    ROTATION = "rotation"
+    MIGRATION_LEAD = "migration_lead"
+    INCIDENT_RESPONSE = "incident_response"
+    PAIRING = "pairing"
+    CROSS_TRAINING = "cross_training"
+
+
+class AuthorizedBridge(BaseModel):
+    """An explicit grant for a person to work in domains/services outside
+    their baseline ownership.
+
+    This is the false-positive suppressor for structural scope-drift
+    detection: planned cross-team work (a migration lead touching Payments,
+    an incident responder reaching into another service) should NOT be
+    flagged as unplanned drift. When scope variance is computed, nodes
+    covered by an active AuthorizedBridge collapse the engineer's
+    effective distance to those nodes to zero.
+    """
+    id: str = ""
+    person_id: str = ""
+    team_id: str = ""
+    authorized_node_ids: list[str] = Field(default_factory=list)
+    reason: str = BridgeReason.CROSS_TEAM_PROJECT.value
+    source_refs: list[SourceRef] = Field(default_factory=list)
+    valid_from: datetime | None = None
+    valid_until: datetime | None = None
+    approved_by_id: str = ""
+
+
 # ── Program Hierarchy ───────────────────────────────────────────────
 
 class Program(Trackable, Reportable, SourceMapped):

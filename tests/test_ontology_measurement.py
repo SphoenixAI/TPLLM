@@ -314,7 +314,7 @@ class TestHealthScore:
 
 class TestBuiltinKPIs:
     def test_builtin_count(self):
-        assert len(BUILTIN_KPI_DEFINITIONS) == 24
+        assert len(BUILTIN_KPI_DEFINITIONS) == 31
 
     def test_all_categories_covered(self):
         """All 10 KPI categories should have at least one built-in definition."""

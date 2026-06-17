@@ -27,6 +27,7 @@ from enum import Enum
 from pydantic import BaseModel, Field
 
 from lltpm.ontology.core import EvidenceClaim
+from lltpm.ontology.entities import AgentRecommendation
 from lltpm.ontology.measurement import (
     HealthStatus,
     InsightSeverity,
@@ -48,7 +49,13 @@ class ValidationOutcome(str, Enum):
 
 
 class ValidationResult(BaseModel):
-    """Result of validating an insight before generating a recommendation."""
+    """Result of validating an insight before generating a recommendation.
+
+    The telemetry fields (``failed_check``, ``confidence_before_validation``,
+    ``severity``) make every validation decision inspectable and measurable —
+    they feed the agent-quality KPIs (approval rate, rejection rate, etc.) so
+    the validator itself becomes observable.
+    """
     insight_id: str = ""
     outcome: ValidationOutcome = ValidationOutcome.NEEDS_HUMAN_REVIEW
     passed: bool = False
@@ -56,6 +63,10 @@ class ValidationResult(BaseModel):
     human_review_required: bool = True
     adjusted_confidence: float = 0.0
     validated_at: datetime = Field(default_factory=datetime.utcnow)
+    # Telemetry — which gate decided this, and the inputs it saw.
+    failed_check: str | None = None
+    confidence_before_validation: float = 0.0
+    severity: str = ""
 
 
 # ── Validation Policy ──────────────────────────────────────────────
@@ -103,6 +114,8 @@ def validate_insight(
     evidence_claims = evidence_claims or []
     reasons: list[str] = []
     human_review = False
+    original_confidence = insight.confidence
+    severity = insight.severity.value
 
     # 1. Evidence sufficiency
     obs_count = len(insight.related_kpi_observation_ids)
@@ -125,6 +138,9 @@ def validate_insight(
             reasons=reasons,
             human_review_required=True,
             adjusted_confidence=insight.confidence * 0.5,
+            failed_check="evidence_sufficiency",
+            confidence_before_validation=original_confidence,
+            severity=severity,
         )
 
     # 2. Confidence threshold
@@ -138,6 +154,9 @@ def validate_insight(
             reasons=reasons,
             human_review_required=True,
             adjusted_confidence=conf,
+            failed_check="confidence",
+            confidence_before_validation=original_confidence,
+            severity=severity,
         )
 
     # 3. Contradiction check
@@ -156,6 +175,9 @@ def validate_insight(
                     reasons=reasons,
                     human_review_required=True,
                     adjusted_confidence=conf * (1 - ratio),
+                    failed_check="contradiction",
+                    confidence_before_validation=original_confidence,
+                    severity=severity,
                 )
             conf *= (1 - ratio * 0.5)
 
@@ -175,6 +197,9 @@ def validate_insight(
                 reasons=reasons,
                 human_review_required=True,
                 adjusted_confidence=conf * 0.5,
+                failed_check="staleness",
+                confidence_before_validation=original_confidence,
+                severity=severity,
             )
 
     # 5. Severity-gated approval
@@ -197,6 +222,9 @@ def validate_insight(
             reasons=["Low severity with sufficient confidence — auto-approved"],
             human_review_required=False,
             adjusted_confidence=conf,
+            failed_check=None,
+            confidence_before_validation=original_confidence,
+            severity=severity,
         )
 
     # 7. Final confidence gate
@@ -208,6 +236,9 @@ def validate_insight(
             reasons=reasons or ["Validation passed"],
             human_review_required=False,
             adjusted_confidence=conf,
+            failed_check=None,
+            confidence_before_validation=original_confidence,
+            severity=severity,
         )
 
     if conf >= pol.min_confidence_for_review:
@@ -218,6 +249,9 @@ def validate_insight(
             reasons=reasons or ["Confidence sufficient for review, not auto-action"],
             human_review_required=True,
             adjusted_confidence=conf,
+            failed_check="severity_gate" if human_review else "final_confidence_gate",
+            confidence_before_validation=original_confidence,
+            severity=severity,
         )
 
     return ValidationResult(
@@ -227,4 +261,92 @@ def validate_insight(
         reasons=[f"Confidence {conf:.2f} below review threshold {pol.min_confidence_for_review}"],
         human_review_required=True,
         adjusted_confidence=conf,
+        failed_check="final_confidence_gate",
+        confidence_before_validation=original_confidence,
+        severity=severity,
     )
+
+
+# ── Recommendation Deduplication ───────────────────────────────────
+# Multiple insights from nearby signals (a Zoom action item + the Slack
+# thread that echoes it) routinely produce near-identical recommendations.
+# Surfacing all of them creates alert fatigue. Dedup collapses recommendations
+# that target the same objects with the same intent into one canonical item,
+# preserving every piece of evidence so nothing is silently dropped.
+
+class MergedRecommendationPair(BaseModel):
+    """Audit record of one duplicate folded into a canonical recommendation."""
+    canonical_id: str = ""
+    duplicate_id: str = ""
+    reason: str = ""
+
+
+def deduplicate_recommendations(
+    recommendations: list[AgentRecommendation],
+) -> tuple[list[AgentRecommendation], list[MergedRecommendationPair]]:
+    """Collapse duplicate recommendations into canonical ones.
+
+    Two recommendations are duplicates when they share the same
+    ``recommendation_type`` and the same set of ``target_object_ids``. For each
+    group, the highest-confidence recommendation (tie-break: earliest
+    ``created_at``) becomes canonical, and the others' evidence claims and
+    source refs are merged into it so no provenance is lost.
+
+    Returns ``(canonical_recommendations, merged_pairs)`` where ``merged_pairs``
+    records every fold for human audit.
+    """
+    groups: dict[tuple[str, frozenset[str]], list[AgentRecommendation]] = {}
+    order: list[tuple[str, frozenset[str]]] = []
+    for rec in recommendations:
+        key = (rec.recommendation_type, frozenset(rec.target_object_ids))
+        if key not in groups:
+            groups[key] = []
+            order.append(key)
+        groups[key].append(rec)
+
+    canonical_list: list[AgentRecommendation] = []
+    merged_pairs: list[MergedRecommendationPair] = []
+
+    for key in order:
+        members = groups[key]
+        # Canonical = highest confidence, earliest created_at on ties.
+        canonical = sorted(
+            members,
+            key=lambda r: (-r.confidence, r.created_at),
+        )[0]
+
+        for dup in members:
+            if dup is canonical:
+                continue
+
+            # Merge evidence claim ids (union, preserve order, no dupes).
+            for ec in dup.evidence_claim_ids:
+                if ec not in canonical.evidence_claim_ids:
+                    canonical.evidence_claim_ids.append(ec)
+
+            # Merge source refs (skip exact duplicates).
+            for ref in dup.source_refs:
+                if ref not in canonical.source_refs:
+                    canonical.source_refs.append(ref)
+
+            # Append the duplicate's reasoning so context is retained.
+            if dup.reasoning_summary:
+                merged_note = f"[merged from {dup.id}] {dup.reasoning_summary}"
+                canonical.reasoning_summary = (
+                    f"{canonical.reasoning_summary}\n{merged_note}".strip()
+                )
+
+            merged_pairs.append(
+                MergedRecommendationPair(
+                    canonical_id=canonical.id,
+                    duplicate_id=dup.id,
+                    reason=(
+                        f"Same recommendation_type '{canonical.recommendation_type}' "
+                        f"and target objects; merged into higher-confidence canonical"
+                    ),
+                )
+            )
+
+        canonical_list.append(canonical)
+
+    return canonical_list, merged_pairs
