@@ -122,6 +122,35 @@ from lltpm.structural.inverse_solver import (
     run_local_inverse_solver,
     simulate_rank_shift,
 )
+from lltpm.structural.proposals import (
+    CalibrationEvidenceBundle,
+    CalibrationProposal,
+    CalibrationProposalType,
+    CalibrationTestCase,
+    CalibrationTestCaseStatus,
+    CalibrationTestCaseType,
+    EvidenceBundleRecommendation,
+    HistoricalValidationImpact,
+    ProposalStatus,
+    RegressionCaseClassification,
+    RegressionCaseResult,
+    RegressionReport,
+    RegressionTestedProposalBundle,
+    create_calibration_proposal_from_hypothesis,
+    map_hypothesis_type_to_proposal_type,
+)
+from lltpm.structural.regression import (
+    build_historical_validation_impact,
+    build_regression_tested_proposal,
+    bundle_calibration_evidence,
+    classify_regression_case,
+    run_regression_test,
+    simulate_proposal_on_case,
+)
+from lltpm.structural.calibration_cases import (
+    generate_calibration_test_cases,
+    run_calibration_test_case,
+)
 from lltpm.structural.engine import StructuralEngine
 
 __all__ = [
@@ -172,6 +201,19 @@ __all__ = [
     "generate_edge_weight_candidates", "generate_missing_edge_candidates",
     "generate_override_reason_candidates", "mismatch_type_from_candidate",
     "run_local_inverse_solver", "simulate_rank_shift",
+    # Calibration Proposals (Commit 5)
+    "CalibrationEvidenceBundle", "CalibrationProposal", "CalibrationProposalType",
+    "CalibrationTestCase", "CalibrationTestCaseStatus", "CalibrationTestCaseType",
+    "EvidenceBundleRecommendation", "HistoricalValidationImpact",
+    "ProposalStatus", "RegressionCaseClassification", "RegressionCaseResult",
+    "RegressionReport", "RegressionTestedProposalBundle",
+    "create_calibration_proposal_from_hypothesis", "map_hypothesis_type_to_proposal_type",
+    # Regression engine (Commit 5)
+    "build_historical_validation_impact", "build_regression_tested_proposal",
+    "bundle_calibration_evidence", "classify_regression_case",
+    "run_regression_test", "simulate_proposal_on_case",
+    # Calibration test cases (Commit 5)
+    "generate_calibration_test_cases", "run_calibration_test_case",
     # Engine
     "StructuralEngine",
 ]
