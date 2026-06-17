@@ -92,6 +92,36 @@ from lltpm.structural.calibration import (
     generate_calibration_hypothesis,
     summarize_feedback_kpis,
 )
+from lltpm.structural.replay import (
+    ReplayComparison,
+    build_replay_comparison,
+    get_option_id,
+    get_predicted_reduction,
+)
+from lltpm.structural.inverse_solver import (
+    DEFAULT_LOCAL_SEARCH_RADIUS,
+    DEFAULT_MAX_CANDIDATE_EDITS,
+    CandidateEditStatus,
+    CandidateEditType,
+    CandidateGraphEdit,
+    ContradictionCheckResult,
+    HardConstraint,
+    InverseSolverResult,
+    TopologicalMismatch,
+    TopologicalMismatchType,
+    apply_candidate_edit_to_copy,
+    build_topological_mismatch,
+    calibration_hypothesis_from_topological_mismatch,
+    contradiction_check,
+    extract_local_subgraph,
+    generate_candidate_edits,
+    generate_edge_weight_candidates,
+    generate_missing_edge_candidates,
+    generate_override_reason_candidates,
+    mismatch_type_from_candidate,
+    run_local_inverse_solver,
+    simulate_rank_shift,
+)
 from lltpm.structural.engine import StructuralEngine
 
 __all__ = [
@@ -128,6 +158,20 @@ __all__ = [
     "CalibrationHypothesis", "CalibrationHypothesisStatus",
     "CalibrationHypothesisType", "FeedbackKPISummary",
     "generate_calibration_hypothesis", "summarize_feedback_kpis",
+    # Replay (Commit 4)
+    "ReplayComparison", "build_replay_comparison",
+    "get_option_id", "get_predicted_reduction",
+    # Inverse solver (Commit 4)
+    "DEFAULT_LOCAL_SEARCH_RADIUS", "DEFAULT_MAX_CANDIDATE_EDITS",
+    "CandidateEditStatus", "CandidateEditType", "CandidateGraphEdit",
+    "ContradictionCheckResult", "HardConstraint", "InverseSolverResult",
+    "TopologicalMismatch", "TopologicalMismatchType",
+    "apply_candidate_edit_to_copy", "build_topological_mismatch",
+    "calibration_hypothesis_from_topological_mismatch", "contradiction_check",
+    "extract_local_subgraph", "generate_candidate_edits",
+    "generate_edge_weight_candidates", "generate_missing_edge_candidates",
+    "generate_override_reason_candidates", "mismatch_type_from_candidate",
+    "run_local_inverse_solver", "simulate_rank_shift",
     # Engine
     "StructuralEngine",
 ]

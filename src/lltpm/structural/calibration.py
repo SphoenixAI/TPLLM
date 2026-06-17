@@ -37,6 +37,14 @@ class CalibrationHypothesisType(str, Enum):
     MISSING_CONTEXT_SIGNAL = "missing_context_signal"
     FALSE_POSITIVE_PATTERN = "false_positive_pattern"
     FALSE_NEGATIVE_PATTERN = "false_negative_pattern"
+    # Structural / inverse-solver hypotheses (Commit 4). Still observational —
+    # these describe what the inverse solver thinks the model was missing.
+    ADD_MISSING_EDGE_TYPE = "add_missing_edge_type"
+    ADD_CONSTRAINT_TYPE = "add_constraint_type"
+    ADJUST_INTERVENTION_COST = "adjust_intervention_cost"
+    INCREASE_METRIC_WEIGHT = "increase_metric_weight"
+    DECREASE_METRIC_WEIGHT = "decrease_metric_weight"
+    NO_CHANGE = "no_change"
 
 
 class CalibrationHypothesisStatus(str, Enum):
@@ -60,6 +68,8 @@ class CalibrationHypothesis(BaseModel):
     metric_name_affected: str = ""
     current_threshold: float | None = None
     suggested_threshold: float | None = None
+    # Set when this hypothesis originates from an inverse-solver TopologicalMismatch.
+    source_mismatch_id: str = ""
     supporting_decision_record_ids: list[str] = Field(default_factory=list)
     supporting_discrepancy_ids: list[str] = Field(default_factory=list)
     summary: str = ""
