@@ -151,6 +151,35 @@ from lltpm.structural.calibration_cases import (
     generate_calibration_test_cases,
     run_calibration_test_case,
 )
+from lltpm.structural.stress_test import (
+    FuzzCaseResult,
+    FuzzMutationRecord,
+    FuzzMutationType,
+    FuzzResilienceReport,
+    LateralTransferCaseResult,
+    LateralTransferReport,
+    OverfitWarning,
+    ProposalScopeSignature,
+    StressTestRecommendation,
+    StressTestStatus,
+    StressTestType,
+    StressTestedEvidenceBundle,
+    SyntheticStressCaseResult,
+    SyntheticStressReport,
+    SyntheticStressType,
+    TransferRelationType,
+    build_stress_tested_evidence_bundle,
+    create_scope_signature,
+    deterministic_index,
+    fuzz_test_case,
+    generate_overfit_warnings,
+    identify_lateral_transfer_cases,
+    run_lateral_transfer_test,
+    run_synthetic_edge_case_test,
+    run_topological_fuzzing_test,
+    run_topological_stress_test_suite,
+    weighted_available_score,
+)
 from lltpm.structural.engine import StructuralEngine
 
 __all__ = [
@@ -214,6 +243,18 @@ __all__ = [
     "run_regression_test", "simulate_proposal_on_case",
     # Calibration test cases (Commit 5)
     "generate_calibration_test_cases", "run_calibration_test_case",
+    # Topological stress testing (Commit 6)
+    "FuzzCaseResult", "FuzzMutationRecord", "FuzzMutationType",
+    "FuzzResilienceReport", "LateralTransferCaseResult", "LateralTransferReport",
+    "OverfitWarning", "ProposalScopeSignature",
+    "StressTestRecommendation", "StressTestStatus", "StressTestType",
+    "StressTestedEvidenceBundle", "SyntheticStressCaseResult",
+    "SyntheticStressReport", "SyntheticStressType", "TransferRelationType",
+    "build_stress_tested_evidence_bundle", "create_scope_signature",
+    "deterministic_index", "fuzz_test_case", "generate_overfit_warnings",
+    "identify_lateral_transfer_cases", "run_lateral_transfer_test",
+    "run_synthetic_edge_case_test", "run_topological_fuzzing_test",
+    "run_topological_stress_test_suite", "weighted_available_score",
     # Engine
     "StructuralEngine",
 ]
