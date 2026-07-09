@@ -43,6 +43,30 @@ from lltpm.application.ledger import (
     append_revert,
     build_application_audit,
 )
+from lltpm.application.registry import (
+    ActiveCalibrationRegistry,
+    ActiveRegistryStatus,
+    CalibrationAdjustment,
+    CalibrationAdjustmentDirection,
+    CalibrationApplicationDecision,
+    CalibrationConsultContext,
+    CalibrationConsultResult,
+    RankerCalibrationTrace,
+    build_ranker_calibration_trace,
+    calculate_bounded_adjustment,
+    combine_adjustments,
+    consult_active_calibrations,
+    deactivate_active_calibration,
+    get_active_calibrations_for_context,
+    is_record_active,
+    record_calibration_trace,
+    register_active_calibration,
+    scope_matches,
+)
+from lltpm.application.ranker_adapter import (
+    rank_options_with_active_calibrations,
+    score_option_with_active_calibrations,
+)
 
 __all__ = [
     # Control
@@ -77,4 +101,26 @@ __all__ = [
     "append_application",
     "append_revert",
     "build_application_audit",
+    # Registry (consult layer)
+    "ActiveCalibrationRegistry",
+    "ActiveRegistryStatus",
+    "CalibrationAdjustment",
+    "CalibrationAdjustmentDirection",
+    "CalibrationApplicationDecision",
+    "CalibrationConsultContext",
+    "CalibrationConsultResult",
+    "RankerCalibrationTrace",
+    "build_ranker_calibration_trace",
+    "calculate_bounded_adjustment",
+    "combine_adjustments",
+    "consult_active_calibrations",
+    "deactivate_active_calibration",
+    "get_active_calibrations_for_context",
+    "is_record_active",
+    "record_calibration_trace",
+    "register_active_calibration",
+    "scope_matches",
+    # Ranker adapter (consult point)
+    "rank_options_with_active_calibrations",
+    "score_option_with_active_calibrations",
 ]
