@@ -11,6 +11,16 @@ launch readiness → AI quality. Intelligence never grants application
 authority.
 """
 
+from lltpm.intelligence.ai_quality import (
+    AIQualityMetrics,
+    AIQualityReport,
+    TechnicalDepthAssessment,
+    assess_claim_quality,
+    assess_technical_depth,
+    build_ai_quality_report,
+    can_emit_project_claim,
+    compute_ai_quality_metrics,
+)
 from lltpm.intelligence.launch_readiness import (
     EvidenceFreshnessBand,
     GoalEstimate,
@@ -42,6 +52,32 @@ from lltpm.intelligence.launch_readiness import (
     identify_launch_blockers,
     score_readiness_dimension,
     validate_launch_training_example,
+)
+from lltpm.intelligence.self_research import (
+    AIQualityRiskFlag,
+    AIQualityRiskType,
+    ClarificationNecessity,
+    ClarificationQuestion,
+    EvidenceSearchProvider,
+    GapResolutionStatus,
+    QuestionHistoryRecord,
+    ResearchAttempt,
+    ResearchQuery,
+    ResearchResolution,
+    ResearchStage,
+    ResearchSynthesisProvider,
+    SelfResearchEngine,
+    SelfResearchPolicy,
+    UnderstandingGap,
+    UnderstandingGapType,
+    build_clarification_question,
+    build_question_signature,
+    detect_understanding_gaps,
+    determine_clarification_necessity,
+    execute_self_research,
+    is_repeated_question,
+    plan_research_queries,
+    reconcile_research_evidence,
 )
 from lltpm.intelligence.project_understanding import (
     ArchitectureComponent,
@@ -87,6 +123,40 @@ from lltpm.intelligence.project_understanding import (
 )
 
 __all__ = [
+    # AI quality (Commit 13)
+    "AIQualityMetrics",
+    "AIQualityReport",
+    "TechnicalDepthAssessment",
+    "assess_claim_quality",
+    "assess_technical_depth",
+    "build_ai_quality_report",
+    "can_emit_project_claim",
+    "compute_ai_quality_metrics",
+    # Self-research (Commit 13)
+    "AIQualityRiskFlag",
+    "AIQualityRiskType",
+    "ClarificationNecessity",
+    "ClarificationQuestion",
+    "EvidenceSearchProvider",
+    "GapResolutionStatus",
+    "QuestionHistoryRecord",
+    "ResearchAttempt",
+    "ResearchQuery",
+    "ResearchResolution",
+    "ResearchStage",
+    "ResearchSynthesisProvider",
+    "SelfResearchEngine",
+    "SelfResearchPolicy",
+    "UnderstandingGap",
+    "UnderstandingGapType",
+    "build_clarification_question",
+    "build_question_signature",
+    "detect_understanding_gaps",
+    "determine_clarification_necessity",
+    "execute_self_research",
+    "is_repeated_question",
+    "plan_research_queries",
+    "reconcile_research_evidence",
     # Launch readiness (Commit 12)
     "EvidenceFreshnessBand",
     "GoalEstimate",
