@@ -14,8 +14,89 @@ from lltpm.integrations.voice_integration import VoiceIntegration
 from lltpm.integrations.gdrive_integration import GoogleDriveIntegration
 from lltpm.integrations.notion_integration import NotionIntegration
 
+# Commit 18 — tool-native integration runtime (vendor-neutral layer)
+from lltpm.integrations.envelopes import (
+    EvidenceEnvelope,
+    build_idempotency_key,
+    envelope_to_project_evidence,
+    is_secret_metadata_key,
+    make_envelope,
+    sanitize_metadata,
+)
+from lltpm.integrations.protocols import (
+    EvidenceReferenceStore,
+    ProjectStateStore,
+    ProjectionStore,
+    QueryAdapterEvidenceSearchProvider,
+    ToolEvidenceAdapter,
+    ToolQueryAdapter,
+)
+from lltpm.integrations.registry import (
+    IntegrationRegistry,
+    WrappedToolAdapter,
+    get_adapter,
+    list_available_sources,
+    register_adapter,
+)
+from lltpm.integrations.retention import (
+    ArtifactPointer,
+    RetentionClass,
+    build_artifact_pointer,
+    content_hash,
+    minimize_envelope,
+)
+from lltpm.integrations.runtime import (
+    InMemoryStateStore,
+    IntelligenceUpdate,
+    IntelligenceUpdateType,
+    RefreshScope,
+    determine_refresh_scope,
+    process_evidence_envelopes,
+)
+from lltpm.integrations.surfaces import (
+    SurfacePayloadType,
+    ToolSurfacePayload,
+    ToolSurfaceRenderer,
+    build_surface_payload_for_update,
+    should_surface_update,
+)
+
 __all__ = [
     "Integration", "IntegrationError",
+    # Commit 18 — runtime layer
+    "ArtifactPointer",
+    "EvidenceEnvelope",
+    "EvidenceReferenceStore",
+    "InMemoryStateStore",
+    "IntegrationRegistry",
+    "IntelligenceUpdate",
+    "IntelligenceUpdateType",
+    "ProjectStateStore",
+    "ProjectionStore",
+    "QueryAdapterEvidenceSearchProvider",
+    "RefreshScope",
+    "RetentionClass",
+    "SurfacePayloadType",
+    "ToolEvidenceAdapter",
+    "ToolQueryAdapter",
+    "ToolSurfacePayload",
+    "ToolSurfaceRenderer",
+    "WrappedToolAdapter",
+    "build_artifact_pointer",
+    "build_idempotency_key",
+    "build_surface_payload_for_update",
+    "content_hash",
+    "determine_refresh_scope",
+    "envelope_to_project_evidence",
+    "get_adapter",
+    "is_secret_metadata_key",
+    "list_available_sources",
+    "make_envelope",
+    "minimize_envelope",
+    "process_evidence_envelopes",
+    "register_adapter",
+    "sanitize_metadata",
+    "should_surface_update",
     "GitHubIntegration",
     "JiraIntegration",
     "SlackIntegration",
