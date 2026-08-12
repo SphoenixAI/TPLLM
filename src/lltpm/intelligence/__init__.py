@@ -21,6 +21,46 @@ from lltpm.intelligence.ai_quality import (
     can_emit_project_claim,
     compute_ai_quality_metrics,
 )
+from lltpm.intelligence.kpi import (
+    KPIClaim,
+    KPIClaimType,
+    KPIDefinition,
+    KPIHealthStatus,
+    KPIIndicatorRole,
+    KPIMeasurementProfile,
+    KPIMilestoneLink,
+    KPIObservation,
+    KPIRelationLabel,
+    KPIRelationship,
+    KPIResponseState,
+    KPITarget,
+    KPITargetOperator,
+    KPITrend,
+    KPIType,
+    active_target,
+    assess_kpi_health,
+    resolve_kpi_by_name,
+    set_kpi_target,
+)
+from lltpm.intelligence.kpi_extraction import (
+    DeterministicKPIClaimExtractor,
+    KPIClaimExtractor,
+)
+from lltpm.intelligence.kpi_readiness_bridge import (
+    kpi_to_readiness_contributions,
+)
+from lltpm.intelligence.kpi_reconciliation import (
+    KPIReconciliationResult,
+    KPIReconciliationStatus,
+    reconcile_kpi_claims,
+)
+from lltpm.intelligence.kpi_stewardship import (
+    KPIResolutionPacket,
+    KPIResponsePlan,
+    KPIStewardshipAssessment,
+    assess_kpi_stewardship,
+    build_kpi_resolution_packet,
+)
 from lltpm.intelligence.launch_readiness import (
     EvidenceFreshnessBand,
     GoalEstimate,
@@ -123,6 +163,37 @@ from lltpm.intelligence.project_understanding import (
 )
 
 __all__ = [
+    # KPI intelligence (Commit 16)
+    "DeterministicKPIClaimExtractor",
+    "KPIClaim",
+    "KPIClaimExtractor",
+    "KPIClaimType",
+    "KPIDefinition",
+    "KPIHealthStatus",
+    "KPIIndicatorRole",
+    "KPIMeasurementProfile",
+    "KPIMilestoneLink",
+    "KPIObservation",
+    "KPIReconciliationResult",
+    "KPIReconciliationStatus",
+    "KPIRelationLabel",
+    "KPIRelationship",
+    "KPIResolutionPacket",
+    "KPIResponsePlan",
+    "KPIResponseState",
+    "KPIStewardshipAssessment",
+    "KPITarget",
+    "KPITargetOperator",
+    "KPITrend",
+    "KPIType",
+    "active_target",
+    "assess_kpi_health",
+    "assess_kpi_stewardship",
+    "build_kpi_resolution_packet",
+    "kpi_to_readiness_contributions",
+    "reconcile_kpi_claims",
+    "resolve_kpi_by_name",
+    "set_kpi_target",
     # AI quality (Commit 13)
     "AIQualityMetrics",
     "AIQualityReport",
