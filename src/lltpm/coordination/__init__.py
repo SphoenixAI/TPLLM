@@ -9,6 +9,23 @@ It never imports from the application layer, and it models teams and
 structures — never individual people's output.
 """
 
+from lltpm.coordination.ask_router import (
+    ActionRoutingPlan,
+    ExpertiseRequirement,
+    RoutingCandidate,
+    answer_already_exists,
+    build_action_routing_plan,
+    identify_routing_candidates,
+)
+from lltpm.coordination.context_packets import (
+    ContextPacket,
+    build_context_packet,
+)
+from lltpm.coordination.decision_capsules import (
+    DecisionCapsule,
+    DecisionOption,
+    build_decision_capsule,
+)
 from lltpm.coordination.decisions import (
     decision_touches_workstream,
     get_latest_conclusive_decision,
@@ -36,6 +53,16 @@ from lltpm.coordination.models import (
     WorkstreamState,
     WorkstreamType,
 )
+from lltpm.coordination.meeting_intelligence import (
+    DiscussionCandidate,
+    DiscussionNeed,
+    MaterialChange,
+    MaterialChangeType,
+    MeetingAgendaPlan,
+    build_exception_driven_meeting_agenda,
+    detect_material_changes,
+    determine_discussion_need,
+)
 from lltpm.coordination.projections import (
     ProjectExecutiveBrief,
     build_project_executive_brief,
@@ -55,6 +82,27 @@ from lltpm.coordination.workstreams import (
 )
 
 __all__ = [
+    # Commit 15 — meetings, capsules, routing, packets
+    "ActionRoutingPlan",
+    "ContextPacket",
+    "DecisionCapsule",
+    "DecisionOption",
+    "DiscussionCandidate",
+    "DiscussionNeed",
+    "ExpertiseRequirement",
+    "MaterialChange",
+    "MaterialChangeType",
+    "MeetingAgendaPlan",
+    "RoutingCandidate",
+    "answer_already_exists",
+    "build_action_routing_plan",
+    "build_context_packet",
+    "build_decision_capsule",
+    "build_exception_driven_meeting_agenda",
+    "detect_material_changes",
+    "determine_discussion_need",
+    "identify_routing_candidates",
+    # Commit 14 — organizational memory
     "ActionRequest",
     "ActionRequestStatus",
     "ActionRequestType",
