@@ -29,6 +29,7 @@ FIRST_PARTY_PACKAGES = [
     "intelligence",
     "coordination",
     "scenarios",
+    "evaluation",
     "memory",
     "integrations",
     "application",
