@@ -13,7 +13,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-from lltpm.coordination.models import OrganizationalActorRef
+from lltpm.core.actors import ActorReference
 from lltpm.intelligence.kpi import (
     KPIDefinition,
     KPIHealthStatus,
@@ -27,9 +27,9 @@ class KPIResponsePlan(BaseModel):
     id: str
     kpi_id: str
     state: KPIResponseState
-    measurement_owner: OrganizationalActorRef | None
-    remediation_owner: OrganizationalActorRef | None
-    decision_owner: OrganizationalActorRef | None
+    measurement_owner: ActorReference | None
+    remediation_owner: ActorReference | None
+    decision_owner: ActorReference | None
     investigation_summary: str | None
     remediation_summary: str | None
     blocker_ids: list[str] = Field(default_factory=list)
@@ -47,7 +47,7 @@ class KPIStewardshipAssessment(BaseModel):
     blocked_by_dependency: bool
     blocker_ids: list[str] = Field(default_factory=list)
     next_required_action: str | None
-    next_decision_owner: OrganizationalActorRef | None
+    next_decision_owner: ActorReference | None
     evidence_freshness: float
     explanation: str
 

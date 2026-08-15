@@ -18,7 +18,7 @@ from enum import Enum
 
 from pydantic import BaseModel, Field, model_validator
 
-from lltpm.coordination.models import OrganizationalActorRef
+from lltpm.core.actors import ActorReference
 
 
 # ── Enums ──────────────────────────────────────────────────────────────
@@ -257,7 +257,7 @@ class KPIClaim(BaseModel):
     parsed_numeric_value: float | None = None
     parsed_unit: str | None = None
     target_candidate: float | None = None
-    actor: OrganizationalActorRef | None = None
+    actor: ActorReference | None = None
     observed_at: datetime
     evidence_ids: list[str]
     confidence: float

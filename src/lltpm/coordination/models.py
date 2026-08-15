@@ -26,6 +26,8 @@ from enum import Enum
 
 from pydantic import BaseModel, Field, model_validator
 
+from lltpm.core.actors import ActorReference
+
 
 # ── Enums ──────────────────────────────────────────────────────────────
 
@@ -123,15 +125,13 @@ class CapacityConstraintType(str, Enum):
 
 # ── Actor model ──────────────────────────────────────────────────────
 
-class OrganizationalActorRef(BaseModel):
-    """Organizational context around decisions and requests — who they
-    are, their role and team, and their relation to the subject. This is
-    not an HR profile and never carries a quality score."""
-    actor_id: str
-    display_name: str | None = None
-    role: str | None = None
-    team_id: str | None = None
-    team_name: str | None = None
+class OrganizationalActorRef(ActorReference):
+    """Organizational context around decisions and requests.
+
+    Extends the core ``ActorReference`` (who they are) with the
+    capacities coordination owns (in what capacity). This is not an HR
+    profile and never carries a quality score.
+    """
     relation_types: list[ActorRelationType] = Field(default_factory=list)
     evidence_ids: list[str] = Field(default_factory=list)
 
