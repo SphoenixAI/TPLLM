@@ -63,6 +63,37 @@ from lltpm.coordination.meeting_intelligence import (
     detect_material_changes,
     determine_discussion_need,
 )
+from lltpm.coordination.recommendations import (
+    AgentDecisionRecommendation,
+    AgentRecommendationStatus,
+    DecisionConstraintType,
+    DecisionCriterion,
+    DecisionCriterionType,
+    DecisionEvaluationAction,
+    DecisionOptionAssessment,
+    DecisionRationale,
+    DecisionRecommendationPolicy,
+    DecisionRecommendationStrength,
+    HumanDecisionEvaluation,
+)
+from lltpm.coordination.decision_evaluation import (
+    DecisionEvaluationProvider,
+    build_decision_criteria,
+    option_is_eligible,
+    score_decision_option,
+    select_agent_recommendation,
+)
+from lltpm.coordination.recommendation_validation import (
+    DECISION_ORIGIN_HUMAN_MODIFIED_AGENT,
+    DECISION_ORIGIN_HUMAN_ONLY,
+    DECISION_ORIGIN_HUMAN_VALIDATED_AGENT,
+    DecisionIntelligencePanel,
+    DeferredDecisionResearchNeed,
+    build_decision_intelligence_panel,
+    build_deferral_research_need,
+    finalize_human_validated_decision,
+    render_panel_sections,
+)
 from lltpm.coordination.projections import (
     ProjectExecutiveBrief,
     build_project_executive_brief,
@@ -82,6 +113,32 @@ from lltpm.coordination.workstreams import (
 )
 
 __all__ = [
+    # Commit 21 — agent decision recommendations
+    "AgentDecisionRecommendation",
+    "AgentRecommendationStatus",
+    "DECISION_ORIGIN_HUMAN_MODIFIED_AGENT",
+    "DECISION_ORIGIN_HUMAN_ONLY",
+    "DECISION_ORIGIN_HUMAN_VALIDATED_AGENT",
+    "DecisionConstraintType",
+    "DecisionCriterion",
+    "DecisionCriterionType",
+    "DecisionEvaluationAction",
+    "DecisionEvaluationProvider",
+    "DecisionIntelligencePanel",
+    "DecisionOptionAssessment",
+    "DecisionRationale",
+    "DecisionRecommendationPolicy",
+    "DecisionRecommendationStrength",
+    "DeferredDecisionResearchNeed",
+    "HumanDecisionEvaluation",
+    "build_decision_criteria",
+    "build_decision_intelligence_panel",
+    "build_deferral_research_need",
+    "finalize_human_validated_decision",
+    "option_is_eligible",
+    "render_panel_sections",
+    "score_decision_option",
+    "select_agent_recommendation",
     # Commit 15 — meetings, capsules, routing, packets
     "ActionRoutingPlan",
     "ContextPacket",
