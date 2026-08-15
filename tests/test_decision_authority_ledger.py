@@ -366,12 +366,14 @@ def executable_source(module) -> str:
 
     tree = ast.parse(inspect.getsource(module))
     for node in ast.walk(tree):
+        # Only these node types have a *list* body that can hold a
+        # docstring; IfExp and Lambda have expression bodies.
         if not isinstance(
             node,
             (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef),
         ):
             continue
-        body = getattr(node, "body", [])
+        body = node.body
         if (
             body
             and isinstance(body[0], ast.Expr)

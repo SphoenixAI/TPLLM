@@ -11,6 +11,41 @@ to have considered every possible future — only the material modeled
 scenario space.
 """
 
+from lltpm.scenarios.failure_propagation import (
+    miscommunication_to_scenario_candidate,
+    propagate_interaction_failure,
+    summarize_propagation,
+)
+from lltpm.scenarios.interaction_models import (
+    CoordinationPreventiveAction,
+    DecisionPropagationAssessment,
+    InteractionEffect,
+    MiscommunicationRisk,
+    MiscommunicationType,
+    OrganizationalInteractionEdge,
+    TeamBeliefState,
+)
+from lltpm.scenarios.interaction_risk import (
+    INTERVENTION_COSTS,
+    apply_preventive_action,
+    build_compound_delay_effect,
+    cheapest_action,
+    combine_interaction_effects,
+    recommend_preventive_actions,
+    recommends_meeting,
+)
+from lltpm.scenarios.miscommunication import (
+    LOST_CONTEXT_DEPTH_THRESHOLD,
+    assess_decision_propagation,
+    calculate_belief_divergence,
+    calculate_context_handoff_depth,
+    detect_authority_confusion_risk,
+    detect_belief_divergence_risk,
+    detect_kpi_definition_mismatch,
+    detect_lost_context_risk,
+    detect_stale_propagation_risk,
+    detect_terminology_ambiguity,
+)
 from lltpm.scenarios.factors import (
     build_correlated_evidence_factors,
     build_factor,
@@ -82,6 +117,35 @@ from lltpm.scenarios.simulation import (
 )
 
 __all__ = [
+    # Commit 25 — interaction and miscommunication modeling
+    "INTERVENTION_COSTS",
+    "LOST_CONTEXT_DEPTH_THRESHOLD",
+    "CoordinationPreventiveAction",
+    "DecisionPropagationAssessment",
+    "InteractionEffect",
+    "MiscommunicationRisk",
+    "MiscommunicationType",
+    "OrganizationalInteractionEdge",
+    "TeamBeliefState",
+    "apply_preventive_action",
+    "assess_decision_propagation",
+    "build_compound_delay_effect",
+    "calculate_belief_divergence",
+    "calculate_context_handoff_depth",
+    "cheapest_action",
+    "combine_interaction_effects",
+    "detect_authority_confusion_risk",
+    "detect_belief_divergence_risk",
+    "detect_kpi_definition_mismatch",
+    "detect_lost_context_risk",
+    "detect_stale_propagation_risk",
+    "detect_terminology_ambiguity",
+    "miscommunication_to_scenario_candidate",
+    "propagate_interaction_failure",
+    "recommend_preventive_actions",
+    "recommends_meeting",
+    "summarize_propagation",
+    # Commit 24 — scenario lattice
     "HIGH_IMPACT_PRESERVATION_THRESHOLD",
     "InformationValueEstimate",
     "LatticeIntegrityReport",
