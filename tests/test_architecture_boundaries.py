@@ -24,6 +24,7 @@ import pytest
 FIRST_PARTY_PACKAGES = [
     "core",
     "identity",
+    "temporal",
     "structural",
     "intelligence",
     "coordination",
@@ -132,6 +133,15 @@ class TestCoreIsFoundational:
     )
     def test_core_has_no_upward_imports(self, graph, forbidden):
         assert forbidden not in graph["core"]
+
+
+class TestTemporalIsFoundational:
+    def test_temporal_imports_nothing_first_party(self, graph):
+        assert graph["temporal"] == set(), (
+            f"temporal must not import any first-party package, found "
+            f"{sorted(graph['temporal'])} — every scenario forecast roots "
+            f"in it, so it stays at the bottom of the graph."
+        )
 
 
 class TestIdentityIsIsolated:
