@@ -28,6 +28,7 @@ FIRST_PARTY_PACKAGES = [
     "structural",
     "intelligence",
     "coordination",
+    "scenarios",
     "memory",
     "integrations",
     "application",
