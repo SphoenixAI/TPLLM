@@ -35,6 +35,7 @@ FIRST_PARTY_PACKAGES = [
     "integrations",
     "application",
     "runtime",
+    "persistence",
 ]
 
 _SRC = pathlib.Path(__file__).resolve().parent.parent / "src" / "lltpm"
@@ -225,7 +226,7 @@ class TestRuntimeIsOrchestrationOnly:
         "domain",
         ["core", "identity", "temporal", "structural", "intelligence",
          "coordination", "scenarios", "portfolio", "evaluation", "memory",
-         "integrations", "application"],
+         "integrations", "application", "persistence"],
     )
     def test_no_domain_imports_the_runtime(self, graph, domain):
         assert "runtime" not in graph[domain], (
@@ -235,7 +236,7 @@ class TestRuntimeIsOrchestrationOnly:
 
     def test_the_runtime_composes_the_domains_it_orchestrates(self, graph):
         assert {
-            "coordination", "integrations", "temporal",
+            "coordination", "integrations", "temporal", "persistence",
         } <= graph["runtime"], (
             "the runtime must actually compose the existing domains rather "
             "than reimplementing them"
@@ -246,6 +247,40 @@ class TestRuntimeIsOrchestrationOnly:
         assert not any(
             "runtime" in cycle for cycle in find_package_cycles(graph)
         )
+
+
+class TestPersistenceIsAPort:
+    """Commit 31 put durable storage at the bottom, behind protocols.
+
+    ``persistence`` imports no first-party package at all, so a storage
+    backend can never drag a domain along with it, and the runtime is the
+    only layer that wires one in.
+    """
+
+    def test_persistence_imports_nothing_first_party(self, graph):
+        assert graph["persistence"] == set(), (
+            f"persistence must stand alone, found "
+            f"{sorted(graph['persistence'])}."
+        )
+
+    @pytest.mark.parametrize(
+        "domain",
+        ["core", "identity", "temporal", "structural", "intelligence",
+         "coordination", "scenarios", "portfolio", "evaluation", "memory",
+         "integrations", "application"],
+    )
+    def test_no_domain_depends_on_persistence(self, graph, domain):
+        assert "persistence" not in graph[domain], (
+            f"{domain} must stay storage-agnostic; durable state is wired "
+            f"in at the runtime seam."
+        )
+
+    def test_only_the_runtime_composes_persistence(self, graph):
+        composers = {
+            package for package, deps in graph.items()
+            if "persistence" in deps
+        }
+        assert composers == {"runtime"}
 
 
 class TestApplicationIsNotSharedInfrastructure:
