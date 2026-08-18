@@ -29,6 +29,7 @@ FIRST_PARTY_PACKAGES = [
     "intelligence",
     "coordination",
     "scenarios",
+    "portfolio",
     "evaluation",
     "memory",
     "integrations",
@@ -143,6 +144,15 @@ class TestTemporalIsFoundational:
             f"temporal must not import any first-party package, found "
             f"{sorted(graph['temporal'])} — every scenario forecast roots "
             f"in it, so it stays at the bottom of the graph."
+        )
+
+
+class TestPortfolioIsSelfContained:
+    def test_portfolio_imports_nothing_first_party(self, graph):
+        assert graph["portfolio"] == set(), (
+            f"portfolio must stay self-contained, found "
+            f"{sorted(graph['portfolio'])} — it reads cross-project inputs "
+            f"duck-typed rather than depending on their packages."
         )
 
 
