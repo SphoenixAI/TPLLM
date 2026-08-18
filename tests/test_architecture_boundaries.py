@@ -34,6 +34,7 @@ FIRST_PARTY_PACKAGES = [
     "memory",
     "integrations",
     "application",
+    "runtime",
 ]
 
 _SRC = pathlib.Path(__file__).resolve().parent.parent / "src" / "lltpm"
@@ -209,6 +210,42 @@ class TestNoForbiddenCycles:
 
     def test_intelligence_uses_core_for_shared_primitives(self, graph):
         assert "core" in graph["intelligence"]
+
+
+class TestRuntimeIsOrchestrationOnly:
+    """Commit 30 added the live orchestrator at the top of the graph.
+
+    ``runtime`` composes the domains beneath it; nothing composes
+    ``runtime``. An orchestration layer that domains imported back would
+    stop being an orchestration layer — the scheduling concern would have
+    leaked into everything it schedules.
+    """
+
+    @pytest.mark.parametrize(
+        "domain",
+        ["core", "identity", "temporal", "structural", "intelligence",
+         "coordination", "scenarios", "portfolio", "evaluation", "memory",
+         "integrations", "application"],
+    )
+    def test_no_domain_imports_the_runtime(self, graph, domain):
+        assert "runtime" not in graph[domain], (
+            f"{domain} must not import runtime — the runtime orchestrates "
+            f"the domains, and the dependency only points that way."
+        )
+
+    def test_the_runtime_composes_the_domains_it_orchestrates(self, graph):
+        assert {
+            "coordination", "integrations", "temporal",
+        } <= graph["runtime"], (
+            "the runtime must actually compose the existing domains rather "
+            "than reimplementing them"
+        )
+
+    def test_adding_the_runtime_introduced_no_cycle(self, graph):
+        assert_no_forbidden_package_cycles(graph)
+        assert not any(
+            "runtime" in cycle for cycle in find_package_cycles(graph)
+        )
 
 
 class TestApplicationIsNotSharedInfrastructure:
