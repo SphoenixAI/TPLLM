@@ -147,13 +147,39 @@ class TestTemporalIsFoundational:
         )
 
 
-class TestPortfolioIsSelfContained:
-    def test_portfolio_imports_nothing_first_party(self, graph):
-        assert graph["portfolio"] == set(), (
-            f"portfolio must stay self-contained, found "
-            f"{sorted(graph['portfolio'])} — it reads cross-project inputs "
-            f"duck-typed rather than depending on their packages."
+class TestPortfolioComposesScenarioPrimitives:
+    """Commit 29 widened this boundary deliberately.
+
+    Portfolio futures are built from the same horizon and tail-mass
+    primitives as project futures, so ``portfolio -> scenarios`` is a
+    legal downward edge. Everything else stays duck-typed: portfolio
+    reads project state and identity by shape, not by import.
+    """
+
+    ALLOWED = {"scenarios"}
+
+    def test_portfolio_depends_only_on_scenarios(self, graph):
+        assert graph["portfolio"] <= self.ALLOWED, (
+            f"portfolio may compose {sorted(self.ALLOWED)} and nothing "
+            f"else, found {sorted(graph['portfolio'])} — cross-project "
+            f"inputs are read duck-typed rather than by importing their "
+            f"packages."
         )
+
+    def test_scenarios_does_not_depend_back_on_portfolio(self, graph):
+        assert "portfolio" not in graph["scenarios"], (
+            "the portfolio edge is one-directional; the reverse would "
+            "make single-project forecasting depend on the whole "
+            "organization's topology."
+        )
+
+    @pytest.mark.parametrize(
+        "forbidden",
+        ["coordination", "intelligence", "memory", "application",
+         "integrations", "identity"],
+    )
+    def test_portfolio_has_no_upward_or_sibling_imports(self, graph, forbidden):
+        assert forbidden not in graph["portfolio"]
 
 
 class TestIdentityIsIsolated:
