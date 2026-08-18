@@ -63,6 +63,11 @@ def build_root_state(
         "blockers": temporal_state.active_blocker_ids,
         "decisions": temporal_state.active_decision_ids,
         "unknowns": temporal_state.unresolved_unknown_ids,
+        # The reconstructed state's own fingerprint is part of the root's
+        # identity: two counterfactual roots representing different chosen
+        # options are different roots even where their surface content
+        # coincides.
+        "fingerprint": temporal_state.state_fingerprint,
     }
     return ScenarioState(
         id=f"state-root-{temporal_state.state_fingerprint}",
@@ -325,8 +330,11 @@ def generate_scenario_lattice(
         frontier = sorted(set(next_frontier))
 
     return ScenarioLattice(
+        # The root fingerprint is part of the identity: two lattices built
+        # for the same project at the same moment from different
+        # counterfactual roots are different lattices and must not collide.
         id=f"lattice-{temporal_state.project_id}-"
-           f"{temporal_state.as_of.isoformat()}",
+           f"{temporal_state.as_of.isoformat()}-{root.state_signature}",
         project_id=temporal_state.project_id,
         root_state_id=root.id,
         states=sorted(states.values(), key=lambda s: (s.horizon_step, s.id)),

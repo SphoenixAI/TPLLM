@@ -63,6 +63,49 @@ from lltpm.coordination.meeting_intelligence import (
     detect_material_changes,
     determine_discussion_need,
 )
+from lltpm.coordination.decision_timing import (
+    DecisionResearchNeed,
+    DecisionTimingAction,
+    DecisionTimingAssessment,
+    build_decision_research_needs,
+    evaluate_decision_timing,
+)
+from lltpm.coordination.decision_utility import (
+    ScenarioOutcomeUtility,
+    calculate_expected_option_utility,
+    calculate_expected_utility_from_lattice,
+    default_outcome_utilities,
+    normalize_utility_to_unit,
+    outcome_distribution,
+)
+from lltpm.coordination.optionality import (
+    OptionalityAssessment,
+    RecoverabilityAssessment,
+    assess_optionality,
+    assess_recoverability,
+)
+from lltpm.coordination.regret import (
+    DecisionRegretAssessment,
+    calculate_decision_regret,
+    lowest_regret_option,
+)
+from lltpm.coordination.scenario_decisions import (
+    CounterfactualOverreachError,
+    DecisionOptionCounterfactual,
+    DecisionPosture,
+    OptionScenarioAnalysis,
+    ScenarioAdjustedOptionScore,
+    ScenarioAwareDecisionRecommendation,
+    ScenarioDecisionPolicy,
+    SevereOutcomeDefinition,
+    analyse_option_lattice,
+    build_option_counterfactual,
+    build_scenario_aware_recommendation,
+    default_severe_outcomes,
+    resolve_posture_weights,
+    scenario_recommendation_is_autonomy_eligible,
+    score_option_for_posture,
+)
 from lltpm.coordination.authority_policy import (
     NEVER_AUTONOMOUS_MARKERS,
     DecisionAuthorityAssessment,
@@ -153,6 +196,40 @@ from lltpm.coordination.workstreams import (
 )
 
 __all__ = [
+    # Commit 27 — scenario-aware decision optimization
+    "CounterfactualOverreachError",
+    "DecisionOptionCounterfactual",
+    "DecisionPosture",
+    "DecisionRegretAssessment",
+    "DecisionResearchNeed",
+    "DecisionTimingAction",
+    "DecisionTimingAssessment",
+    "OptionScenarioAnalysis",
+    "OptionalityAssessment",
+    "RecoverabilityAssessment",
+    "ScenarioAdjustedOptionScore",
+    "ScenarioAwareDecisionRecommendation",
+    "ScenarioDecisionPolicy",
+    "ScenarioOutcomeUtility",
+    "SevereOutcomeDefinition",
+    "analyse_option_lattice",
+    "assess_optionality",
+    "assess_recoverability",
+    "build_decision_research_needs",
+    "build_option_counterfactual",
+    "build_scenario_aware_recommendation",
+    "calculate_decision_regret",
+    "calculate_expected_option_utility",
+    "calculate_expected_utility_from_lattice",
+    "default_outcome_utilities",
+    "default_severe_outcomes",
+    "evaluate_decision_timing",
+    "lowest_regret_option",
+    "normalize_utility_to_unit",
+    "outcome_distribution",
+    "resolve_posture_weights",
+    "scenario_recommendation_is_autonomy_eligible",
+    "score_option_for_posture",
     # Commit 22 — decision authority and bounded autonomy
     "AGENT_AUTHORITY_ACTOR_ID",
     "DECISION_ORIGIN_AUTONOMOUS",
