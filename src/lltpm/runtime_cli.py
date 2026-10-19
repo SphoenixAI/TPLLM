@@ -26,6 +26,9 @@ from rich.panel import Panel
 from rich.table import Table
 
 console = Console()
+# Notes and warnings go to stderr so `lltpm runtime export > file.json`
+# produces clean JSON while the operator still sees the caveats.
+errors = Console(stderr=True)
 
 DEFAULT_DB = "lltpm.db"
 DEFAULT_ORGANIZATION = "default"
@@ -243,6 +246,81 @@ def journal(db: str, start: int, end: int, event_type: str) -> None:
                 ", ".join(record.project_ids) or "-",
             )
         console.print(table)
+    finally:
+        persistence.close()
+
+
+@runtime_cli.command()
+@click.option("--db", default=DEFAULT_DB, help="SQLite database path")
+@click.option("--organization", default=DEFAULT_ORGANIZATION)
+@click.option(
+    "--output", "-o", type=click.Path(), default="",
+    help="Write JSON here instead of stdout",
+)
+@click.option(
+    "--what",
+    type=click.Choice(
+        ["all", "decisions", "recommendations", "policy", "evidence"],
+    ),
+    default="all", show_default=True,
+)
+@click.option(
+    "--no-payloads", is_flag=True,
+    help="Omit record payloads; keep the index and provenance",
+)
+def export(
+    db: str, organization: str, output: str, what: str, no_payloads: bool,
+) -> None:
+    """Export durable history as JSON. Read-only.
+
+    The export carries its own integrity verdict, so a copy that was
+    never verified cannot be mistaken for one that was.
+    """
+    from lltpm.persistence import export_journal
+
+    persistence = _open_persistence(db)
+    try:
+        bundle = export_journal(
+            journal=persistence.journal,
+            organization_id=organization,
+            exported_at=_now(),
+            manifest=_manifest(),
+            include_payloads=not no_payloads,
+        )
+
+        selection = {
+            "all": bundle.model_dump(mode="json"),
+            "decisions": {"decisions": bundle.decisions},
+            "recommendations": {"recommendations": bundle.recommendations},
+            "policy": {"policy_history": bundle.policy_history},
+            "evidence": {
+                "evidence_provenance": [
+                    p.model_dump(mode="json")
+                    for p in bundle.evidence_provenance
+                ],
+            },
+        }[what]
+        if what != "all":
+            selection["integrity"] = bundle.integrity.model_dump(mode="json")
+
+        text = json.dumps(selection, indent=2, sort_keys=True)
+        if output:
+            Path(output).write_text(text)
+            console.print(
+                f"[green]exported[/green] {bundle.record_count} record(s) "
+                f"to {output}"
+            )
+        else:
+            click.echo(text)
+
+        for note in bundle.notes:
+            errors.print(f"[yellow]note[/yellow] {note}")
+        if not bundle.trustworthy:
+            errors.print(
+                "[red]warning[/red] this export describes history that "
+                "failed verification"
+            )
+            raise SystemExit(1)
     finally:
         persistence.close()
 

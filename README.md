@@ -257,6 +257,9 @@ src/lltpm/
   truth; every derived projection can be deleted and rebuilt from it.
 - **Not a surveillance tool** — the system models organizational mechanics,
   never individual productivity, and tests enforce that at the source level.
+- **Your history is yours** — durable state is JSON in one SQLite file, and
+  `lltpm runtime export` gives you the journal, decisions, recommendations
+  and evidence provenance without parsing anything opaque.
 
 ### Running the organizational stack
 
@@ -286,7 +289,21 @@ lltpm runtime snapshot --db lltpm.db --organization acme
 
 # Which artifact types run a dedicated engine
 lltpm runtime coverage
+
+# Export durable history as JSON (read-only)
+lltpm runtime export --db lltpm.db --organization acme > history.json
+lltpm runtime export --db lltpm.db --what decisions
 ```
+
+A worked example lives in `examples/evidence.json` — three pieces of
+evidence across two projects, enough for the engines to produce a
+revision. The whole walkthrough runs in CI on every push, so if the
+offline promise above stops being true, the build says so.
+
+Every export carries its own integrity verdict. An export of damaged
+history says so in the JSON and exits non-zero, so a copy that was never
+verified cannot be mistaken for one that was. Caveats go to stderr, so
+redirecting stdout gives clean JSON.
 
 `ingest` is journal-first: the evidence is durable before anything
 derives from it, so a recompute that fails leaves the evidence intact

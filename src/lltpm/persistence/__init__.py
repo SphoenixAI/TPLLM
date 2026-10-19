@@ -26,6 +26,18 @@ Nothing here records anybody's activity. Durability must not quietly
 become surveillance history.
 """
 
+from lltpm.persistence.export import (
+    DECISION_EVENTS,
+    POLICY_EVENTS,
+    RECOMMENDATION_EVENTS,
+    EvidenceProvenance,
+    ExportIntegrity,
+    JournalExport,
+    export_decision_history,
+    export_evidence_provenance,
+    export_journal,
+    source_availability,
+)
 from lltpm.persistence.integrity import (
     JournalCorruptionReport,
     JournalIntegrityError,
@@ -143,6 +155,16 @@ from lltpm.persistence.versioning import (
 
 __all__ = [
     "AUTHORITATIVE_EVENT_TYPES",
+    "DECISION_EVENTS",
+    "POLICY_EVENTS",
+    "RECOMMENDATION_EVENTS",
+    "EvidenceProvenance",
+    "ExportIntegrity",
+    "JournalExport",
+    "export_decision_history",
+    "export_evidence_provenance",
+    "export_journal",
+    "source_availability",
     "CURRENT_PAYLOAD_SCHEMA_VERSION",
     "DATABASE_SCHEMA_VERSION",
     "EVENT_TYPE_CATEGORY",

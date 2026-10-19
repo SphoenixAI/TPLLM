@@ -615,3 +615,104 @@ class TestStructuralScenarioGenerator:
                 temporal_state=state, horizon=None, context=None,
             )
         ]
+
+
+class TestExportCommand:
+    @pytest.fixture
+    def seeded(self, runner, workspace):
+        _, db, evidence = workspace
+        _ingest(runner, db, evidence)
+        return db
+
+    def test_stdout_is_clean_json(self, runner, seeded):
+        """`lltpm runtime export > file.json` must produce valid JSON."""
+        result = runner.invoke(
+            runtime_cli,
+            ["export", "--db", seeded, "--organization", "acme"],
+        )
+        assert result.exit_code == 0
+        parsed = json.loads(result.stdout)
+        assert parsed["record_count"] > 0
+        assert parsed["integrity"]["hash_chain_valid"] is True
+
+    def test_a_selection_carries_the_integrity_verdict_too(
+        self, runner, seeded,
+    ):
+        result = runner.invoke(
+            runtime_cli,
+            [
+                "export", "--db", seeded, "--organization", "acme",
+                "--what", "evidence",
+            ],
+        )
+        parsed = json.loads(result.stdout)
+        assert "evidence_provenance" in parsed
+        assert "integrity" in parsed, (
+            "a partial export must still say whether its history verified"
+        )
+
+    def test_payloads_can_be_omitted(self, runner, seeded):
+        result = runner.invoke(
+            runtime_cli,
+            [
+                "export", "--db", seeded, "--organization", "acme",
+                "--no-payloads",
+            ],
+        )
+        parsed = json.loads(result.stdout)
+        assert parsed["record_count"] > 0
+        assert all(row["payload"] == {} for row in parsed["records"])
+
+    def test_it_can_write_to_a_file(self, runner, seeded, tmp_path):
+        target = tmp_path / "export.json"
+        result = runner.invoke(
+            runtime_cli,
+            [
+                "export", "--db", seeded, "--organization", "acme",
+                "--output", str(target),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "exported" in result.output
+        assert json.loads(target.read_text())["record_count"] > 0
+
+    def test_a_corrupt_journal_exports_and_exits_nonzero(
+        self, runner, seeded,
+    ):
+        connection = sqlite3.connect(seeded)
+        connection.execute(
+            "UPDATE journal_records SET payload = ? "
+            "WHERE global_sequence = 1",
+            ('{"note":"hand edited"}',),
+        )
+        connection.commit()
+        connection.close()
+
+        result = runner.invoke(
+            runtime_cli,
+            ["export", "--db", seeded, "--organization", "acme"],
+        )
+        assert result.exit_code == 1, (
+            "an export of damaged history must not look like a clean one"
+        )
+        parsed = json.loads(result.stdout)
+        assert parsed["integrity"]["hash_chain_valid"] is False
+        assert parsed["integrity"]["corrupted_at_sequence"] == 1
+
+    def test_exporting_does_not_change_the_journal(self, runner, seeded):
+        before = _head_sequence(seeded)
+        runner.invoke(
+            runtime_cli,
+            ["export", "--db", seeded, "--organization", "acme"],
+        )
+        assert _head_sequence(seeded) == before
+
+    def test_an_unknown_selection_is_refused(self, runner, seeded):
+        result = runner.invoke(
+            runtime_cli,
+            [
+                "export", "--db", seeded, "--organization", "acme",
+                "--what", "everything-please",
+            ],
+        )
+        assert result.exit_code == 2

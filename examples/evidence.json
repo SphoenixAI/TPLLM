@@ -1,0 +1,14 @@
+[
+  {"source_system": "slack", "source_type": "chat", "source_id": "C1-100",
+   "event_type": "architecture_evidence", "observed_at": "2026-10-19T09:00:00",
+   "project_ids": ["billing"],
+   "content": "Billing activation depends on Platform approval of the contract standard before the integration can launch."},
+  {"source_system": "jira", "source_type": "ticket", "source_id": "PLAT-42",
+   "event_type": "blocker_opened", "observed_at": "2026-10-19T09:30:00",
+   "project_ids": ["billing"],
+   "content": "Platform Architecture is in incident response; review capacity is reduced."},
+  {"source_system": "meeting", "source_type": "meeting", "source_id": "M-7",
+   "event_type": "meeting_transcript", "observed_at": "2026-10-19T08:58:00",
+   "project_ids": ["identity"],
+   "content": "Identity owns the migration. The integration target is 60 percent activation."}
+]
