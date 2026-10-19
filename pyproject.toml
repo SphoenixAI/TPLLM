@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "lltpm"
-version = "0.1.0"
+version = "0.31.0"
 description = "AI-powered Technical Program Manager agent that replaces meetings with insight"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -52,7 +52,6 @@ all = [
 ]
 dev = [
     "pytest>=8.0",
-    "pytest-asyncio>=0.23",
 ]
 
 [project.scripts]
@@ -63,4 +62,3 @@ packages = ["src/lltpm"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-asyncio_mode = "auto"

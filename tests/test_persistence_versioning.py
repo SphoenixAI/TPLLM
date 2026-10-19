@@ -38,6 +38,34 @@ class TestVersionConstants:
         assert DATABASE_SCHEMA_VERSION >= 1
         assert CURRENT_PAYLOAD_SCHEMA_VERSION >= 1
 
+    def test_the_library_version_tracks_the_installed_package(self):
+        """pyproject.toml is the single source of truth.
+
+        A manifest records provenance; a hand-copied version string that
+        drifts from the package would quietly make that record false.
+        """
+        from importlib.metadata import PackageNotFoundError, version
+
+        from lltpm.persistence import LLTPM_VERSION
+
+        try:
+            installed = version("lltpm")
+        except PackageNotFoundError:
+            pytest.skip("lltpm is not installed; nothing to compare against")
+        assert LLTPM_VERSION == installed
+
+    def test_a_declared_fallback_exists_for_source_trees(self):
+        from lltpm.persistence.versioning import DECLARED_LLTPM_VERSION
+
+        assert DECLARED_LLTPM_VERSION
+
+    def test_the_manifest_reports_the_same_version(self):
+        from lltpm.persistence import LLTPM_VERSION
+
+        assert build_manifest(
+            policy_fingerprint="fp",
+        ).lltpm_version == LLTPM_VERSION
+
     def test_a_manifest_carries_every_derivation_input(self):
         built = manifest()
         assert built.lltpm_version

@@ -180,16 +180,32 @@ Instead:
 
 ```bash
 # Install with dev dependencies
-pip install -e ".[dev]"
+python -m pip install -e ".[dev]"
 
-# Run tests
-pytest tests/ -v
+# Run tests (2850+)
+python -m pytest tests/ -q
 
 # Run with integrations
-pip install -e ".[integrations]"
+python -m pip install -e ".[integrations]"
 ```
 
+Use `python -m pip` and `python -m pytest` rather than the bare
+executables — on some systems `pip` is bound to a different interpreter
+than `python`, which installs the dependencies where the tests cannot
+see them.
+
+
 ## Project Structure
+
+LLTPM has two layers. The **TPM surface** is the agent, its tools, and
+the artifacts it produces. Underneath sits a **layered
+organizational-reasoning stack** — temporal truth, scenarios, portfolio
+topology, governed autonomy, a live orchestrator, and a durable journal.
+
+The layering is not aspirational: `tests/test_architecture_boundaries.py`
+builds a first-party import graph by parsing source and asserts it stays
+acyclic, that the foundations import nothing, and that nothing imports
+the orchestrator.
 
 ```
 src/lltpm/
@@ -197,41 +213,59 @@ src/lltpm/
 ├── main.py               # CLI entry point
 ├── config.py             # Configuration management
 ├── system_prompt.py      # Agent personality and rules
+├── dashboard.py          # FastAPI dashboard with JWT auth
+│
+│   # ── Foundations: import no first-party package ──
+├── core/                 # Shared domain primitives
+├── temporal/             # Bitemporal truth (reality time vs knowledge time)
+├── identity/             # Cross-system entity resolution
+├── structural/           # Causal/structural graph engine
+├── persistence/          # Durable journal, snapshots, replay, SQLite
+│
+│   # ── Domain intelligence ──
+├── intelligence/         # Project understanding, KPIs, launch readiness
+├── coordination/         # Decisions, authority policy, bounded autonomy
+├── scenarios/            # Probabilistic scenario lattice
+├── portfolio/            # Cross-project topology and simulation
+├── memory/               # Procedural coordination memory
+├── evaluation/           # Replay, forecast metrics, calibration
+├── application/          # Governed calibration application, auto-revert
+│
+│   # ── Orchestration: nothing imports this ──
+├── runtime/              # Live orchestrator + durability seam
+│
+│   # ── Original TPM surface ──
 ├── models/               # Pydantic data models
-│   ├── program.py        # Program, stakeholders, metrics
-│   ├── risk.py           # RAID items
-│   ├── decision.py       # Decision log entries
-│   ├── milestone.py      # Milestones, gates, plans
-│   └── update.py         # Status updates, action items
-├── artifacts/            # Artifact persistence and generation
-│   ├── store.py          # JSON file-backed store
-│   ├── raid_log.py       # RAID log CRUD
-│   ├── decision_log.py   # Decision log management
-│   ├── milestone_plan.py # Milestone planning
-│   ├── status_update.py  # Status report generation
-│   ├── launch_checklist.py # Launch readiness gates
-│   ├── meeting_notes.py  # Action item tracking
-│   └── program_brief.py  # Program one-pager
+├── artifacts/            # Artifact store and generators
 ├── workflows/            # TPM workflow engines
-│   ├── meeting_gate.py   # Anti-meeting enforcer
-│   ├── dependency_tracker.py # Drift detection
-│   ├── risk_engine.py    # Automatic risk scanning
-│   ├── update_aggregator.py  # Program pulse
-│   ├── daily_cadence.py  # Daily TPM routine
-│   ├── weekly_planner.py # Weekly rhythm
-│   └── bug_triage.py     # Bug economy management
-├── integrations/         # External service connectors
-│   ├── github_integration.py
-│   ├── jira_integration.py
-│   ├── slack_integration.py
-│   ├── linear_integration.py
-│   └── calendar_integration.py
+├── integrations/         # GitHub, Jira, Slack, Linear, Calendar, voice
 └── tools/                # LLM tool definitions
-    ├── registry.py       # Tool registry
-    ├── project_tools.py  # 20+ program management tools
-    ├── tracking_tools.py # Workflow and tracking tools
-    ├── analytics_tools.py # Pulse and simulation tools
-    ├── communication_tools.py # Slack tools
-    ├── github_tools.py   # GitHub tools
-    └── calendar_tools.py # Scheduling tools
 ```
+
+### What the stack guarantees
+
+- **Probability honesty** — likelihood and confidence are separate numbers,
+  and pruned branches keep their mass, so displayed futures never falsely
+  sum to 100%.
+- **Arrival order is not temporal authority** — a webhook that lands late
+  cannot move an approved decision back to pending.
+- **Coherent revisions** — intelligence is published as a set computed
+  against one evidence cutoff; a partial recompute never becomes current.
+- **No stale autonomous action** — a recommendation is revalidated and
+  finalized inside one guarded call, kill switch first.
+- **Durability** — an append-only hash-chained journal is the source of
+  truth; every derived projection can be deleted and rebuilt from it.
+- **Not a surveillance tool** — the system models organizational mechanics,
+  never individual productivity, and tests enforce that at the source level.
+
+### Durable storage
+
+The reference deployment is one local SQLite file. No Kafka, no Redis,
+no Postgres, no object store, no daemon — every backend sits behind a
+protocol, and `persistence` imports no other first-party package.
+
+```bash
+# Back up everything: copy one file
+cp lltpm.db lltpm.db.backup
+```
+

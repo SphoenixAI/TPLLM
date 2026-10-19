@@ -32,7 +32,29 @@ from lltpm.persistence.protocols import (
     UnsupportedJournalEventError,
 )
 
-LLTPM_VERSION = "0.31.0"
+def _installed_version(fallback: str) -> str:
+    """The version actually installed, not one hand-copied into source.
+
+    A manifest's whole job is honest provenance, so two version strings
+    drifting apart would undermine the thing it exists to record.
+    ``pyproject.toml`` is the single source of truth; the fallback covers
+    running from a source tree with nothing installed.
+
+    This is metadata, not derivation identity — ``lltpm_version`` is
+    deliberately excluded from the compatibility comparison below, so a
+    version that reflects the real install cannot make two otherwise
+    equivalent reconstructions look incompatible.
+    """
+    try:
+        from importlib.metadata import PackageNotFoundError, version
+
+        return version("lltpm")
+    except Exception:  # noqa: BLE001 — a missing install is not an error
+        return fallback
+
+
+DECLARED_LLTPM_VERSION = "0.31.0"
+LLTPM_VERSION = _installed_version(DECLARED_LLTPM_VERSION)
 JOURNAL_SCHEMA_VERSION = 1
 SNAPSHOT_SCHEMA_VERSION = 1
 DATABASE_SCHEMA_VERSION = 1
