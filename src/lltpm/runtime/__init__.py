@@ -156,6 +156,21 @@ from lltpm.runtime.revisions import (
     complete_revision,
     mismatched_revision_artifacts,
 )
+from lltpm.runtime.services import (
+    DERIVED,
+    ENGINE_BACKED,
+    CoverageReport,
+    LiveIntelligenceServices,
+    coverage_report,
+)
+from lltpm.runtime.sources import (
+    EVENT_CLASS_TO_TEMPORAL_TYPE,
+    DomainInputs,
+    JournalBackedDataSource,
+    OrganizationalDataSource,
+    evidence_to_temporal_event,
+    journal_record_to_temporal_event,
+)
 from lltpm.runtime.surfaces import (
     artifact_surface_label,
     describe_no_action,
@@ -175,6 +190,17 @@ from lltpm.runtime.validity import (
 
 __all__ = [
     "CRITICAL_CONTEXT_INPUTS",
+    "DERIVED",
+    "ENGINE_BACKED",
+    "EVENT_CLASS_TO_TEMPORAL_TYPE",
+    "CoverageReport",
+    "DomainInputs",
+    "JournalBackedDataSource",
+    "LiveIntelligenceServices",
+    "OrganizationalDataSource",
+    "coverage_report",
+    "evidence_to_temporal_event",
+    "journal_record_to_temporal_event",
     "DurableOrchestrationResult",
     "ReconstructionOutcome",
     "RuntimeJournalReconstructor",
