@@ -294,3 +294,51 @@ def verify_snapshot_integrity(snapshot: RuntimeSnapshot) -> bool:
     if not snapshot.snapshot_hash:
         return False
     return calculate_snapshot_hash(snapshot) == snapshot.snapshot_hash
+
+
+# ── Comparing two deliveries of one fact ─────────────────────────────
+
+# Paths that record *when we were told*, not *what we were told*. Two
+# deliveries of the same webhook legitimately differ here, so comparing
+# them would make redelivery — the exact case idempotency exists for —
+# look like a conflict.
+DELIVERY_METADATA_PATHS = (
+    ("evidence", "received_at"),
+)
+
+
+def _without(payload: dict[str, Any], path: tuple[str, ...]) -> Any:
+    """Return the payload with one nested path removed."""
+    if not path:
+        return payload
+    if not isinstance(payload, dict) or path[0] not in payload:
+        return payload
+    copied = dict(payload)
+    if len(path) == 1:
+        copied.pop(path[0], None)
+        return copied
+    copied[path[0]] = _without(copied[path[0]], path[1:])
+    return copied
+
+
+def comparable_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    """The part of a payload that says what happened.
+
+    Delivery metadata is stripped so the same fact arriving twice
+    compares equal. The stored record keeps the first delivery's
+    timestamps — we did learn it then — and only the comparison ignores
+    them.
+    """
+    stripped: Any = payload
+    for path in DELIVERY_METADATA_PATHS:
+        stripped = _without(stripped, path)
+    return stripped
+
+
+def payloads_describe_same_fact(
+    first: dict[str, Any], second: dict[str, Any],
+) -> bool:
+    """Whether two payloads are the same fact, redelivery aside."""
+    return canonical_json_bytes(
+        comparable_payload(first)
+    ) == canonical_json_bytes(comparable_payload(second))

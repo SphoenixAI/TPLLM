@@ -53,6 +53,8 @@ from lltpm.persistence.journal import build_journal_record
 from lltpm.persistence.protocols import RevisionPromotionError
 from lltpm.runtime.models import (
     LiveOrchestrationResult,
+    PortfolioIntelligenceRuntimeState,
+    ProjectIntelligenceRuntimeState,
     RuntimeAttentionAction,
     RuntimePolicy,
 )
@@ -832,7 +834,11 @@ class RuntimeJournalReconstructor:
             )
 
         outcome = ReconstructionOutcome()
-        projection = RuntimeProjection(organization_id=organization_id)
+        projection = _projection_from_baseline(
+            organization_id=organization_id, baseline=baseline,
+        )
+        baseline_revision = (baseline or {}).get("active_revision_id")
+        outcome.revision_id = baseline_revision
 
         envelopes: list[EvidenceEnvelope] = []
         for record in records:
@@ -846,7 +852,9 @@ class RuntimeJournalReconstructor:
         if envelopes:
             # One deterministic pass over all reconstructed evidence.
             # The orchestrator orders it by reality time itself, so the
-            # late-arriving events stay late.
+            # late-arriving events stay late. Seeded from the snapshot,
+            # so projects the delta does not touch keep the state the
+            # checkpoint already established rather than vanishing.
             result, projection = process_live_organizational_events(
                 envelopes=envelopes,
                 runtime_state_store=projection,
@@ -854,7 +862,7 @@ class RuntimeJournalReconstructor:
                 runtime_policy=self.runtime_policy,
                 now=context.clock.now(),
             )
-            outcome.revision_id = result.revision_id
+            outcome.revision_id = result.revision_id or baseline_revision
             outcome.suppressed_side_effects += sum(
                 1 for action in result.attention_actions
                 if action in _SURFACING_ACTIONS
@@ -968,3 +976,42 @@ def build_replay_context(
         manifest=manifest,
         suppress_side_effects=True,
     )
+
+
+def _projection_from_baseline(
+    *,
+    organization_id: str,
+    baseline: dict[str, Any] | None,
+) -> RuntimeProjection:
+    """Seed a projection from a snapshot checkpoint.
+
+    Without this a snapshot-accelerated replay would start from nothing
+    and silently lose every project the delta happens not to mention —
+    reporting them as "published but not reconstructed" when the
+    snapshot held their state all along. A snapshot is an accelerator,
+    so starting from it must give the same answer as replaying from
+    record one.
+    """
+    projection = RuntimeProjection(organization_id=organization_id)
+    if not baseline:
+        return projection
+
+    for project_id, state in (baseline.get("project_states") or {}).items():
+        try:
+            projection = projection.with_project_state(
+                ProjectIntelligenceRuntimeState.model_validate(state)
+            )
+        except Exception:  # noqa: BLE001 — a bad entry is not fatal
+            continue
+
+    portfolio_state = baseline.get("portfolio_state")
+    if portfolio_state:
+        try:
+            projection = projection.with_portfolio_state(
+                PortfolioIntelligenceRuntimeState.model_validate(
+                    portfolio_state
+                )
+            )
+        except Exception:  # noqa: BLE001
+            pass
+    return projection

@@ -260,3 +260,91 @@ class TestRejectionReporting:
         assert store.rejected_snapshots(
             organization_id=ORGANIZATION, manifest=manifest(),
         ) == []
+
+
+class TestSnapshotBaselineSeedsReconstruction:
+    """A Commit 32 fix to Commit 31 behaviour.
+
+    ``RuntimeJournalReconstructor.apply_records`` ignored the snapshot
+    baseline entirely and always started from an empty projection. A
+    snapshot covering the whole journal therefore produced an empty
+    reconstruction and reported every project as "published but not
+    reconstructed" — when the snapshot held their state all along.
+
+    A snapshot is an accelerator, so starting from one must give the same
+    answer as replaying from record one.
+    """
+
+    def _baseline(self):
+        return {
+            "active_revision_id": "revision-7",
+            "project_states": {
+                PROJECT_A: {
+                    "project_id": PROJECT_A,
+                    "state_fingerprint": "fp-a",
+                    "kpi_state_ids": ["kpi-1"],
+                },
+            },
+            "portfolio_state": {
+                "state_fingerprint": "fp-portfolio",
+                "bottleneck_ids": ["b1"],
+            },
+            "state_fingerprints": {f"project:{PROJECT_A}": "fp-a"},
+        }
+
+    def test_an_empty_delta_returns_the_baseline_state(self):
+        from tests._persistence_fixtures import replay_context
+        from tests._persistence_fixtures import reconstructor
+
+        outcome = reconstructor().apply_records(
+            records=[],
+            organization_id=ORGANIZATION,
+            context=replay_context(),
+            baseline=self._baseline(),
+        )
+        assert outcome.revision_id == "revision-7"
+        assert PROJECT_A in outcome.project_states
+        assert outcome.state_fingerprints[
+            f"project:{PROJECT_A}"
+        ] == "fp-a", (
+            "the snapshot held this state; a replay starting from it must "
+            "not report the project as missing"
+        )
+
+    def test_the_portfolio_state_survives_too(self):
+        from tests._persistence_fixtures import reconstructor, replay_context
+
+        outcome = reconstructor().apply_records(
+            records=[],
+            organization_id=ORGANIZATION,
+            context=replay_context(),
+            baseline=self._baseline(),
+        )
+        assert outcome.portfolio_state is not None
+        assert outcome.state_fingerprints["portfolio"] == "fp-portfolio"
+
+    def test_no_baseline_still_starts_from_nothing(self):
+        from tests._persistence_fixtures import reconstructor, replay_context
+
+        outcome = reconstructor().apply_records(
+            records=[],
+            organization_id=ORGANIZATION,
+            context=replay_context(),
+            baseline=None,
+        )
+        assert outcome.project_states == {}
+        assert outcome.revision_id is None
+
+    def test_a_malformed_baseline_entry_is_skipped_not_fatal(self):
+        from tests._persistence_fixtures import reconstructor, replay_context
+
+        baseline = self._baseline()
+        baseline["project_states"]["broken"] = {"not": "a project state"}
+        outcome = reconstructor().apply_records(
+            records=[],
+            organization_id=ORGANIZATION,
+            context=replay_context(),
+            baseline=baseline,
+        )
+        assert PROJECT_A in outcome.project_states
+        assert "broken" not in outcome.project_states

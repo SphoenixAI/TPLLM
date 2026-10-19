@@ -383,3 +383,112 @@ class TestChainVerification:
         )
         assert report.valid is False
         assert report.broken_link_at_sequence == 2
+
+
+class TestRedeliveryIsNotAConflict:
+    """A Commit 32 fix to Commit 31 behaviour.
+
+    The same webhook arriving twice is the normal case idempotency exists
+    for, but the duplicate-content check compared whole payloads —
+    including ``received_at``, which differs by definition between two
+    deliveries. Redelivery therefore raised instead of deduping.
+    """
+
+    def _evidence_payload(self, received_at: str) -> dict:
+        return {
+            "evidence": {
+                "evidence_id": "env-1",
+                "source_system": "slack",
+                "source_type": "chat",
+                "source_id": "C1-1",
+                "event_type": "chat_message",
+                "observed_at": "2026-11-16T09:00:00",
+                "received_at": received_at,
+                "project_ids": ["project-a"],
+                "normalized_content": "Platform approval is pending.",
+            },
+        }
+
+    def test_a_later_delivery_of_the_same_fact_dedupes(self, journal):
+        first = journal.append(record=record(
+            source_key="slack:C1:1",
+            event_type=JournalEventType.EVIDENCE_ACCEPTED,
+            payload=self._evidence_payload("2026-11-16T09:00:05"),
+        ))
+        again = journal.append(record=record(
+            source_key="slack:C1:1",
+            event_type=JournalEventType.EVIDENCE_ACCEPTED,
+            payload=self._evidence_payload("2026-11-16T11:42:13"),
+        ))
+        assert again.id == first.id
+        assert len(journal) == 1
+
+    def test_the_first_delivery_time_is_what_is_kept(self, journal):
+        journal.append(record=record(
+            source_key="slack:C1:1",
+            event_type=JournalEventType.EVIDENCE_ACCEPTED,
+            payload=self._evidence_payload("2026-11-16T09:00:05"),
+        ))
+        journal.append(record=record(
+            source_key="slack:C1:1",
+            event_type=JournalEventType.EVIDENCE_ACCEPTED,
+            payload=self._evidence_payload("2026-11-16T11:42:13"),
+        ))
+        stored = journal.read_from(global_sequence=1)[0]
+        assert stored.payload["evidence"]["received_at"] == (
+            "2026-11-16T09:00:05"
+        ), "we did learn it then; the later delivery told us nothing new"
+
+    def test_a_genuinely_different_fact_is_still_refused(self, journal):
+        journal.append(record=record(
+            source_key="slack:C1:1",
+            event_type=JournalEventType.EVIDENCE_ACCEPTED,
+            payload=self._evidence_payload("2026-11-16T09:00:05"),
+        ))
+        conflicting = self._evidence_payload("2026-11-16T09:00:05")
+        conflicting["evidence"]["normalized_content"] = "Something else."
+        with pytest.raises(JournalIdempotencyError, match="one identity"):
+            journal.append(record=record(
+                source_key="slack:C1:1",
+                event_type=JournalEventType.EVIDENCE_ACCEPTED,
+                payload=conflicting,
+            ))
+
+    def test_a_reused_key_across_event_types_is_still_refused(self, journal):
+        journal.append(record=record(
+            source_key="k",
+            event_type=JournalEventType.EVIDENCE_ACCEPTED,
+            payload=self._evidence_payload("2026-11-16T09:00:05"),
+        ))
+        # Same derived key, different kind of fact.
+        from lltpm.persistence import build_journal_idempotency_key
+
+        key = build_journal_idempotency_key(
+            event_type=JournalEventType.EVIDENCE_ACCEPTED, source_key="k",
+        )
+        with pytest.raises(JournalIdempotencyError):
+            journal.append(record=record(
+                source_key="k",
+                event_type=JournalEventType.EVIDENCE_ACCEPTED,
+                payload={"evidence": {"evidence_id": "different"}},
+                idempotency_key=key,
+            ))
+
+    def test_only_delivery_metadata_is_ignored(self):
+        from lltpm.persistence import comparable_payload
+
+        stripped = comparable_payload(
+            self._evidence_payload("2026-11-16T09:00:05")
+        )
+        assert "received_at" not in stripped["evidence"]
+        assert stripped["evidence"]["observed_at"] == (
+            "2026-11-16T09:00:00"
+        ), "reality time is content, not delivery metadata"
+        assert stripped["evidence"]["normalized_content"]
+
+    def test_stripping_does_not_mutate_the_original(self):
+        from lltpm.persistence import comparable_payload
+
+        payload = self._evidence_payload("2026-11-16T09:00:05")
+        comparable_payload(payload)
+        assert payload["evidence"]["received_at"] == "2026-11-16T09:00:05"

@@ -48,6 +48,7 @@ from tests._persistence_fixtures import (
 )
 from tests._wiring_fixtures import (
     PLATFORM,
+    launch_definition,
     PROJECT_A,
     PROJECT_B,
     PROJECT_C,
@@ -334,42 +335,86 @@ class TestTheServiceRefusesToInvent:
                 revision_id="r",
             )
 
-    def test_no_capacity_window_refuses_a_bottleneck(self):
-        services = self._services(
-            inputs=domain_inputs(capacity_windows=[]),
+    def test_an_undeclared_kpi_in_scope_is_an_inconsistency(self):
+        """The runtime believes a specific KPI moved but nobody declared
+        it. That is worth stopping for."""
+        services = self._services(kpi_definitions=[])
+        request = ArtifactRecomputeRequest(
+            artifact_type=A.KPI_STATE,
+            scope=RecomputeScope(
+                project_ids={PROJECT_A}, kpi_ids={"kpi-nobody-declared"},
+            ),
         )
-        with pytest.raises(ArtifactRecomputeError, match="real constraint"):
-            services.recompute_artifact(
-                request=_request(A.PORTFOLIO_BOTTLENECKS, PROJECT_A),
-                revision_id="r",
-            )
+        with pytest.raises(
+            ArtifactRecomputeError, match="target nobody stated",
+        ):
+            services.recompute_artifact(request=request, revision_id="r")
 
-    def test_no_launch_definition_refuses_readiness(self):
+
+class TestMissingOptionalStructureIsAnEmptyResult:
+    """Absence is not failure.
+
+    Blocking a whole revision because one project tracks no KPIs, or has
+    no launch declared yet, would make the system unusable. These report
+    an honest nothing rather than refusing — while still never inventing
+    the figure they lack.
+    """
+
+    def _services(self, **overrides):
+        return live_services(persistence=Persistence(), **overrides)
+
+    def test_no_kpis_declared_reports_an_empty_result(self):
+        services = self._services(kpi_definitions=[])
+        artifact = services.recompute_artifact(
+            request=_request(A.KPI_STATE, PROJECT_A), revision_id="r",
+        )
+        assert artifact.changed is False
+        assert "No KPIs are declared" in artifact.after_summary
+
+    def test_no_launch_declared_reports_nothing_to_be_ready_for(self):
         services = self._services(
             inputs=domain_inputs(launch_definitions={}),
         )
-        with pytest.raises(
-            ArtifactRecomputeError, match="a number about nothing",
-        ):
-            services.recompute_artifact(
-                request=_request(A.LAUNCH_READINESS, PROJECT_C),
-                revision_id="r",
-            )
+        artifact = services.recompute_artifact(
+            request=_request(A.LAUNCH_READINESS, PROJECT_C), revision_id="r",
+        )
+        assert artifact.changed is False
+        assert "no readiness to report" in artifact.after_summary
 
-    def test_no_kpi_definition_refuses_a_health_assessment(self):
-        services = self._services(kpi_definitions=[])
-        with pytest.raises(
-            ArtifactRecomputeError, match="target nobody declared",
-        ):
-            services.recompute_artifact(
-                request=_request(A.KPI_STATE, PROJECT_A),
-                revision_id="r",
-            )
-
-    def test_no_bottleneck_means_no_allocation_decision(self):
-        """An honest nothing-to-do, not a manufactured recommendation."""
+    def test_a_partially_declared_launch_set_scores_what_it_can(self):
         services = self._services(
-            inputs=domain_inputs(capacity_demands=[]),
+            inputs=domain_inputs(
+                launch_definitions={PROJECT_C: launch_definition(PROJECT_C)},
+            ),
+        )
+        artifact = services.recompute_artifact(
+            request=_request(A.LAUNCH_READINESS, PROJECT_A, PROJECT_C),
+            revision_id="r",
+        )
+        assert artifact.changed is True
+        assert "scored for 1 project" in artifact.after_summary
+        assert PROJECT_A in artifact.after_summary, (
+            "the project that could not be scored must be named, not "
+            "quietly omitted"
+        )
+
+    def test_no_capacity_declared_reports_no_bottleneck(self):
+        services = self._services(
+            inputs=domain_inputs(capacity_windows=[]),
+        )
+        artifact = services.recompute_artifact(
+            request=_request(A.PORTFOLIO_BOTTLENECKS, PROJECT_A),
+            revision_id="r",
+        )
+        assert artifact.changed is False
+        assert "No capacity windows are declared" in artifact.after_summary
+        assert "can be shown to be over-subscribed" in (
+            artifact.after_summary
+        ), "absence of a constraint is not evidence of one"
+
+    def test_no_capacity_declared_asks_for_no_allocation_decision(self):
+        services = self._services(
+            inputs=domain_inputs(capacity_windows=[]),
         )
         artifact = services.recompute_artifact(
             request=_request(A.PORTFOLIO_RECOMMENDATION, PROJECT_A),
@@ -377,14 +422,47 @@ class TestTheServiceRefusesToInvent:
         )
         assert artifact.changed is False
         assert artifact.decision_required is False
-        assert "nothing has to be displaced" in artifact.after_summary
 
-    def test_a_refusal_blocks_the_revision(self):
-        """Commit 30's executor turns a refusal into no publication."""
+    def test_no_capacity_declared_simulates_nothing(self):
+        services = self._services(
+            inputs=domain_inputs(capacity_windows=[]),
+        )
+        artifact = services.recompute_artifact(
+            request=_request(A.PORTFOLIO_SCENARIO, PROJECT_A),
+            revision_id="r",
+        )
+        assert artifact.changed is False
+        assert "no contended resource" in artifact.after_summary
+
+    def test_a_revision_still_publishes_with_no_declared_structure(self):
+        """The quickstart case: evidence in, intelligence out, no setup."""
         persistence = Persistence()
         services = live_services(
-            persistence=persistence,
-            inputs=domain_inputs(launch_definitions={}),
+            persistence=persistence, inputs=DomainInputs(),
+        )
+        durable, _ = process_durable_organizational_events(
+            envelopes=evidence_envelopes(),
+            organization_id=ORGANIZATION,
+            journal=persistence.journal,
+            state_store=persistence.state,
+            artifact_store=persistence.artifacts,
+            runtime_projection=RuntimeProjection(
+                organization_id=ORGANIZATION,
+            ),
+            intelligence_services=services,
+            runtime_policy=runtime_policy(),
+            manifest=manifest(),
+            now=at(60),
+        )
+        assert durable.result.complete is True
+        assert durable.revision_promoted is True
+        assert durable.result.failures == []
+
+    def test_a_missing_capability_still_blocks_the_revision(self):
+        """Optional structure is absence; a missing engine is a failure."""
+        persistence = Persistence()
+        services = live_services(
+            persistence=persistence, scenario_generator=None,
         )
         durable, _ = process_durable_organizational_events(
             envelopes=evidence_envelopes(),
@@ -403,7 +481,7 @@ class TestTheServiceRefusesToInvent:
         assert durable.result.complete is False
         assert durable.revision_promoted is False
         assert any(
-            f.error_class == "MissingLaunchDefinition"
+            f.error_class == "MissingScenarioGenerator"
             for f in durable.result.failures
         )
         assert persistence.journal.latest_position() is not None, (

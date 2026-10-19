@@ -83,6 +83,14 @@ src/lltpm/
   runtime/         — live orchestrator: dedupe, temporal ordering, coalesced
                      recompute, coherent revisions, materiality, causal
                      compression, attention routing, durability seam
+                     services.py  — the production IntelligenceServices;
+                                    dispatches each artifact type to its engine
+                     sources.py   — domain inputs read from the journal,
+                                    including evidence -> TemporalEvent
+                     baselines.py — deterministic offline providers for the
+                                    two Protocols that otherwise need a model
+  runtime_cli.py   — `lltpm runtime` command group (ingest/status/verify/
+                     journal/replay/snapshot/coverage)
 
   # ── Original TPM surface ──
   models/          — Pydantic data models (program, security, etc.)
@@ -142,4 +150,21 @@ bash setup.sh          # Full setup: install, test, smoke test
 python -m lltpm init   # Configuration wizard
 python -m lltpm chat   # Interactive agent
 python -m lltpm dashboard  # Web dashboard
+
+# The organizational-reasoning stack (offline, no API key needed)
+python -m lltpm runtime ingest evidence.json --db lltpm.db
+python -m lltpm runtime status --db lltpm.db
+python -m lltpm runtime replay --db lltpm.db --publish
 ```
+
+### Wiring state
+
+`runtime/services.py` is the only production implementation of the
+orchestrator's `recompute_artifact` port. Nine artifact types run a
+dedicated engine; nine are thinner derived projections. `lltpm runtime
+coverage` reports which is which — it is deliberately honest rather than
+letting a projection pass for an engine.
+
+Packages still not on the live path: `identity`, `memory`, `evaluation`,
+`application`, `structural`, `ontology`, `advisory`. They are built and
+tested but no user-facing command invokes them yet.

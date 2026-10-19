@@ -29,6 +29,14 @@ def cli(ctx: click.Context) -> None:
     ctx.obj["config"] = config
 
 
+# The organizational-reasoning stack's entry point. Registered here so
+# `lltpm runtime ...` reaches the live orchestrator and the durable
+# journal; before this it was library code with no caller.
+from lltpm.runtime_cli import runtime_cli  # noqa: E402
+
+cli.add_command(runtime_cli)
+
+
 # ── Init & Onboarding ────────────────────────────────────
 
 

@@ -258,6 +258,40 @@ src/lltpm/
 - **Not a surveillance tool** — the system models organizational mechanics,
   never individual productivity, and tests enforce that at the source level.
 
+### Running the organizational stack
+
+The reasoning stack has its own command group. It works offline — no API
+key, no cloud account, one local SQLite file — because the two engines
+that would otherwise need a model fall back to deterministic baselines
+that are labelled as baselines in the reproducibility manifest.
+
+```bash
+# Journal evidence, then recompute intelligence from it
+lltpm runtime ingest evidence.json --db lltpm.db --organization acme
+
+# Current revision, journal head, storage health
+lltpm runtime status --db lltpm.db --organization acme
+
+# Verify the journal hash chain (read-only; never repairs)
+lltpm runtime verify --db lltpm.db
+
+# Inspect durable history
+lltpm runtime journal --db lltpm.db --event-type evidence_accepted
+
+# Rebuild projections from the journal (dry run by default)
+lltpm runtime replay --db lltpm.db --organization acme --publish
+
+# Checkpoint so future replays start from here
+lltpm runtime snapshot --db lltpm.db --organization acme
+
+# Which artifact types run a dedicated engine
+lltpm runtime coverage
+```
+
+`ingest` is journal-first: the evidence is durable before anything
+derives from it, so a recompute that fails leaves the evidence intact
+and a later `replay` rebuilds the projection.
+
 ### Durable storage
 
 The reference deployment is one local SQLite file. No Kafka, no Redis,

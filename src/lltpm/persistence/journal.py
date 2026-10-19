@@ -26,6 +26,7 @@ from typing import Any
 
 from lltpm.persistence.integrity import (
     calculate_journal_record_hash,
+    payloads_describe_same_fact,
     verify_journal_hash_chain,
 )
 from lltpm.persistence.models import (
@@ -184,9 +185,8 @@ class InMemoryEventJournalStore:
     def _assert_same_content(
         existing: JournalRecord, incoming: JournalRecord,
     ) -> None:
-        if (
-            existing.event_type != incoming.event_type
-            or existing.payload != incoming.payload
+        if existing.event_type != incoming.event_type or not (
+            payloads_describe_same_fact(existing.payload, incoming.payload)
         ):
             raise JournalIdempotencyError(
                 f"Idempotency key '{existing.idempotency_key}' was reused "

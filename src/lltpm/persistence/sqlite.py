@@ -29,6 +29,7 @@ from typing import Any
 from lltpm.persistence.integrity import (
     calculate_journal_record_hash,
     canonical_json_bytes,
+    payloads_describe_same_fact,
 )
 from lltpm.persistence.models import (
     IntelligenceArtifactRecord,
@@ -301,9 +302,10 @@ class SQLiteEventJournalStore:
                 ).fetchone()
                 if existing is not None:
                     committed = _row_to_record(existing)
-                    if (
-                        committed.event_type != record.event_type
-                        or committed.payload != record.payload
+                    if committed.event_type != record.event_type or not (
+                        payloads_describe_same_fact(
+                            committed.payload, record.payload,
+                        )
                     ):
                         cursor.execute("ROLLBACK")
                         raise JournalIdempotencyError(

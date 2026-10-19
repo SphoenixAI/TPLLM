@@ -339,10 +339,26 @@ class LiveIntelligenceServices:
             if not wanted or d.id in wanted
         ]
         if not definitions:
-            raise ArtifactRecomputeError(
-                "No KPI definitions are configured for this scope; a KPI "
-                "cannot be assessed against a target nobody declared.",
-                error_class="MissingKPIDefinition",
+            undeclared = wanted - {d.id for d in self.kpi_definitions}
+            if undeclared:
+                # The runtime believes a specific KPI moved but nobody
+                # declared it. That is an inconsistency worth stopping
+                # for, not an absence.
+                raise ArtifactRecomputeError(
+                    f"KPI(s) {sorted(undeclared)} changed but are not "
+                    f"declared; a KPI cannot be assessed against a target "
+                    f"nobody stated.",
+                    error_class="UndeclaredKPI",
+                )
+            # No KPIs here at all. An empty result, not a failure —
+            # blocking a revision because a project tracks no KPIs would
+            # make the system unusable.
+            return self._artifact(
+                request, revision_id,
+                artifact_id="kpi-none",
+                fingerprint=build_state_fingerprint({"health": []}),
+                summary="No KPIs are declared for this scope.",
+                changed=False,
             )
         trends = [
             assess_kpi_health(
@@ -378,15 +394,15 @@ class LiveIntelligenceServices:
         """Commit 12: score readiness against a declared launch."""
         projects = self._scoped_projects(request)
         fingerprints: list[str] = []
+        unscored: list[str] = []
         for project_id in projects:
             launch = self.data_source.launch_definition(project_id)
             if launch is None:
-                raise ArtifactRecomputeError(
-                    f"Readiness for {project_id} needs a declared launch; "
-                    f"a readiness score with no stated launch behind it "
-                    f"would be a number about nothing.",
-                    error_class="MissingLaunchDefinition",
-                )
+                # Nothing to be ready for. Reported rather than scored:
+                # a readiness number with no stated launch behind it
+                # would be a number about nothing.
+                unscored.append(project_id)
+                continue
             understanding = self._ensure_understanding(project_id)
             snapshot = build_launch_readiness_snapshot(
                 understanding=understanding,
@@ -408,11 +424,21 @@ class LiveIntelligenceServices:
                     ),
                 })
             )
+        scored = [p for p in projects if p not in unscored]
+        summary = f"Launch readiness scored for {len(scored)} project(s)."
+        if unscored:
+            summary += (
+                f" No launch is declared for {', '.join(unscored)}, so "
+                f"there is no readiness to report for them."
+            )
         return self._artifact(
             request, revision_id,
-            artifact_id=f"readiness-{'-'.join(projects) or 'none'}",
-            fingerprint=build_state_fingerprint({"snapshots": fingerprints}),
-            summary=f"Launch readiness scored for {len(projects)} project(s).",
+            artifact_id=f"readiness-{'-'.join(scored) or 'none'}",
+            fingerprint=build_state_fingerprint({
+                "snapshots": fingerprints, "unscored": sorted(unscored),
+            }),
+            summary=summary,
+            changed=bool(scored),
         )
 
     def _scenario_lattice(self, request, revision_id):
@@ -517,11 +543,18 @@ class LiveIntelligenceServices:
         windows = self.data_source.capacity_windows()
         demands = self.data_source.capacity_demands()
         if not windows:
-            raise ArtifactRecomputeError(
-                "No capacity windows are declared; a bottleneck can only "
-                "be reported from a real constraint, never inferred from "
-                "its absence.",
-                error_class="MissingCapacityWindow",
+            # No declared constraint means nothing to be over-subscribed.
+            # A bottleneck is only ever reported from a real capacity
+            # figure, never inferred from the absence of one.
+            return self._artifact(
+                request, revision_id,
+                artifact_id="bottlenecks-undeclared",
+                fingerprint=build_state_fingerprint({"bottlenecks": []}),
+                summary=(
+                    "No capacity windows are declared, so no shared "
+                    "resource can be shown to be over-subscribed."
+                ),
+                changed=False,
             )
         bottlenecks = detect_bottlenecks(
             demands=demands, capacity_windows=windows,
@@ -563,10 +596,15 @@ class LiveIntelligenceServices:
         """Commit 29: cross-project simulation under one allocation."""
         windows = self.data_source.capacity_windows()
         if not windows:
-            raise ArtifactRecomputeError(
-                "Cross-project simulation needs a declared capacity "
-                "window to allocate.",
-                error_class="MissingCapacityWindow",
+            return self._artifact(
+                request, revision_id,
+                artifact_id="portfolio-scenario-undeclared",
+                fingerprint=build_state_fingerprint({"outcomes": []}),
+                summary=(
+                    "No capacity windows are declared, so there is no "
+                    "contended resource to simulate an allocation of."
+                ),
+                changed=False,
             )
         if self.scenario_horizon is None:
             raise ArtifactRecomputeError(
@@ -613,10 +651,15 @@ class LiveIntelligenceServices:
         windows = self.data_source.capacity_windows()
         demands = self.data_source.capacity_demands()
         if not windows:
-            raise ArtifactRecomputeError(
-                "An allocation recommendation needs a declared capacity "
-                "window.",
-                error_class="MissingCapacityWindow",
+            return self._artifact(
+                request, revision_id,
+                artifact_id="portfolio-recommendation-undeclared",
+                fingerprint=build_state_fingerprint({"bottlenecks": []}),
+                summary=(
+                    "No capacity windows are declared, so there is nothing "
+                    "to allocate and no decision to ask for."
+                ),
+                changed=False,
             )
         bottlenecks = detect_bottlenecks(
             demands=demands, capacity_windows=windows,
