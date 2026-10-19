@@ -69,6 +69,12 @@ from lltpm.runtime.dependency_graph import (
     upstream_artifacts,
     validate_dependency_graph,
 )
+from lltpm.runtime.identity_resolution import (
+    IdentityResolutionOutcome,
+    canonical_ids_for_envelope,
+    registry_from_journal,
+    resolve_envelope_identities,
+)
 from lltpm.runtime.ingest import (
     DEFAULT_CONTEST_WINDOW,
     assert_no_future_events,
@@ -195,6 +201,10 @@ __all__ = [
     "EVENT_CLASS_TO_TEMPORAL_TYPE",
     "CoverageReport",
     "DomainInputs",
+    "IdentityResolutionOutcome",
+    "canonical_ids_for_envelope",
+    "registry_from_journal",
+    "resolve_envelope_identities",
     "JournalBackedDataSource",
     "LiveIntelligenceServices",
     "OrganizationalDataSource",

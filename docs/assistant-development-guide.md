@@ -89,6 +89,9 @@ src/lltpm/
                                     including evidence -> TemporalEvent
                      baselines.py — deterministic offline providers for the
                                     two Protocols that otherwise need a model
+                     identity_resolution.py — canonical identity on the ingest
+                                    path; decisions are journalled, ambiguity
+                                    is preserved rather than guessed
   runtime_cli.py   — `lltpm runtime` command group (ingest/status/verify/
                      journal/replay/snapshot/coverage)
 
@@ -122,6 +125,10 @@ These are enforced by tests and should not be relaxed casually:
   guarded call; the kill switch is checked first and nothing widens authority.
 - **Journal first, promote last** — durable changes are appended before the
   runtime treats them as real; derived state is always rebuildable.
+- **Identity is resolved conservatively** — an explicit curated alias
+  resolves; a mere name resemblance does not, and an ambiguous match is
+  left unlinked for a person to settle. Merging two colleagues who share
+  a surname is worse than reporting an unlinked identity.
 - **Replay touches nothing external** — rebuilding history never re-sends a
   message or re-finalizes a decision.
 - **No worker scoring or activity tracking** — the system models
@@ -165,6 +172,8 @@ dedicated engine; nine are thinner derived projections. `lltpm runtime
 coverage` reports which is which — it is deliberately honest rather than
 letting a projection pass for an engine.
 
-Packages still not on the live path: `identity`, `memory`, `evaluation`,
+Packages still not on the live path: `memory`, `evaluation`,
 `application`, `structural`, `ontology`, `advisory`. They are built and
-tested but no user-facing command invokes them yet.
+tested but no user-facing command invokes them yet — `evaluation` and
+`application` are offline calibration concerns rather than live-path
+ones, so that is partly by design.

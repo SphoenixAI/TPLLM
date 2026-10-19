@@ -588,7 +588,19 @@ class DurableOrchestrationResult(BaseModel):
     evidence_records_appended: int = 0
     revision_promoted: bool = False
     artifacts_persisted: int = 0
+    identities_linked: dict[str, str] = Field(default_factory=dict)
+    identities_ambiguous: dict[str, list[str]] = Field(default_factory=dict)
+    identities_unresolved: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+
+    @property
+    def identity_needs_attention(self) -> bool:
+        """An ambiguous identity is a question for a person.
+
+        It also means the portfolio layer may still be seeing two names
+        for one thing, which is worth surfacing rather than burying.
+        """
+        return bool(self.identities_ambiguous)
 
 
 def process_durable_organizational_events(
@@ -604,12 +616,18 @@ def process_durable_organizational_events(
     manifest: ReproducibilityManifest,
     now: datetime,
     retention_class: JournalRetentionClass = JournalRetentionClass.NORMALIZED,
+    identity_registry: Any = None,
 ) -> tuple[DurableOrchestrationResult, RuntimeProjection]:
-    """Append first, orchestrate second, promote last.
+    """Append first, resolve identity, orchestrate, promote last.
 
     If the recompute raises after the journal append, the evidence is
     already durable and recovery will rebuild the projection. Durable
     organizational truth is never rolled back because a cache failed.
+
+    Identity resolution sits between the append and the orchestration
+    because it is the step that makes two names for one authority become
+    one node — and because its decisions are themselves durable facts,
+    not derived state.
     """
     appended: list[str] = []
     for envelope in envelopes:
@@ -622,6 +640,21 @@ def process_durable_organizational_events(
         )
         appended.append(record.id)
 
+    identity_outcome = None
+    if identity_registry is not None:
+        from lltpm.runtime.identity_resolution import (
+            resolve_envelope_identities,
+        )
+
+        identity_registry, identity_outcome = resolve_envelope_identities(
+            envelopes=envelopes,
+            registry=identity_registry,
+            organization_id=organization_id,
+            journal=journal,
+            now=now,
+        )
+        appended.extend(identity_outcome.journal_record_ids)
+
     result, projection = process_live_organizational_events(
         envelopes=envelopes,
         runtime_state_store=runtime_projection,
@@ -633,8 +666,23 @@ def process_durable_organizational_events(
     durable = DurableOrchestrationResult(
         result=result,
         journal_records=list(appended),
-        evidence_records_appended=len(appended),
+        evidence_records_appended=len(envelopes),
+        identities_linked=(
+            dict(identity_outcome.linked) if identity_outcome else {}
+        ),
+        identities_ambiguous=(
+            dict(identity_outcome.ambiguous) if identity_outcome else {}
+        ),
+        identities_unresolved=(
+            list(identity_outcome.unresolved) if identity_outcome else []
+        ),
     )
+    if identity_outcome is not None and identity_outcome.ambiguous:
+        durable.warnings.append(
+            f"{len(identity_outcome.ambiguous)} identity(ies) were "
+            f"ambiguous and left unlinked; two names for one thing may "
+            f"still be counted twice until a person settles them."
+        )
 
     if not result.complete or result.revision_id is None:
         durable.warnings.append(

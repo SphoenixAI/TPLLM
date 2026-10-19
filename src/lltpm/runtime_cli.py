@@ -296,7 +296,10 @@ def ingest(
     ``replay`` rebuilds the projection.
     """
     from lltpm.integrations.envelopes import make_envelope
-    from lltpm.runtime import process_durable_organizational_events
+    from lltpm.runtime import (
+        process_durable_organizational_events,
+        registry_from_journal,
+    )
     from lltpm.runtime.baselines import baseline_providers
     from lltpm.runtime.services import LiveIntelligenceServices
     from lltpm.runtime.sources import JournalBackedDataSource
@@ -335,6 +338,12 @@ def ingest(
             scenario_horizon=_horizon(now, horizon_days),
             **baseline_providers(),
         )
+        # Canonical identity is rebuilt from durable history rather than
+        # re-resolved from scratch: the decisions already made stand, and
+        # a replay does not need the source systems to still answer.
+        registry = registry_from_journal(
+            journal=persistence.journal, organization_id=organization,
+        )
         durable, projection = process_durable_organizational_events(
             envelopes=envelopes,
             organization_id=organization,
@@ -348,12 +357,24 @@ def ingest(
             runtime_policy=None,
             manifest=_manifest(),
             now=now,
+            identity_registry=registry,
         )
 
         console.print(
             f"Journalled {durable.evidence_records_appended} evidence "
             f"record(s)."
         )
+        if durable.identities_linked:
+            console.print(
+                f"Resolved {len(durable.identities_linked)} canonical "
+                f"identity link(s)."
+            )
+        if durable.identities_ambiguous:
+            console.print(
+                f"  [yellow]{len(durable.identities_ambiguous)} identity "
+                f"(ies) ambiguous[/yellow] — left unlinked for a person to "
+                f"settle rather than guessed"
+            )
         result = durable.result
         if result.complete:
             console.print(
