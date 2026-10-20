@@ -136,12 +136,82 @@ def test_cli_help():
     assert "init" in result.output
 
 
-def test_cli_dashboard_without_deps():
-    """Test dashboard command gracefully fails without FastAPI."""
+def test_cli_dashboard_reports_missing_extras():
+    """Without the dashboard extras, say so rather than traceback."""
     runner = CliRunner()
-    # This will either start the server or show the install message
-    # depending on whether fastapi is available
-    result = runner.invoke(cli, ["dashboard"])
-    # Either it starts (exit_code 0) or tells user to install
-    # We just check it doesn't crash unexpectedly
-    assert result.exit_code in (0, 1) or "dashboard" in result.output.lower()
+    with patch.dict("sys.modules", {"lltpm.dashboard": None}):
+        result = runner.invoke(cli, ["dashboard"])
+    assert result.exit_code == 0
+    assert "requires extra dependencies" in result.output
+    assert "lltpm[dashboard]" in result.output, (
+        "rich reads [dashboard] as a style tag unless escaped, which "
+        "turns the hint into 'pip install lltpm'"
+    )
+
+
+def test_cli_dashboard_starts_the_server_when_available():
+    """Assert what the command decided, without binding a socket.
+
+    The serve call is patched out on purpose. The previous version of
+    this test invoked the real one, so it only passed when uvicorn was
+    absent — and when uvicorn was installed it started a web server on
+    0.0.0.0:8000 and hung the suite forever.
+    """
+    runner = CliRunner()
+    with patch("lltpm.main._serve_dashboard") as serve:
+        result = runner.invoke(cli, ["dashboard"])
+
+    assert result.exit_code == 0
+    serve.assert_called_once()
+    assert serve.call_args.kwargs == {"host": "127.0.0.1", "port": 8000}
+
+
+def test_cli_dashboard_binds_loopback_by_default():
+    """Exposing a dashboard beyond the machine is opt-in."""
+    runner = CliRunner()
+    with patch("lltpm.main._serve_dashboard") as serve:
+        runner.invoke(cli, ["dashboard"])
+    assert serve.call_args.kwargs["host"] == "127.0.0.1"
+
+
+def test_cli_dashboard_host_and_port_are_overridable():
+    runner = CliRunner()
+    with patch("lltpm.main._serve_dashboard") as serve:
+        result = runner.invoke(
+            cli, ["dashboard", "--host", "0.0.0.0", "--port", "9999"],
+        )
+    assert result.exit_code == 0
+    assert serve.call_args.kwargs == {"host": "0.0.0.0", "port": 9999}
+
+
+def test_cli_dashboard_reports_the_url_it_will_serve():
+    runner = CliRunner()
+    with patch("lltpm.main._serve_dashboard"):
+        result = runner.invoke(cli, ["dashboard", "--port", "9100"])
+    assert "9100" in result.output
+
+
+def test_the_cli_test_suite_never_binds_a_real_socket():
+    """A regression guard for the class of bug, not just the instance.
+
+    A test suite that starts a listening server depends on which
+    packages happen to be installed and can hang indefinitely. The serve
+    call must be reached only through the patchable seam.
+    """
+    import ast
+    import inspect
+
+    import lltpm.main as main_module
+
+    tree = ast.parse(inspect.getsource(main_module))
+    uvicorn_run_calls = [
+        node for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "run"
+        and getattr(node.func.value, "id", "") == "uvicorn"
+    ]
+    assert len(uvicorn_run_calls) == 1, (
+        "uvicorn.run must live in exactly one extracted seam so tests can "
+        "patch it; inlining it again would reintroduce the hang"
+    )

@@ -59,6 +59,9 @@ lltpm = "lltpm.main:cli"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/lltpm"]
+# PEP 561: the package is annotated throughout, so say so — without this
+# marker a consumer's type checker ignores every annotation here.
+artifacts = ["src/lltpm/py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

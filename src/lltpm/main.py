@@ -498,25 +498,48 @@ def workload(ctx: click.Context, program_id: str) -> None:
     _print_md(result)
 
 
+def _serve_dashboard(app: object, *, host: str, port: int) -> None:
+    """Hand the app to uvicorn and block.
+
+    Extracted so a test can assert what the command *decided* without
+    binding a socket. Previously the serve call was inline, which meant
+    the dashboard test only passed when uvicorn happened to be absent —
+    and started a real public web server when it was not.
+    """
+    import uvicorn
+
+    uvicorn.run(app, host=host, port=port)
+
+
 @cli.command()
+@click.option(
+    "--host", default="127.0.0.1", show_default=True,
+    help="Interface to bind. Use 0.0.0.0 to expose beyond this machine.",
+)
+@click.option("--port", default=8000, show_default=True)
 @click.pass_context
-def dashboard(ctx: click.Context) -> None:
+def dashboard(ctx: click.Context, host: str, port: int) -> None:
     """Launch the web dashboard (requires dashboard extras)."""
     try:
-        import uvicorn
         from lltpm.dashboard import create_app
-
-        config: LLTPMConfig = ctx.obj["config"]
-        console.print("[bold]Starting LLTPM Dashboard...[/bold]")
-        console.print("[dim]http://localhost:8000/docs for API docs[/dim]")
-
-        app = create_app(config)
-        uvicorn.run(app, host="0.0.0.0", port=8000)
     except ImportError:
+        # The bracket is escaped because rich would otherwise read
+        # [dashboard] as a style tag and print "pip install lltpm",
+        # which does not install the dashboard.
         console.print(
             "[red]Dashboard requires extra dependencies.[/red]\n"
-            "Install with: pip install lltpm[dashboard]"
+            r"Install with: pip install lltpm\[dashboard]"
         )
+        return
+
+    config: LLTPMConfig = ctx.obj["config"]
+    console.print("[bold]Starting LLTPM Dashboard...[/bold]")
+    console.print(f"[dim]http://{host}:{port}/docs for API docs[/dim]")
+
+    # Only the import check is guarded. An ImportError raised while
+    # building the app is a real bug and should surface, not be reported
+    # as a missing dependency.
+    _serve_dashboard(create_app(config), host=host, port=port)
 
 
 if __name__ == "__main__":

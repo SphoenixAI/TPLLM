@@ -17,6 +17,7 @@ construction.
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -30,8 +31,30 @@ console = Console()
 # produces clean JSON while the operator still sees the caveats.
 errors = Console(stderr=True)
 
-DEFAULT_DB = "lltpm.db"
+DEFAULT_DB = ""  # resolved against LLTPM_DATA_DIR; see _resolve_db
 DEFAULT_ORGANIZATION = "default"
+DB_FILENAME = "lltpm.db"
+
+
+def _resolve_db(path: str) -> str:
+    """Where the journal actually lives.
+
+    An explicit --db wins. Otherwise the database goes in the configured
+    data directory, which is what makes the container work: the image
+    sets LLTPM_DATA_DIR=/data and mounts a volume there, while the
+    working directory is /app. A bare relative default would put the
+    journal at /app/lltpm.db — off the volume, and destroyed on restart.
+    Durability that a default deployment throws away is not durability.
+    """
+    if path:
+        return path
+
+    data_dir = os.getenv("LLTPM_DATA_DIR")
+    if data_dir:
+        directory = Path(data_dir)
+        directory.mkdir(parents=True, exist_ok=True)
+        return str(directory / DB_FILENAME)
+    return DB_FILENAME
 
 
 def _open_persistence(path: str):
@@ -93,13 +116,16 @@ def runtime_cli() -> None:
 
 
 @runtime_cli.command()
-@click.option("--db", default=DEFAULT_DB, help="SQLite database path")
+@click.option(
+    "--db", default=DEFAULT_DB,
+    help="SQLite path; defaults to $LLTPM_DATA_DIR/lltpm.db",
+)
 @click.option("--organization", default=DEFAULT_ORGANIZATION)
 def status(db: str, organization: str) -> None:
     """Current revision, journal head, and storage health."""
     from lltpm.persistence import inspect_persistence_health
 
-    persistence = _open_persistence(db)
+    persistence = _open_persistence(_resolve_db(db))
     try:
         report = inspect_persistence_health(
             organization_id=organization,
@@ -178,12 +204,15 @@ def _known_projects(persistence) -> list[str]:
 
 
 @runtime_cli.command()
-@click.option("--db", default=DEFAULT_DB, help="SQLite database path")
+@click.option(
+    "--db", default=DEFAULT_DB,
+    help="SQLite path; defaults to $LLTPM_DATA_DIR/lltpm.db",
+)
 def verify(db: str) -> None:
     """Verify the journal hash chain. Read-only; never repairs."""
     from lltpm.persistence import verify_journal
 
-    persistence = _open_persistence(db)
+    persistence = _open_persistence(_resolve_db(db))
     try:
         report = verify_journal(journal=persistence.journal)
         if report.valid:
@@ -203,7 +232,10 @@ def verify(db: str) -> None:
 
 
 @runtime_cli.command()
-@click.option("--db", default=DEFAULT_DB, help="SQLite database path")
+@click.option(
+    "--db", default=DEFAULT_DB,
+    help="SQLite path; defaults to $LLTPM_DATA_DIR/lltpm.db",
+)
 @click.option("--start", default=1, help="First global sequence")
 @click.option("--end", default=0, help="Last global sequence (0 = head)")
 @click.option("--event-type", default="", help="Filter by event type")
@@ -211,7 +243,7 @@ def journal(db: str, start: int, end: int, event_type: str) -> None:
     """Inspect a range of journal records. Read-only."""
     from lltpm.persistence import JournalEventType, inspect_journal_range
 
-    persistence = _open_persistence(db)
+    persistence = _open_persistence(_resolve_db(db))
     try:
         head = persistence.journal.latest_position()
         if head is None:
@@ -251,7 +283,10 @@ def journal(db: str, start: int, end: int, event_type: str) -> None:
 
 
 @runtime_cli.command()
-@click.option("--db", default=DEFAULT_DB, help="SQLite database path")
+@click.option(
+    "--db", default=DEFAULT_DB,
+    help="SQLite path; defaults to $LLTPM_DATA_DIR/lltpm.db",
+)
 @click.option("--organization", default=DEFAULT_ORGANIZATION)
 @click.option(
     "--output", "-o", type=click.Path(), default="",
@@ -278,7 +313,7 @@ def export(
     """
     from lltpm.persistence import export_journal
 
-    persistence = _open_persistence(db)
+    persistence = _open_persistence(_resolve_db(db))
     try:
         bundle = export_journal(
             journal=persistence.journal,
@@ -358,7 +393,10 @@ def coverage() -> None:
 
 @runtime_cli.command()
 @click.argument("evidence_file", type=click.Path(exists=True))
-@click.option("--db", default=DEFAULT_DB, help="SQLite database path")
+@click.option(
+    "--db", default=DEFAULT_DB,
+    help="SQLite path; defaults to $LLTPM_DATA_DIR/lltpm.db",
+)
 @click.option("--organization", default=DEFAULT_ORGANIZATION)
 @click.option(
     "--horizon-days", default=14, show_default=True,
@@ -405,7 +443,7 @@ def ingest(
         for item in events
     ]
 
-    persistence = _open_persistence(db)
+    persistence = _open_persistence(_resolve_db(db))
     try:
         data_source = JournalBackedDataSource(
             journal=persistence.journal, organization_id=organization,
@@ -479,7 +517,10 @@ def ingest(
 
 
 @runtime_cli.command()
-@click.option("--db", default=DEFAULT_DB, help="SQLite database path")
+@click.option(
+    "--db", default=DEFAULT_DB,
+    help="SQLite path; defaults to $LLTPM_DATA_DIR/lltpm.db",
+)
 @click.option("--organization", default=DEFAULT_ORGANIZATION)
 @click.option(
     "--publish/--dry-run", default=False,
@@ -504,7 +545,7 @@ def replay(
     from lltpm.runtime.services import LiveIntelligenceServices
     from lltpm.runtime.sources import JournalBackedDataSource
 
-    persistence = _open_persistence(db)
+    persistence = _open_persistence(_resolve_db(db))
     try:
         data_source = JournalBackedDataSource(
             journal=persistence.journal, organization_id=organization,
@@ -559,13 +600,16 @@ def replay(
 
 
 @runtime_cli.command()
-@click.option("--db", default=DEFAULT_DB, help="SQLite database path")
+@click.option(
+    "--db", default=DEFAULT_DB,
+    help="SQLite path; defaults to $LLTPM_DATA_DIR/lltpm.db",
+)
 @click.option("--organization", default=DEFAULT_ORGANIZATION)
 def snapshot(db: str, organization: str) -> None:
     """Checkpoint current state so future replays start from here."""
     from lltpm.persistence import build_runtime_snapshot
 
-    persistence = _open_persistence(db)
+    persistence = _open_persistence(_resolve_db(db))
     try:
         head = persistence.journal.latest_position()
         if head is None:

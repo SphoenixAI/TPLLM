@@ -339,7 +339,7 @@ def create_app(config: LLTPMConfig | None = None) -> Any:
     def render_document(
         program_id: str,
         doc_type: str,
-        fmt: str = Query(default="html", regex="^(html|markdown)$"),
+        fmt: str = Query(default="html", pattern="^(html|markdown)$"),
     ):
         """Render a document as HTML or Markdown.
 
