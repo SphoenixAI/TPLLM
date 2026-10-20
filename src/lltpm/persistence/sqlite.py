@@ -21,6 +21,7 @@ There is no half-record.
 from __future__ import annotations
 
 import json
+import logging
 import sqlite3
 import threading
 from datetime import datetime
@@ -52,6 +53,8 @@ from lltpm.persistence.versioning import (
     DATABASE_SCHEMA_VERSION,
     assert_supported_database_schema,
 )
+
+logger = logging.getLogger(__name__)
 
 SCHEMA_STATEMENTS = (
     """
@@ -314,6 +317,17 @@ class SQLiteEventJournalStore:
                             f"facts cannot share one identity."
                         )
                     cursor.execute("COMMIT")
+                    logger.debug(
+                        "journal append deduplicated",
+                        extra={
+                            "journal_event_type": record.event_type.value,
+                            "idempotency_key": record.idempotency_key,
+                            "journal_sequence": (
+                                committed.position.global_sequence
+                            ),
+                            "record_id": committed.id,
+                        },
+                    )
                     return committed
 
                 stream_id = record.position.stream_id
@@ -397,6 +411,18 @@ class SQLiteEventJournalStore:
                     (stream_id, next_stream, next_stream),
                 )
                 cursor.execute("COMMIT")
+                logger.debug(
+                    "journal record appended",
+                    extra={
+                        "journal_event_type": committed.event_type.value,
+                        "journal_sequence": next_global,
+                        "journal_stream": stream_id,
+                        "record_id": committed.id,
+                        "organization_id": committed.organization_id,
+                        "causal_event_id": committed.causal_event_id,
+                        "revision_id": committed.runtime_revision_id,
+                    },
+                )
                 return committed
             except (JournalConcurrencyError, JournalIdempotencyError):
                 raise

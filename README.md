@@ -234,6 +234,9 @@ src/lltpm/
 │   # ── Orchestration: nothing imports this ──
 ├── runtime/              # Live orchestrator + durability seam
 │
+│   # ── Application infrastructure ──
+├── observability/        # Log formatting, redaction; only the CLI uses it
+│
 │   # ── Original TPM surface ──
 ├── models/               # Pydantic data models
 ├── artifacts/            # Artifact store and generators
@@ -281,6 +284,9 @@ lltpm runtime verify --db lltpm.db
 # Inspect durable history
 lltpm runtime journal --db lltpm.db --event-type evidence_accepted
 
+# Watch records land, like tail -f (read-only; Ctrl-C to stop)
+lltpm runtime journal --db lltpm.db --follow
+
 # Rebuild projections from the journal (dry run by default)
 lltpm runtime replay --db lltpm.db --organization acme --publish
 
@@ -294,6 +300,41 @@ lltpm runtime coverage
 lltpm runtime export --db lltpm.db --organization acme > history.json
 lltpm runtime export --db lltpm.db --what decisions
 ```
+
+#### Watching it work
+
+Each command reports what it did on stdout. `--log-level` adds the
+process's own account of itself on stderr — which engine ran, what was
+deduplicated, why a revision was not promoted — so redirecting stdout to
+a file keeps both usable:
+
+```bash
+# Human-readable, on stderr
+lltpm runtime --log-level info ingest evidence.json --db lltpm.db
+
+# One JSON object per line, for a log pipeline
+lltpm runtime --log-level debug --log-format json \
+  ingest evidence.json --db lltpm.db 2> run.jsonl
+
+# Clean JSON on stdout, process account on stderr, at the same time
+lltpm runtime --log-level info export --db lltpm.db > history.json
+```
+
+Log lines carry the ids that join them back to durable history —
+`revision_id`, `journal_sequence`, `causal_event_id`,
+`organization_id` — and anything produced by a replay is marked
+`execution_mode=replay`, so reconstruction is never mistaken for live
+work. Credential-looking material is redacted at format time.
+
+The log and the journal answer different questions and are deliberately
+not the same thing. The journal records *what happened to the
+organization*: durable, ordered, hash-chained, replayable. The log
+records *what the process did*: transient, cheap, and safe to lose. No
+log line is authoritative and none is ever replayed.
+
+Nothing in the log describes an individual's activity. The field
+vocabulary is a closed list and a source guardrail walks every log call
+in the package to keep it that way.
 
 A worked example lives in `examples/evidence.json` — three pieces of
 evidence across two projects, enough for the engines to produce a

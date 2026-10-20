@@ -31,6 +31,7 @@ on. Nothing here reads the wall clock; ``as_of`` is always passed in.
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 from typing import Any
 
@@ -68,6 +69,8 @@ from lltpm.scenarios.models import ScenarioHorizon
 from lltpm.scenarios.probability import probability_of_outcome
 from lltpm.temporal.models import build_state_fingerprint
 from lltpm.temporal.state import reconstruct_project_state
+
+logger = logging.getLogger(__name__)
 
 # Artifact types computed by the engine that owns them.
 ENGINE_BACKED = frozenset({
@@ -194,6 +197,17 @@ class LiveIntelligenceServices:
     ) -> RecomputedArtifact:
         self.calls.append(request.artifact_type)
         handler = self._handlers().get(request.artifact_type)
+        logger.debug(
+            "recomputing artifact",
+            extra={
+                "artifact_type": request.artifact_type.value,
+                "revision_id": revision_id,
+                "outcome": (
+                    "engine"
+                    if request.artifact_type in ENGINE_BACKED else "derived"
+                ),
+            },
+        )
         if handler is None:
             raise ArtifactRecomputeError(
                 f"No engine or projection is wired for "
@@ -749,6 +763,19 @@ class LiveIntelligenceServices:
         severity: str = "normal",
         changed: bool = True,
     ) -> RecomputedArtifact:
+        if not changed:
+            # The common reason an artifact comes back empty is that the
+            # structure it needs was never declared. Saying so here is
+            # what turns "the dashboard is blank" into an answerable
+            # question. The summary is engine prose, never evidence.
+            logger.info(
+                "artifact recomputed with no change",
+                extra={
+                    "artifact_type": request.artifact_type.value,
+                    "revision_id": revision_id,
+                    "reason": summary,
+                },
+            )
         return RecomputedArtifact(
             artifact_type=request.artifact_type,
             artifact_id=artifact_id,

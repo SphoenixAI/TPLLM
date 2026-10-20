@@ -36,6 +36,7 @@ FIRST_PARTY_PACKAGES = [
     "application",
     "runtime",
     "persistence",
+    "observability",
 ]
 
 _SRC = pathlib.Path(__file__).resolve().parent.parent / "src" / "lltpm"
@@ -281,6 +282,42 @@ class TestPersistenceIsAPort:
             if "persistence" in deps
         }
         assert composers == {"runtime"}
+
+
+class TestObservabilityIsApplicationInfrastructure:
+    """Commit 36 added logging without adding a dependency.
+
+    Call sites throughout the codebase emit through the standard
+    library; this package only formats and configures, and only an
+    application entry point imports it. That is ordinary stdlib logging
+    discipline, and it is also the only arrangement the existing
+    boundaries permit: ``persistence`` imports no first-party package at
+    all, so it could not import a logging helper even where one would be
+    convenient.
+    """
+
+    def test_observability_imports_nothing_first_party(self, graph):
+        assert graph["observability"] == set(), (
+            f"the logging layer must stand alone, found "
+            f"{sorted(graph['observability'])} — anything it imported "
+            f"would become a dependency of every log call site."
+        )
+
+    @pytest.mark.parametrize(
+        "domain",
+        ["core", "identity", "temporal", "structural", "intelligence",
+         "coordination", "scenarios", "portfolio", "evaluation", "memory",
+         "integrations", "application", "persistence", "runtime"],
+    )
+    def test_no_package_depends_on_the_logging_layer(self, graph, domain):
+        assert "observability" not in graph[domain], (
+            f"{domain} must log through the standard library; depending on "
+            f"a logging package would make emitting a line an import "
+            f"decision."
+        )
+
+    def test_adding_it_introduced_no_cycle(self, graph):
+        assert_no_forbidden_package_cycles(graph)
 
 
 class TestApplicationIsNotSharedInfrastructure:

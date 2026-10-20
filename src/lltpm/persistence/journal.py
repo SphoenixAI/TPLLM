@@ -20,6 +20,7 @@ builder both backends share.
 
 from __future__ import annotations
 
+import logging
 import threading
 from datetime import datetime
 from typing import Any
@@ -42,6 +43,11 @@ from lltpm.persistence.protocols import (
     JournalIdempotencyError,
 )
 from lltpm.persistence.versioning import CURRENT_PAYLOAD_SCHEMA_VERSION
+
+# Standard library only, and no handler: configuring logging is an
+# application's job, and `persistence` imports no first-party package at
+# all so that a storage backend can never drag a domain along with it.
+logger = logging.getLogger(__name__)
 
 
 def build_journal_record(
@@ -128,6 +134,15 @@ class InMemoryEventJournalStore:
             existing = self._by_idempotency_key.get(record.idempotency_key)
             if existing is not None:
                 self._assert_same_content(existing, record)
+                logger.debug(
+                    "journal append deduplicated",
+                    extra={
+                        "journal_event_type": record.event_type.value,
+                        "idempotency_key": record.idempotency_key,
+                        "journal_sequence": existing.position.global_sequence,
+                        "record_id": existing.id,
+                    },
+                )
                 return existing
 
             stream_id = record.position.stream_id
@@ -157,6 +172,18 @@ class InMemoryEventJournalStore:
             self._by_id[committed.id] = committed
             self._by_idempotency_key[committed.idempotency_key] = committed
             self._stream_heads[stream_id] = committed.position.stream_sequence
+            logger.debug(
+                "journal record appended",
+                extra={
+                    "journal_event_type": committed.event_type.value,
+                    "journal_sequence": committed.position.global_sequence,
+                    "journal_stream": stream_id,
+                    "record_id": committed.id,
+                    "organization_id": committed.organization_id,
+                    "causal_event_id": committed.causal_event_id,
+                    "revision_id": committed.runtime_revision_id,
+                },
+            )
             return committed
 
     @staticmethod

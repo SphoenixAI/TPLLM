@@ -25,6 +25,7 @@ rather than a separate code path that merely agrees.
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 from typing import Any
 
@@ -60,6 +61,8 @@ from lltpm.runtime.models import (
 )
 from lltpm.runtime.orchestrator import process_live_organizational_events
 from lltpm.runtime.revisions import RuntimeStateStore as RuntimeProjection
+
+logger = logging.getLogger(__name__)
 
 # Attention actions that would have reached a person. During replay they
 # are reconstructed and counted, never surfaced.
@@ -585,7 +588,11 @@ class DurableOrchestrationResult(BaseModel):
     """One durable pass: what was journalled, published, and prevented."""
     result: LiveOrchestrationResult
     journal_records: list[str] = Field(default_factory=list)
+    # Newly durable records, not envelopes handed in: a redelivery is an
+    # ordinary event and reporting it as an append would overstate what
+    # changed.
     evidence_records_appended: int = 0
+    evidence_records_deduplicated: int = 0
     revision_promoted: bool = False
     artifacts_persisted: int = 0
     identities_linked: dict[str, str] = Field(default_factory=dict)
@@ -629,7 +636,14 @@ def process_durable_organizational_events(
     one node — and because its decisions are themselves durable facts,
     not derived state.
     """
+    # The journal head before this batch. An append is idempotent, so a
+    # redelivered webhook comes back as the record that already exists —
+    # and counting those as new would report work that did not happen.
+    head = journal.latest_position()
+    head_before = head.global_sequence if head is not None else 0
+
     appended: list[str] = []
+    newly_appended = 0
     for envelope in envelopes:
         record = append_evidence_accepted(
             journal=journal,
@@ -639,6 +653,17 @@ def process_durable_organizational_events(
             retention_class=retention_class,
         )
         appended.append(record.id)
+        if record.position.global_sequence > head_before:
+            newly_appended += 1
+    logger.info(
+        "evidence journalled before anything derived from it",
+        extra={
+            "organization_id": organization_id,
+            "evidence_count": len(envelopes),
+            "records_appended": newly_appended,
+            "events_deduplicated": len(envelopes) - newly_appended,
+        },
+    )
 
     identity_outcome = None
     if identity_registry is not None:
@@ -666,7 +691,8 @@ def process_durable_organizational_events(
     durable = DurableOrchestrationResult(
         result=result,
         journal_records=list(appended),
-        evidence_records_appended=len(envelopes),
+        evidence_records_appended=newly_appended,
+        evidence_records_deduplicated=len(envelopes) - newly_appended,
         identities_linked=(
             dict(identity_outcome.linked) if identity_outcome else {}
         ),
@@ -678,6 +704,14 @@ def process_durable_organizational_events(
         ),
     )
     if identity_outcome is not None and identity_outcome.ambiguous:
+        logger.warning(
+            "identities left unlinked as ambiguous rather than guessed",
+            extra={
+                "organization_id": organization_id,
+                "identity_linked_count": len(identity_outcome.linked),
+                "identity_ambiguous_count": len(identity_outcome.ambiguous),
+            },
+        )
         durable.warnings.append(
             f"{len(identity_outcome.ambiguous)} identity(ies) were "
             f"ambiguous and left unlinked; two names for one thing may "
@@ -685,6 +719,20 @@ def process_durable_organizational_events(
         )
 
     if not result.complete or result.revision_id is None:
+        # A pass that completed and simply found nothing material is a
+        # normal outcome, not a problem. Only an incomplete pass — an
+        # engine that failed — deserves a warning, or the warning level
+        # stops meaning anything.
+        logger.log(
+            logging.INFO if result.complete else logging.WARNING,
+            "no revision published; evidence is durable regardless",
+            extra={
+                "organization_id": organization_id,
+                "complete": result.complete,
+                "failure_count": len(result.failures),
+                "evidence_count": len(envelopes),
+            },
+        )
         durable.warnings.append(
             "No complete revision was produced; evidence is durable and a "
             "later recovery will rebuild the projection."
@@ -713,7 +761,26 @@ def process_durable_organizational_events(
             ),
         )
         durable.revision_promoted = True
+        logger.info(
+            "revision promoted to current",
+            extra={
+                "organization_id": organization_id,
+                "revision_id": result.revision_id,
+                "project_count": len(result.projects_affected),
+                "artifact_count": persisted,
+                "promoted": True,
+            },
+        )
     except RevisionPromotionError as error:
+        logger.error(
+            "revision not promoted; previous revision remains current",
+            extra={
+                "organization_id": organization_id,
+                "revision_id": result.revision_id,
+                "promoted": False,
+                "reason": str(error),
+            },
+        )
         durable.warnings.append(f"Revision not promoted: {error}")
         return durable, projection
 
@@ -730,6 +797,14 @@ def process_durable_organizational_events(
         )
         durable.journal_records.append(marker.id)
     except Exception as error:  # noqa: BLE001 — audit, not truth
+        logger.warning(
+            "revision is durably current but its audit marker was not written",
+            extra={
+                "organization_id": organization_id,
+                "revision_id": result.revision_id,
+                "reason": str(error),
+            },
+        )
         durable.warnings.append(
             f"Revision {result.revision_id} is durably current but its "
             f"audit marker was not written: {error}"
@@ -881,6 +956,15 @@ class RuntimeJournalReconstructor:
                 "rebuilding history must not repeat its consequences."
             )
 
+        logger.info(
+            "reconstructing projections from durable history",
+            extra={
+                "organization_id": organization_id,
+                "execution_mode": context.mode.value,
+                "records_replayed": len(records),
+                "revision_id": (baseline or {}).get("active_revision_id"),
+            },
+        )
         outcome = ReconstructionOutcome()
         projection = _projection_from_baseline(
             organization_id=organization_id, baseline=baseline,
@@ -925,6 +1009,16 @@ class RuntimeJournalReconstructor:
             if projection.portfolio_state is not None else None
         )
         outcome.state_fingerprints = collect_state_fingerprints(projection)
+        logger.info(
+            "reconstruction complete; no external effect was repeated",
+            extra={
+                "organization_id": organization_id,
+                "execution_mode": context.mode.value,
+                "revision_id": outcome.revision_id,
+                "project_count": len(outcome.project_states),
+                "side_effects_suppressed": outcome.suppressed_side_effects,
+            },
+        )
         return outcome
 
     def _apply_record(

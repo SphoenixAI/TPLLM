@@ -27,6 +27,7 @@ historical agent output.
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 from typing import Any
 
@@ -60,6 +61,8 @@ from lltpm.persistence.versioning import (
     assert_supported_journal_schema,
     manifest_incompatibilities,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class SideEffectFence:
@@ -221,6 +224,15 @@ def replay_journal(
             "silently repaired and the missing records are not invented."
         )
         result.end_sequence = head_sequence
+        logger.error(
+            "replay stopped: durable history failed verification",
+            extra={
+                "organization_id": request.organization_id,
+                "execution_mode": ExecutionMode.REPLAY.value,
+                "journal_sequence": result.corruption_detected_at,
+                "reason": chain.explanation,
+            },
+        )
         return result
 
     records = [
@@ -241,6 +253,18 @@ def replay_journal(
 
     result.records_replayed = len(records)
     result.end_sequence = end_sequence
+    logger.info(
+        "replay starting",
+        extra={
+            "organization_id": request.organization_id,
+            "mode": request.mode.value,
+            "execution_mode": ExecutionMode.REPLAY.value,
+            "snapshot_id": result.snapshot_id,
+            "start_sequence": start_sequence,
+            "end_sequence": end_sequence,
+            "records_replayed": len(records),
+        },
+    )
 
     # ── Manifest compatibility ───────────────────────────────────────
     incompatibilities = _manifest_report(
@@ -316,6 +340,20 @@ def replay_journal(
             result=result,
         )
 
+    logger.info(
+        "replay finished",
+        extra={
+            "organization_id": request.organization_id,
+            "mode": request.mode.value,
+            "execution_mode": ExecutionMode.REPLAY.value,
+            "revision_id": result.reconstructed_revision_id,
+            "records_replayed": result.records_replayed,
+            "side_effects_suppressed": result.side_effects_suppressed,
+            "mismatch_count": len(result.mismatches),
+            "complete": result.complete,
+            "published": result.published,
+        },
+    )
     return result
 
 

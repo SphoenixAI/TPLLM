@@ -38,6 +38,11 @@ from lltpm.persistence.export import (
     export_journal,
     source_availability,
 )
+from lltpm.persistence.follow import (
+    DEFAULT_BATCH_SIZE,
+    DEFAULT_POLL_SECONDS,
+    follow_journal,
+)
 from lltpm.persistence.integrity import (
     JournalCorruptionReport,
     JournalIntegrityError,
@@ -155,6 +160,9 @@ from lltpm.persistence.versioning import (
 
 __all__ = [
     "AUTHORITATIVE_EVENT_TYPES",
+    "DEFAULT_BATCH_SIZE",
+    "DEFAULT_POLL_SECONDS",
+    "follow_journal",
     "DECISION_EVENTS",
     "POLICY_EVENTS",
     "RECOMMENDATION_EVENTS",

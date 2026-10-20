@@ -74,3 +74,32 @@ jobs:
             --organization demo --publish
           python -m lltpm runtime export --db /tmp/ci.db \
             --organization demo --what decisions > /dev/null
+
+      # Following has to terminate and has to stay read-only. A loop
+      # that hangs in CI is better found here than on a laptop.
+      - name: Following the journal terminates and changes nothing
+        run: |
+          python -m lltpm runtime journal --db /tmp/ci.db \
+            --follow --start 1 --poll-seconds 0.1 --idle-timeout 1
+          python -m lltpm runtime verify --db /tmp/ci.db
+
+      - name: Structured logs are machine-readable
+        run: |
+          python -m lltpm runtime --log-level info --log-format json \
+            replay --db /tmp/ci.db --organization demo 2> /tmp/ci.log
+          python -c "
+          import json, pathlib, sys
+          lines = [
+              line for line in
+              pathlib.Path('/tmp/ci.log').read_text().splitlines()
+              if line.startswith('{')
+          ]
+          assert lines, 'no structured log lines were emitted'
+          for line in lines:
+              json.loads(line)
+          assert any(
+              json.loads(line).get('execution_mode') == 'replay'
+              for line in lines
+          ), 'replay lines must say so'
+          print(f'{len(lines)} structured log line(s) parsed')
+          "

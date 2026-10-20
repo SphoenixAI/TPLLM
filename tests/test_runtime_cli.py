@@ -13,6 +13,7 @@ cannot change anything.
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
 from pathlib import Path
 
@@ -716,3 +717,226 @@ class TestExportCommand:
             ],
         )
         assert result.exit_code == 2
+
+
+# ── Commit 36: logging and following ─────────────────────────────────
+
+
+def _all_output(result) -> str:
+    """Stdout plus stderr, across click versions.
+
+    Older click mixes the two and refuses `result.stderr`; newer click
+    separates them. The log stream is on stderr either way.
+    """
+    try:
+        return result.output + (result.stderr or "")
+    except (ValueError, AttributeError):
+        return result.output
+
+
+def _report(result) -> list[str]:
+    """Only the command's own report, with log lines filtered out.
+
+    Some click versions mix stderr into `output`, so the report has to
+    be separated by shape rather than by stream.
+    """
+    return [
+        line for line in result.output.splitlines()
+        if not line.startswith("{")
+        and not _TIMESTAMPED.match(line)
+    ]
+
+
+_TIMESTAMPED = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}")
+
+
+class TestLoggingOptions:
+    @pytest.fixture
+    def seeded(self, runner, workspace):
+        _, db, evidence = workspace
+        _ingest(runner, db, evidence)
+        return db
+
+    def test_logging_is_off_by_default_in_the_command_output(
+        self, runner, workspace,
+    ):
+        """The command's own report is the interface; logs are opt-in."""
+        _, db, evidence = workspace
+        result = _ingest(runner, db, evidence)
+        assert "lltpm.runtime" not in result.output
+
+    def test_an_info_level_run_says_what_the_process_did(
+        self, runner, workspace,
+    ):
+        _, db, evidence = workspace
+        result = runner.invoke(
+            runtime_cli,
+            [
+                "--log-level", "info", "ingest", evidence,
+                "--db", db, "--organization", "acme",
+            ],
+        )
+        assert result.exit_code == 0, result.output
+        assert "evidence journalled" in _all_output(result)
+
+    def test_json_logs_are_one_parseable_object_per_line(
+        self, runner, workspace,
+    ):
+        _, db, evidence = workspace
+        result = runner.invoke(
+            runtime_cli,
+            [
+                "--log-level", "info", "--log-format", "json",
+                "ingest", evidence, "--db", db, "--organization", "acme",
+            ],
+        )
+        lines = [
+            line for line in _all_output(result).splitlines()
+            if line.startswith("{")
+        ]
+        assert lines, _all_output(result)
+        for line in lines:
+            document = json.loads(line)
+            assert {"timestamp", "level", "logger", "message"} <= set(document)
+
+    def test_the_logs_carry_the_revision_the_command_reported(
+        self, runner, workspace,
+    ):
+        """The join key. Without it a log line cannot be tied back to the
+        durable revision it describes."""
+        _, db, evidence = workspace
+        result = runner.invoke(
+            runtime_cli,
+            [
+                "--log-level", "info", "--log-format", "json",
+                "ingest", evidence, "--db", db, "--organization", "acme",
+            ],
+        )
+        revisions = {
+            json.loads(line).get("revision_id")
+            for line in _all_output(result).splitlines()
+            if line.startswith("{")
+        }
+        assert "revision-1" in revisions
+
+    def test_the_logs_name_the_organization(self, runner, workspace):
+        _, db, evidence = workspace
+        result = runner.invoke(
+            runtime_cli,
+            [
+                "--log-level", "info", "--log-format", "json",
+                "ingest", evidence, "--db", db, "--organization", "acme",
+            ],
+        )
+        organizations = {
+            json.loads(line).get("organization_id")
+            for line in _all_output(result).splitlines()
+            if line.startswith("{")
+        }
+        assert organizations - {None} == {"acme"}, (
+            "a line that names an organization must name the right one; "
+            "lines about a single artifact legitimately name none"
+        )
+
+    def test_a_replay_marks_its_lines_as_replay(self, runner, seeded):
+        """Reading a log and mistaking reconstruction for live work is
+        how a replay gets blamed for something it only rebuilt."""
+        result = runner.invoke(
+            runtime_cli,
+            [
+                "--log-level", "info", "--log-format", "json",
+                "replay", "--db", seeded, "--organization", "acme",
+            ],
+        )
+        modes = {
+            json.loads(line).get("execution_mode")
+            for line in _all_output(result).splitlines()
+            if line.startswith("{")
+        }
+        assert "replay" in modes
+
+    def test_logging_changes_no_outcome(self, runner, workspace, tmp_path):
+        """Observability must be additive. If turning logs on changed a
+        result, the logs would be part of the computation."""
+        _, _, evidence = workspace
+        quiet_db = str(tmp_path / "quiet.db")
+        loud_db = str(tmp_path / "loud.db")
+        quiet = runner.invoke(
+            runtime_cli,
+            [
+                "--log-level", "off", "ingest", evidence,
+                "--db", quiet_db, "--organization", "acme",
+            ],
+        )
+        loud = runner.invoke(
+            runtime_cli,
+            [
+                "--log-level", "debug", "ingest", evidence,
+                "--db", loud_db, "--organization", "acme",
+            ],
+        )
+        assert quiet.exit_code == loud.exit_code == 0
+        assert _report(quiet) == _report(loud), (
+            "the command's own report must not depend on the log level"
+        )
+        assert _head_sequence(quiet_db) == _head_sequence(loud_db)
+
+    def test_an_unknown_level_is_refused(self, runner, workspace):
+        _, db, evidence = workspace
+        result = runner.invoke(
+            runtime_cli,
+            ["--log-level", "chatty", "ingest", evidence, "--db", db],
+        )
+        assert result.exit_code == 2
+
+
+class TestJournalFollow:
+    @pytest.fixture
+    def seeded(self, runner, workspace):
+        _, db, evidence = workspace
+        _ingest(runner, db, evidence)
+        return db
+
+    def _follow(self, runner, db, *extra):
+        return runner.invoke(
+            runtime_cli,
+            [
+                "journal", "--db", db, "--follow",
+                "--poll-seconds", "0.01", "--idle-timeout", "0.01", *extra,
+            ],
+        )
+
+    def test_an_explicit_start_replays_the_tail_then_follows(
+        self, runner, seeded,
+    ):
+        result = self._follow(runner, seeded, "--start", "1")
+        assert result.exit_code == 0, result.output
+        assert result.output.count("evidence_accepted") >= 3
+
+    def test_without_a_start_it_follows_from_the_head(self, runner, seeded):
+        """tail -f semantics: a watcher wants what happens next, not a
+        reprint of everything that already happened."""
+        result = self._follow(runner, seeded)
+        assert result.exit_code == 0
+        assert "evidence_accepted" not in result.output
+
+    def test_it_can_filter_by_event_type(self, runner, seeded):
+        result = self._follow(
+            runner, seeded, "--start", "1",
+            "--event-type", "intelligence_revision_published",
+        )
+        assert result.exit_code == 0
+        assert "evidence_accepted" not in result.output
+        assert "intelligence_revision_published" in result.output
+
+    def test_an_empty_journal_can_be_followed(self, runner, tmp_path):
+        result = self._follow(runner, str(tmp_path / "empty.db"))
+        assert result.exit_code == 0, result.output
+        assert "Journal is empty" not in result.output, (
+            "an empty journal is exactly when someone wants to watch it"
+        )
+
+    def test_following_changes_nothing(self, runner, seeded):
+        before = _head_sequence(seeded)
+        self._follow(runner, seeded, "--start", "1")
+        assert _head_sequence(seeded) == before

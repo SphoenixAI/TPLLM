@@ -25,6 +25,7 @@ invocation can run it and exit.
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 
 from lltpm.integrations.envelopes import EvidenceEnvelope
@@ -75,6 +76,8 @@ from lltpm.runtime.revisions import (
 )
 from lltpm.runtime.surfaces import determine_attention_action
 
+logger = logging.getLogger(__name__)
+
 _PROJECT_UPDATE_FIELDS: dict[A, str] = {
     A.KPI_STATE: "kpi_changes",
     A.LAUNCH_READINESS: "readiness_changes",
@@ -109,6 +112,14 @@ def process_live_organizational_events(
     store = runtime_state_store.with_metrics(
         events_received=len(incoming),
         events_deduplicated=len(duplicates),
+    )
+    logger.debug(
+        "orchestration pass starting",
+        extra={
+            "organization_id": store.organization_id,
+            "events_received": len(incoming),
+            "events_deduplicated": len(duplicates),
+        },
     )
 
     if not fresh:
@@ -222,6 +233,19 @@ def process_live_organizational_events(
         artifacts=execution.artifacts,
         failures=execution.failures,
     )
+    for failure in execution.failures:
+        # Recorded, never raised: one engine failing must not take the
+        # whole pass down, and the revision stays incomplete rather than
+        # partially publishing.
+        logger.warning(
+            "artifact recompute failed",
+            extra={
+                "organization_id": store.organization_id,
+                "revision_id": revision_id,
+                "artifact_type": failure.artifact_type.value,
+                "reason": failure.explanation,
+            },
+        )
 
     # ── Interpret ────────────────────────────────────────────────────
     root_summaries = build_root_summaries(ordered)
@@ -295,6 +319,21 @@ def process_live_organizational_events(
     else:
         store = store.record_failed_candidate(revision)
 
+    logger.info(
+        "revision published" if revision.complete
+        else "candidate revision incomplete; nothing promoted",
+        extra={
+            "organization_id": store.organization_id,
+            "revision_id": revision_id,
+            "parent_revision_id": candidate.parent_revision_id,
+            "complete": revision.complete,
+            "events_processed": len(fresh),
+            "project_count": len(batch.affected_project_ids),
+            "artifact_count": len(execution.artifacts),
+            "skipped_count": len(execution.skipped),
+            "failure_count": len(execution.failures),
+        },
+    )
     return (
         LiveOrchestrationResult(
             revision_id=revision_id if revision.complete else None,
@@ -645,6 +684,17 @@ def _quiet_result(
     contested: list[str] | None = None,
 ) -> tuple[LiveOrchestrationResult, RuntimeStateStore]:
     """A successful pass that produced no work and no interruption."""
+    # Logged at info because silence is a decision the system made, and
+    # "why did nothing happen?" is the question an operator asks first.
+    logger.info(
+        "orchestration pass took no action",
+        extra={
+            "organization_id": store.organization_id,
+            "events_processed": events_processed,
+            "events_deduplicated": events_deduplicated,
+            "no_action_reason": reason.value,
+        },
+    )
     return (
         LiveOrchestrationResult(
             revision_id=(

@@ -26,6 +26,14 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from lltpm.observability import (
+    DEFAULT_LOG_FORMAT,
+    DEFAULT_LOG_LEVEL,
+    LOG_FORMAT_CHOICES,
+    LOG_LEVEL_CHOICES,
+    configure_logging,
+)
+
 console = Console()
 # Notes and warnings go to stderr so `lltpm runtime export > file.json`
 # produces clean JSON while the operator still sees the caveats.
@@ -104,12 +112,35 @@ def _horizon(now: datetime, days: int):
 
 
 @click.group(name="runtime")
-def runtime_cli() -> None:
+@click.option(
+    "--log-level",
+    type=click.Choice(LOG_LEVEL_CHOICES),
+    default=DEFAULT_LOG_LEVEL,
+    show_default=True,
+    help="Operational logging verbosity; logs go to stderr",
+)
+@click.option(
+    "--log-format",
+    type=click.Choice(LOG_FORMAT_CHOICES),
+    default=DEFAULT_LOG_FORMAT,
+    show_default=True,
+    help="'json' emits one JSON object per line for a log pipeline",
+)
+def runtime_cli(log_level: str, log_format: str) -> None:
     """Live organizational intelligence: ingest, inspect, replay.
 
     State lives in one local SQLite file. No cloud account, no broker,
     no daemon.
+
+    These commands report what they did on stdout. --log-level adds the
+    process's own account of itself — which engine ran, what was
+    deduplicated, why a revision was not promoted — on stderr, so
+    redirecting stdout to a file keeps both usable.
     """
+    # The one place in LLTPM that configures logging. Every module below
+    # emits through the standard library and configures nothing, which
+    # is what lets LLTPM be embedded without hijacking its host's logs.
+    configure_logging(level=log_level, log_format=log_format)
 
 
 # ── Read-only inspection ─────────────────────────────────────────────
@@ -195,6 +226,57 @@ def _seeded_projection(persistence, organization: str):
     return projection.with_revision_index(highest)
 
 
+def _head_sequence(persistence) -> int:
+    head = persistence.journal.latest_position()
+    return head.global_sequence if head is not None else 0
+
+
+def _follow(
+    *,
+    persistence,
+    after_sequence: int,
+    event_types,
+    poll_seconds: float,
+    idle_timeout: float | None,
+) -> None:
+    """Print durable records as they are appended.
+
+    Read-only, like the rest of ``journal``: the follower polls a
+    strictly increasing sequence and never writes. One line per record
+    rather than a table, because a table cannot be streamed.
+    """
+    from lltpm.persistence.follow import follow_journal
+
+    wanted = set(event_types) if event_types else None
+    errors.print(
+        f"[dim]following from sequence {after_sequence + 1}; "
+        f"Ctrl-C to stop[/dim]"
+    )
+
+    def emit(record) -> None:
+        if wanted is not None and record.event_type not in wanted:
+            return
+        console.print(
+            f"[dim]#{record.position.global_sequence:>5}[/dim] "
+            f"{record.event_type.value} "
+            f"[dim]{record.occurred_at.isoformat(timespec='seconds')}[/dim] "
+            f"{', '.join(record.project_ids) or '-'}"
+        )
+
+    try:
+        last = follow_journal(
+            journal=persistence.journal,
+            on_record=emit,
+            after_sequence=after_sequence,
+            poll_seconds=poll_seconds,
+            idle_timeout_seconds=idle_timeout,
+        )
+    except KeyboardInterrupt:
+        errors.print("\n[dim]stopped[/dim]")
+        return
+    errors.print(f"[dim]idle; stopped at sequence {last}[/dim]")
+
+
 def _known_projects(persistence) -> list[str]:
     from lltpm.runtime.sources import JournalBackedDataSource
 
@@ -239,16 +321,34 @@ def verify(db: str) -> None:
 @click.option("--start", default=1, help="First global sequence")
 @click.option("--end", default=0, help="Last global sequence (0 = head)")
 @click.option("--event-type", default="", help="Filter by event type")
-def journal(db: str, start: int, end: int, event_type: str) -> None:
+@click.option(
+    "--follow", "-f", is_flag=True,
+    help="Stream records as they land, like tail -f; Ctrl-C to stop",
+)
+@click.option(
+    "--poll-seconds", default=1.0, show_default=True,
+    help="How often --follow checks for new records",
+)
+@click.option(
+    "--idle-timeout", default=0.0, show_default=True,
+    help="With --follow, stop after this many idle seconds (0 = never)",
+)
+@click.pass_context
+def journal(
+    ctx: click.Context,
+    db: str,
+    start: int,
+    end: int,
+    event_type: str,
+    follow: bool,
+    poll_seconds: float,
+    idle_timeout: float,
+) -> None:
     """Inspect a range of journal records. Read-only."""
     from lltpm.persistence import JournalEventType, inspect_journal_range
 
     persistence = _open_persistence(_resolve_db(db))
     try:
-        head = persistence.journal.latest_position()
-        if head is None:
-            console.print("Journal is empty.")
-            return
         event_types = None
         if event_type:
             try:
@@ -258,6 +358,30 @@ def journal(db: str, start: int, end: int, event_type: str) -> None:
                     f"[red]error[/red] unknown event type '{event_type}'"
                 )
                 raise SystemExit(2) from None
+
+        if follow:
+            _follow(
+                persistence=persistence,
+                # An explicit --start means "replay from there, then
+                # follow"; without one, follow from the head, which is
+                # what tail -f does and what someone watching a live
+                # ingest actually wants.
+                after_sequence=(
+                    start - 1
+                    if ctx.get_parameter_source("start")
+                    is not click.core.ParameterSource.DEFAULT
+                    else _head_sequence(persistence)
+                ),
+                event_types=event_types,
+                poll_seconds=poll_seconds,
+                idle_timeout=idle_timeout or None,
+            )
+            return
+
+        head = persistence.journal.latest_position()
+        if head is None:
+            console.print("Journal is empty.")
+            return
 
         records = inspect_journal_range(
             journal=persistence.journal,
@@ -480,6 +604,11 @@ def ingest(
             f"Journalled {durable.evidence_records_appended} evidence "
             f"record(s)."
         )
+        if durable.evidence_records_deduplicated:
+            console.print(
+                f"  {durable.evidence_records_deduplicated} were already "
+                f"durable (redelivered, not re-appended)."
+            )
         if durable.identities_linked:
             console.print(
                 f"Resolved {len(durable.identities_linked)} canonical "
@@ -492,10 +621,20 @@ def ingest(
                 f"settle rather than guessed"
             )
         result = durable.result
-        if result.complete:
+        if result.complete and durable.revision_promoted:
             console.print(
                 f"[green]published[/green] revision {result.revision_id} "
                 f"across {len(result.projects_affected)} project(s)"
+            )
+        elif result.complete:
+            # A pass can succeed and still publish nothing: the evidence
+            # was processed and judged non-material, or every change was
+            # already reflected. "published revision None" was the old
+            # output here, which claimed a revision that never existed.
+            why = ", ".join(r.value for r in result.no_action_reasons)
+            console.print(
+                f"[green]accepted[/green] — no revision was needed "
+                f"({why or 'nothing changed'})"
             )
         else:
             console.print(

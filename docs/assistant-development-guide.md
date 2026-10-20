@@ -93,7 +93,16 @@ src/lltpm/
                                     path; decisions are journalled, ambiguity
                                     is preserved rather than guessed
   runtime_cli.py   — `lltpm runtime` command group (ingest/status/verify/
-                     journal/replay/snapshot/coverage)
+                     journal/replay/snapshot/coverage/export), plus
+                     `--log-level`/`--log-format` and `journal --follow`
+
+  # ── Application infrastructure (imports no first-party package) ──
+  observability/   — JSON-lines and human log formatters, format-time
+                     credential redaction, the structured-field
+                     vocabulary, and `configure_logging`. Call sites
+                     everywhere else use stdlib `logging.getLogger(
+                     __name__)` and import nothing from here; only
+                     `runtime_cli.py` configures handlers.
 
   # ── Original TPM surface ──
   models/          — Pydantic data models (program, security, etc.)
@@ -134,7 +143,12 @@ These are enforced by tests and should not be relaxed casually:
 - **No worker scoring or activity tracking** — the system models
   organizational mechanics (capacity, dependencies, authority, information
   flow), never individual productivity, and source-level guardrail tests
-  enforce it.
+  enforce it. This covers logs too: the log field vocabulary is a closed
+  list and a guardrail walks every log call in `src/lltpm`.
+- **Logs are not a second journal** — the journal records what happened
+  to the organization (durable, hash-chained, replayed); logs record what
+  the process did (transient, never authoritative, never replayed).
+  Turning logging on or off changes no result, and a test asserts it.
 
 ## Development Conventions
 
@@ -147,6 +161,9 @@ These are enforced by tests and should not be relaxed casually:
 - Timing-safe comparison for all secret validation
 - No hardcoded secrets — generated at runtime, persisted in ArtifactStore
 - Durable payloads are JSON, never pickle; credentials never enter the journal
+- Libraries log through `logging.getLogger(__name__)` with `extra={...}`
+  and never configure handlers; field names come from
+  `observability.fields.STRUCTURED_FIELD_NAMES`
 - Version lives only in `pyproject.toml`; `LLTPM_VERSION` reads it from
   installed package metadata
 
@@ -162,6 +179,11 @@ python -m lltpm dashboard  # Web dashboard
 python -m lltpm runtime ingest evidence.json --db lltpm.db
 python -m lltpm runtime status --db lltpm.db
 python -m lltpm runtime replay --db lltpm.db --publish
+
+# Watch the journal and the process in real time
+python -m lltpm runtime journal --db lltpm.db --follow
+python -m lltpm runtime --log-level info --log-format json \
+  ingest evidence.json --db lltpm.db 2> run.jsonl
 ```
 
 ### Wiring state
