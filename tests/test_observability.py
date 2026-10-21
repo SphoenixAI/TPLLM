@@ -316,12 +316,18 @@ def restore_logging():
 
 
 class TestConfiguration:
-    def test_it_installs_one_handler_on_the_lltpm_logger(
+    def test_it_installs_exactly_one_handler_of_its_own(
         self, restore_logging,
     ):
-        before = len(restore_logging.handlers)
+        """Counted by tag, not by total: another command group may have
+        configured logging earlier in the run, and this call replaces
+        that handler rather than adding to it."""
         configure_logging(level="info", stream=io.StringIO())
-        assert len(restore_logging.handlers) == before + 1
+        tagged = [
+            handler for handler in restore_logging.handlers
+            if getattr(handler, "_lltpm_tag", None)
+        ]
+        assert len(tagged) == 1
 
     def test_calling_it_twice_does_not_double_every_line(
         self, restore_logging,
@@ -427,9 +433,14 @@ class TestLibrariesDoNotConfigureLogging:
         offenders = []
         for path in sorted(_SRC.rglob("*.py")):
             relative = path.relative_to(_SRC)
-            if relative.parts[0] in {"observability", "runtime_cli.py"}:
+            # Top-level modules are application wiring by construction —
+            # the CLI groups and their shared plumbing — and the
+            # architecture tests do not treat them as packages either.
+            # The invariant is about packages: a domain must be able to
+            # log without taking on a dependency.
+            if len(relative.parts) == 1:
                 continue
-            if relative.name in {"runtime_cli.py", "main.py", "cli.py"}:
+            if relative.parts[0] == "observability":
                 continue
             tree = ast.parse(path.read_text())
             for node in ast.walk(tree):

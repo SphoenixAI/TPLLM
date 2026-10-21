@@ -33,9 +33,19 @@ Field paths use a small notation: ``user.login`` for nesting, and
 from __future__ import annotations
 
 import hashlib
+import json
+import pathlib
 from typing import Any
 
 from pydantic import BaseModel, Field
+
+#: Where the shipped contracts live. The recorded payloads stay in the
+#: test tree — they are large and are nobody's runtime concern — but the
+#: contracts derived from them ship with the package, because
+#: ``lltpm integrations verify`` has to work from an installed wheel and
+#: a contract that only exists in a git checkout cannot be checked by
+#: the person running the tool.
+CONTRACT_DATA_DIR = pathlib.Path(__file__).resolve().parent / "contract_data"
 
 #: Placeholder for anything dropped during scrubbing. Visible on
 #: purpose: a reader of a fixture should see that a value was removed
@@ -206,6 +216,122 @@ def check_contract(
                 ))
                 break
     return breaches
+
+
+# ── The shipped bundle ───────────────────────────────────────────────
+
+
+class ContractBundle(BaseModel):
+    """Every contract for one source system, with its provenance.
+
+    ``provenance`` is carried per payload kind for one reason: a
+    contract derived from a hand-written payload is not evidence about
+    the live API, and a verification report that presented it as
+    verified would be worse than no report. The same distinction
+    ``lltpm runtime coverage`` draws between an engine and a projection.
+    """
+    source_system: str
+    note: str = ""
+    contracts: dict[str, PayloadContract] = Field(default_factory=dict)
+    provenance: dict[str, str] = Field(default_factory=dict)
+    recorded_at: dict[str, str] = Field(default_factory=dict)
+
+    def is_evidence(self, payload_kind: str) -> bool:
+        """Whether this contract came from a real recording."""
+        return self.provenance.get(payload_kind) == "recorded"
+
+    @property
+    def verifiable_kinds(self) -> list[str]:
+        return sorted(k for k in self.contracts if self.is_evidence(k))
+
+    @property
+    def unverifiable_kinds(self) -> list[str]:
+        return sorted(k for k in self.contracts if not self.is_evidence(k))
+
+
+def contract_bundle_path(source_system: str) -> pathlib.Path:
+    return CONTRACT_DATA_DIR / f"{source_system}.json"
+
+
+def load_contract_bundle(source_system: str) -> ContractBundle | None:
+    """The shipped contracts, or ``None`` when none were recorded."""
+    path = contract_bundle_path(source_system)
+    if not path.exists():
+        return None
+    return ContractBundle.model_validate_json(path.read_text())
+
+
+def available_contract_bundles() -> list[str]:
+    if not CONTRACT_DATA_DIR.exists():
+        return []
+    return sorted(path.stem for path in CONTRACT_DATA_DIR.glob("*.json"))
+
+
+#: How strong a fixture's provenance is, lowest being strongest. Where
+#: two fixtures cover one payload kind, the contract takes the strongest
+#: available so it is never weaker than the evidence on hand.
+PROVENANCE_RANK = {"recorded": 0, "derived": 1, "hand_written": 2}
+
+
+class ContractSource(BaseModel):
+    """Payloads for one kind, and what they are."""
+    payload_kind: str
+    payloads: list[dict[str, Any]] = Field(default_factory=list)
+    provenance: str = "recorded"
+    recorded_at: str = ""
+
+
+def build_contract_bundle(
+    *,
+    source_system: str,
+    sources: list[ContractSource],
+    paths_by_kind: dict[str, tuple[str, ...]],
+    note: str = "",
+) -> ContractBundle:
+    """Derive a bundle from recorded payloads.
+
+    Several sources may cover one payload kind — a recording plus
+    variants derived from it. The strongest provenance wins, and the
+    contract is extracted from every sample of that kind so an optional
+    field stays optional.
+    """
+    strongest: dict[str, str] = {}
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    recorded_at: dict[str, str] = {}
+
+    for source in sources:
+        kind = source.payload_kind
+        if kind not in paths_by_kind:
+            continue
+        grouped.setdefault(kind, []).extend(source.payloads)
+        rank = PROVENANCE_RANK.get(source.provenance, len(PROVENANCE_RANK))
+        current = PROVENANCE_RANK.get(
+            strongest.get(kind, ""), len(PROVENANCE_RANK) + 1,
+        )
+        if rank < current:
+            strongest[kind] = source.provenance
+            recorded_at[kind] = source.recorded_at
+
+    return ContractBundle(
+        source_system=source_system,
+        note=note,
+        contracts={
+            kind: extract_contract(
+                source_system=source_system, payload_kind=kind,
+                payloads=payloads, paths=paths_by_kind[kind],
+            )
+            for kind, payloads in sorted(grouped.items())
+        },
+        provenance=dict(sorted(strongest.items())),
+        recorded_at=dict(sorted(recorded_at.items())),
+    )
+
+
+def serialize_contract_bundle(bundle: ContractBundle) -> str:
+    """Canonical JSON, so a regenerated bundle diffs field by field."""
+    return json.dumps(
+        bundle.model_dump(mode="json"), indent=1, sort_keys=True,
+    ) + "\n"
 
 
 # ── What the GitHub normalizers actually read ────────────────────────

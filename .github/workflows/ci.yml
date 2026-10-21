@@ -83,6 +83,28 @@ jobs:
             --follow --start 1 --poll-seconds 0.1 --idle-timeout 1
           python -m lltpm runtime verify --db /tmp/ci.db
 
+      # The integration path offline: everything except the two commands
+      # that touch the network. `verify` and `record` are deliberately
+      # not run here — a build that depended on GitHub's live API would
+      # fail for reasons that are not about this code.
+      - name: Integrations work offline
+        run: |
+          python -m lltpm integrations sources
+          python -m lltpm integrations normalize \
+            tests/fixtures/github/pull_requests.json \
+            --kind pull_request --repository acme/atlas-service \
+            --project atlas --output /tmp/envelopes.json
+          python -c "
+          import json, pathlib
+          envelopes = json.loads(pathlib.Path('/tmp/envelopes.json').read_text())
+          assert envelopes, 'no evidence was produced'
+          assert all(e['idempotency_key'] for e in envelopes)
+          assert all(e['observed_at'] < e['received_at'] for e in envelopes), (
+              'reality time must precede knowledge time'
+          )
+          print(f'{len(envelopes)} envelope(s) normalized offline')
+          "
+
       - name: Structured logs are machine-readable
         run: |
           python -m lltpm runtime --log-level info --log-format json \

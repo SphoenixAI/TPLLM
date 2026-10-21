@@ -17,115 +17,33 @@ construction.
 from __future__ import annotations
 
 import json
-import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from pathlib import Path
 
 import click
-from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from lltpm.observability import (
-    DEFAULT_LOG_FORMAT,
-    DEFAULT_LOG_LEVEL,
-    LOG_FORMAT_CHOICES,
-    LOG_LEVEL_CHOICES,
-    configure_logging,
+from lltpm.cli_support import (
+    DEFAULT_DB,
+    DEFAULT_ORGANIZATION,
+    console,
+    db_option,
+    errors,
+    horizon as _horizon,
+    known_projects as _known_projects,
+    logging_options,
+    manifest as _manifest,
+    now as _now,
+    open_persistence as _open_persistence,
+    resolve_db as _resolve_db,
+    seeded_projection as _seeded_projection,
+    start_logging,
 )
-
-console = Console()
-# Notes and warnings go to stderr so `lltpm runtime export > file.json`
-# produces clean JSON while the operator still sees the caveats.
-errors = Console(stderr=True)
-
-DEFAULT_DB = ""  # resolved against LLTPM_DATA_DIR; see _resolve_db
-DEFAULT_ORGANIZATION = "default"
-DB_FILENAME = "lltpm.db"
-
-
-def _resolve_db(path: str) -> str:
-    """Where the journal actually lives.
-
-    An explicit --db wins. Otherwise the database goes in the configured
-    data directory, which is what makes the container work: the image
-    sets LLTPM_DATA_DIR=/data and mounts a volume there, while the
-    working directory is /app. A bare relative default would put the
-    journal at /app/lltpm.db — off the volume, and destroyed on restart.
-    Durability that a default deployment throws away is not durability.
-    """
-    if path:
-        return path
-
-    data_dir = os.getenv("LLTPM_DATA_DIR")
-    if data_dir:
-        directory = Path(data_dir)
-        directory.mkdir(parents=True, exist_ok=True)
-        return str(directory / DB_FILENAME)
-    return DB_FILENAME
-
-
-def _open_persistence(path: str):
-    from lltpm.persistence import SQLitePersistenceConfig
-    from lltpm.persistence.sqlite import initialize_sqlite_persistence
-
-    return initialize_sqlite_persistence(
-        SQLitePersistenceConfig(path=path)
-    )
-
-
-def _manifest(policy_fingerprint: str = "cli-default"):
-    from lltpm.persistence import build_manifest
-    from lltpm.runtime.baselines import (
-        BASELINE_RECOMMENDATION_METHOD,
-        BASELINE_SCENARIO_METHOD,
-    )
-
-    # The manifest records that these artifacts came from baselines, so
-    # nothing later mistakes them for model-derived output.
-    return build_manifest(
-        policy_fingerprint=policy_fingerprint,
-        scenario_method_version=BASELINE_SCENARIO_METHOD,
-        recommendation_method_version=BASELINE_RECOMMENDATION_METHOD,
-    )
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
-
-
-def _horizon(now: datetime, days: int):
-    """A forecast needs a stated window; this is the CLI's default one.
-
-    Explicit rather than implicit: the horizon bounds what the lattice
-    is allowed to claim, so it is a parameter rather than a constant
-    buried in the engine.
-    """
-    from lltpm.scenarios.models import ScenarioHorizon
-
-    return ScenarioHorizon(
-        start_at=now,
-        end_at=now + timedelta(days=days),
-        maximum_depth=4,
-        minimum_branch_probability=0.02,
-    )
 
 
 @click.group(name="runtime")
-@click.option(
-    "--log-level",
-    type=click.Choice(LOG_LEVEL_CHOICES),
-    default=DEFAULT_LOG_LEVEL,
-    show_default=True,
-    help="Operational logging verbosity; logs go to stderr",
-)
-@click.option(
-    "--log-format",
-    type=click.Choice(LOG_FORMAT_CHOICES),
-    default=DEFAULT_LOG_FORMAT,
-    show_default=True,
-    help="'json' emits one JSON object per line for a log pipeline",
-)
+@logging_options
 def runtime_cli(log_level: str, log_format: str) -> None:
     """Live organizational intelligence: ingest, inspect, replay.
 
@@ -137,10 +55,7 @@ def runtime_cli(log_level: str, log_format: str) -> None:
     deduplicated, why a revision was not promoted — on stderr, so
     redirecting stdout to a file keeps both usable.
     """
-    # The one place in LLTPM that configures logging. Every module below
-    # emits through the standard library and configures nothing, which
-    # is what lets LLTPM be embedded without hijacking its host's logs.
-    configure_logging(level=log_level, log_format=log_format)
+    start_logging(log_level, log_format)
 
 
 # ── Read-only inspection ─────────────────────────────────────────────
@@ -203,29 +118,6 @@ def status(db: str, organization: str) -> None:
         persistence.close()
 
 
-def _seeded_projection(persistence, organization: str):
-    """A projection whose revision counter continues from durable state.
-
-    Each CLI invocation builds a fresh in-memory projection, so without
-    this every ingest would allocate "revision-1" again and the second
-    one would dedupe against the first's audit marker — making two
-    genuinely different recomputations look like one.
-    """
-    from lltpm.runtime import RuntimeStateStore as RuntimeProjection
-
-    projection = RuntimeProjection(organization_id=organization)
-    existing = (
-        persistence.state.list_revisions(organization)
-        if hasattr(persistence.state, "list_revisions") else []
-    )
-    highest = 0
-    for revision in existing:
-        suffix = revision.revision_id.rsplit("-", 1)[-1]
-        if suffix.isdigit():
-            highest = max(highest, int(suffix))
-    return projection.with_revision_index(highest)
-
-
 def _head_sequence(persistence) -> int:
     head = persistence.journal.latest_position()
     return head.global_sequence if head is not None else 0
@@ -275,14 +167,6 @@ def _follow(
         errors.print("\n[dim]stopped[/dim]")
         return
     errors.print(f"[dim]idle; stopped at sequence {last}[/dim]")
-
-
-def _known_projects(persistence) -> list[str]:
-    from lltpm.runtime.sources import JournalBackedDataSource
-
-    return JournalBackedDataSource(
-        journal=persistence.journal,
-    ).project_ids()
 
 
 @runtime_cli.command()

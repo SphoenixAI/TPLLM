@@ -336,6 +336,70 @@ Nothing in the log describes an individual's activity. The field
 vocabulary is a closed list and a source guardrail walks every log call
 in the package to keep it that way.
 
+### Reading a real source system
+
+`lltpm integrations` is the path from a provider's API to durable
+evidence. It is read-only against the provider by construction: the
+reader can issue nothing but GET, and a test asserts no write verb
+appears in it.
+
+```bash
+# What can be read, and how trustworthy each contract is
+lltpm integrations sources
+
+# See what a payload would become — offline, no network, no database
+lltpm integrations normalize pulls.json --kind pull_request \
+  --repository acme/atlas --project atlas
+
+# The live path: read a repository and journal what it says
+lltpm integrations ingest --repository acme/atlas --project atlas \
+  --db lltpm.db --organization acme
+
+# Check the recorded contracts still match the live API
+lltpm integrations verify --repository acme/atlas
+```
+
+Three things it refuses to do, because each alternative is a specific
+false statement:
+
+- **It never guesses a project.** Bindings are declared. An unbound
+  repository is reported, not filed under a plausible project.
+- **It never invents an event class.** A push, a comment-only review and
+  a draft pull request are reported as uninterpreted with a stated
+  reason. Merged code stays technical evidence, not feature completion.
+- **It never stamps `now` on a past fact.** A pull request merged in
+  February and read in October occurred in February; a payload with no
+  usable timestamp is rejected rather than dated today.
+
+Idempotency follows the published guidance for webhook delivery: the key
+is the provider's own event id — `X-GitHub-Delivery` for a delivery, the
+event id from the Events API, or a polled resource's identity plus its
+version — never a timestamp and never a payload hash. Reading the same
+repository twice appends nothing.
+
+#### Keeping the recordings honest
+
+The offline tests run against payloads recorded from the live API, in
+the shape of Fowler's self-initializing fake: record once, replay
+offline, re-check the recordings on their own schedule. The contract is
+the set of fields the normalizers actually read, with the types they may
+take — so a new GitHub field cannot fail the build and a renamed
+`merged_at` must.
+
+`lltpm integrations sources` reports the provenance of every contract,
+and `verify` refuses to report an unrecorded one as passing:
+
+```
+│ github │ event        │ recorded     │
+│ github │ issue        │ derived      │
+│ github │ pull_request │ recorded     │
+│ github │ review       │ hand-written │
+```
+
+Recorded fixtures name nobody: handles, account ids and repository names
+are pseudonymized before anything is written, and `record` refuses to
+write a fixture that still discloses something.
+
 A worked example lives in `examples/evidence.json` — three pieces of
 evidence across two projects, enough for the engines to produce a
 revision. The whole walkthrough runs in CI on every push, so if the
