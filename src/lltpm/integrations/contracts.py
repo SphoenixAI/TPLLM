@@ -35,6 +35,7 @@ from __future__ import annotations
 import hashlib
 import json
 import pathlib
+from enum import Enum
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -236,13 +237,41 @@ class ContractBundle(BaseModel):
     provenance: dict[str, str] = Field(default_factory=dict)
     recorded_at: dict[str, str] = Field(default_factory=dict)
 
+    def evidence_for(self, payload_kind: str) -> "ContractEvidence":
+        """What this contract is evidence *about*.
+
+        Three answers, not two. A contract recorded from the live API can
+        be re-checked against it. A contract taken verbatim from the
+        provider's own published example is evidence that the shape is
+        the documented one — which is worth more than nothing and less
+        than a recording, because documentation drifts. Anything derived
+        or hand-written is evidence about neither.
+        """
+        provenance = self.provenance.get(payload_kind, "")
+        if provenance == "recorded":
+            return ContractEvidence.LIVE_VERIFIABLE
+        if provenance == "official_documentation":
+            return ContractEvidence.OFFICIAL
+        return ContractEvidence.NONE
+
     def is_evidence(self, payload_kind: str) -> bool:
-        """Whether this contract came from a real recording."""
-        return self.provenance.get(payload_kind) == "recorded"
+        """Whether a live check can confirm this contract."""
+        return self.evidence_for(payload_kind) is (
+            ContractEvidence.LIVE_VERIFIABLE
+        )
 
     @property
     def verifiable_kinds(self) -> list[str]:
+        """Kinds a live API check can confirm — recordings only."""
         return sorted(k for k in self.contracts if self.is_evidence(k))
+
+    @property
+    def official_kinds(self) -> list[str]:
+        """Kinds backed by the provider's own published example."""
+        return sorted(
+            k for k in self.contracts
+            if self.evidence_for(k) is ContractEvidence.OFFICIAL
+        )
 
     @property
     def unverifiable_kinds(self) -> list[str]:
@@ -267,10 +296,33 @@ def available_contract_bundles() -> list[str]:
     return sorted(path.stem for path in CONTRACT_DATA_DIR.glob("*.json"))
 
 
+class ContractEvidence(str, Enum):
+    """What a contract is evidence about, which is not the same as
+    whether it exists."""
+    LIVE_VERIFIABLE = "live_verifiable"
+    OFFICIAL = "official_documentation"
+    NONE = "none"
+
+
 #: How strong a fixture's provenance is, lowest being strongest. Where
 #: two fixtures cover one payload kind, the contract takes the strongest
 #: available so it is never weaker than the evidence on hand.
-PROVENANCE_RANK = {"recorded": 0, "derived": 1, "hand_written": 2}
+#:
+#: ``official_documentation`` is a payload copied from the provider's own
+#: published example, unmodified. It sits below a recording because
+#: documentation drifts from implementations, and above ``derived``
+#: because the provider published it. Calling such a fixture "recorded"
+#: would claim a live check that never happened, which is the one thing
+#: this vocabulary exists to prevent.
+PROVENANCE_RANK = {
+    "recorded": 0,
+    "official_documentation": 1,
+    "derived": 2,
+    "hand_written": 3,
+}
+
+#: The only values a fixture index may declare.
+PROVENANCE_VALUES = frozenset(PROVENANCE_RANK)
 
 
 class ContractSource(BaseModel):

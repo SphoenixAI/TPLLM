@@ -1020,3 +1020,63 @@ def normalize_github_payloads(
         },
     )
     return outcome
+
+
+def normalize_payload(
+    *,
+    payload_kind: str,
+    payload: dict[str, Any],
+    bindings: ProjectBindings,
+    received_at: datetime,
+    scope: str = "",
+    delivery_id: str | None = None,
+    event_name: str = "",
+) -> NormalizationOutcome:
+    """GitHub's uniform entry point for the provider registry.
+
+    Every provider exposes this same signature so the CLI and the
+    cross-provider tests can treat providers interchangeably instead of
+    carrying a conditional per provider. ``scope`` is whatever the
+    provider calls the container a payload lives in — here, a
+    repository.
+
+    An unknown kind is reported rather than guessed at, for the same
+    reason an unmapped event class is: a dispatcher that fell back to
+    "probably a pull request" would invent a fact.
+    """
+    if payload_kind == "pull_request":
+        return normalize_github_pull_request(
+            payload, bindings=bindings, received_at=received_at,
+            repository=scope, delivery_id=delivery_id,
+        )
+    if payload_kind == "issue":
+        return normalize_github_issue(
+            payload, bindings=bindings, received_at=received_at,
+            repository=scope, delivery_id=delivery_id,
+        )
+    if payload_kind == "review":
+        return normalize_github_review(
+            payload, bindings=bindings, received_at=received_at,
+            repository=scope, delivery_id=delivery_id,
+        )
+    if payload_kind == "event":
+        return normalize_github_event(
+            payload, bindings=bindings, received_at=received_at,
+        )
+    if payload_kind == "webhook":
+        return normalize_github_webhook(
+            event_name=event_name, delivery_id=delivery_id or "",
+            payload=payload, bindings=bindings, received_at=received_at,
+        )
+
+    outcome = NormalizationOutcome()
+    outcome.rejected.append(SkippedPayload(
+        source_system=GITHUB, external_scope=scope,
+        payload_kind=payload_kind, payload_id="?",
+        reason=(
+            f"'{payload_kind}' is not a GitHub payload kind this "
+            f"normalizer handles; a dispatcher that guessed would invent "
+            f"a fact"
+        ),
+    ))
+    return outcome
