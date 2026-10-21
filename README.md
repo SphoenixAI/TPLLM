@@ -263,8 +263,16 @@ where LLTPM departs from the standard answer on purpose.
   finalized inside one guarded call, kill switch first.
 - **Durability** — an append-only hash-chained journal is the source of
   truth; every derived projection can be deleted and rebuilt from it.
-- **Not a surveillance tool** — the system models organizational mechanics,
-  never individual productivity, and tests enforce that at the source level.
+- **The reasoning stack is not a surveillance tool** — it models
+  organizational mechanics, never individual productivity, and a source-level
+  guardrail asserts that no model in the layered stack measures a person.
+  The original TPM surface predates that rule and is **not** clean: five
+  models there measure individuals, including a quarterly performance
+  review with letter grades that the agent can generate.
+  `tests/test_person_measurement_scope.py` enumerates every one of them
+  and why it is there, and fails if the list changes in either direction.
+  Whether that surface should exist is a product decision; what is not
+  negotiable is that it stays enumerated and cannot spread to new code.
 - **Your history is yours** — durable state is JSON in one SQLite file, and
   `lltpm runtime export` gives you the journal, decisions, recommendations
   and evidence provenance without parsing anything opaque.

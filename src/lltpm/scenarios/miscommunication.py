@@ -11,7 +11,6 @@ decision is present in downstream state. None of it measures a person.
 
 from __future__ import annotations
 
-from datetime import datetime
 
 from lltpm.scenarios.interaction_models import (
     DecisionPropagationAssessment,
@@ -77,8 +76,17 @@ def assess_decision_propagation(
     """Coverage is measured from downstream *state*, never from delivery.
 
     ``downstream_state_decisions`` maps an entity to the decision its
-    current state actually reflects. An entity absent from that map has
-    unknown context — it is not assumed to have received anything.
+    current state actually reflects, within this decision's lineage. An
+    entity absent from that map has unknown context — it is not assumed
+    to have received anything.
+
+    ``superseded_decision_ids`` does not change the classification: a
+    state reflecting a different decision of this lineage is stale
+    either way. It changes what can be *said* about it. "Reflects a
+    decision this one is known to supersede" is a claim with evidence
+    behind it; "reflects some other decision" is an observation. The
+    explanation distinguishes them rather than asserting the stronger
+    one for every mismatch.
     """
     superseded = set(superseded_decision_ids or [])
     confirmed: list[str] = []
@@ -99,6 +107,10 @@ def assess_decision_propagation(
 
     total = len(expected_recipients)
     coverage = len(confirmed) / total if total else 0.0
+    known_superseded = sum(
+        1 for entity in stale
+        if downstream_state_decisions.get(entity) in superseded
+    )
 
     return DecisionPropagationAssessment(
         decision_id=decision_id,
@@ -109,9 +121,14 @@ def assess_decision_propagation(
         propagation_coverage=round(coverage, 4),
         explanation=(
             f"{len(confirmed)}/{total} recipient(s) show the current "
-            f"decision in their downstream state; {len(stale)} reflect a "
-            f"superseded decision and {len(unknown)} have no evidence of "
-            f"current context. Delivery is not treated as comprehension."
+            f"decision in their downstream state; {len(stale)} reflect an "
+            f"earlier one"
+            + (
+                f" ({known_superseded} of them a decision this one is "
+                f"known to supersede)" if known_superseded else ""
+            )
+            + f"; {len(unknown)} have no evidence of current context. "
+            f"Delivery is not treated as comprehension."
         ),
     )
 

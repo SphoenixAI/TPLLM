@@ -490,6 +490,67 @@ Stated here rather than discovered later.
   `datetime.now(UTC)` returns aware, and the bitemporal layer is
   sensitive to the difference (§3). The new ingest boundary is already
   explicit about it.
+- **The no-worker-scoring claim was scoped wrongly.** The README and
+  docs/assistant-development-guide.md stated that the system models organizational mechanics and
+  never individual productivity, and that source-level tests enforce
+  it. The first half is the design intent of the layered stack and is
+  true there. The second half was not: the existing guardrails enumerate
+  runtime modules by hand and never looked at the original TPM surface,
+  which contains five per-person measurement models — including
+  `QuarterlyEvaluation`, a performance review with responsiveness,
+  reliability, collaboration and overall letter grades, reachable from
+  the agent through a `generate_evaluation` tool.
+
+  Both documents now say which part of the system the invariant covers,
+  and `tests/test_person_measurement_scope.py` detects per-person
+  measurement by model *shape* — a person as the declared subject plus a
+  grade, score, rate or hours count — rather than by vocabulary, because
+  the three earlier vocabulary-based guardrails in this codebase each
+  flagged something innocent and had to be narrowed. The layered stack
+  is asserted clean; the legacy classes are enumerated with
+  justifications, and the test fails if the list grows, shrinks, or a
+  new module joins it.
+
+  Whether that surface should exist is a product decision about shipped,
+  agent-callable functionality and is deliberately left open rather than
+  resolved here. What is closed is the gap between the claim and the
+  code.
+- **There is pre-existing lint debt in the original TPM surface, and it
+  was deliberately not swept.** `python -m pyflakes src/lltpm/` reports
+  103 findings that are not already annotated: 88 unused imports, 11
+  f-strings with no placeholders, and 4 locals assigned and never read.
+  A further 8 findings are availability probes the code already marks
+  `# noqa: F401` — pyflakes does not read those annotations, flake8 and
+  ruff do, which is an argument for switching tools rather than for
+  editing the code. Every module added in this arc is clean under the
+  same tool.
+
+  A mechanical sweep was attempted and reverted three times, and each
+  failure is worth recording because each one looked safe:
+
+  1. Removing a name from a multi-name `from ... import (...)` left
+     malformed blocks with a dangling indented parenthesis.
+  2. Stripping the `f` prefix from an f-string that pyflakes flagged as
+     having no placeholders broke an *implicitly concatenated* group.
+     Adjacent string literals are one AST node, so the prefix that was
+     stripped was not the fragment that lacked placeholders — it
+     silently turned the autonomy guardrail's blocker message into
+     literal braces, in the one place the system explains to a person
+     why it declined to act autonomously.
+  3. Re-rendering import statements from the AST to fix (1) dropped the
+     indentation of function-local imports, producing syntax errors in
+     two modules.
+
+  The script written to repair (2) was itself about to add `f` prefixes
+  to HTML templates full of literal CSS braces. The full test suite
+  passed after (1) and after (2); it was the linter and a reading of
+  the diff that caught them, not the tests.
+
+  The lesson is the one the earlier guardrail work already taught here:
+  a mechanical edit across 60 files needs a narrower predicate than
+  "the linter flagged it", and a 60-file diff is a poor trade for a
+  lint badge. The debt is listed instead of swept, and the four dead
+  locals are named in §12 because two of them were worth a second look.
 - **Jira and Slack have no normalizers yet.** Only GitHub does. Their
   endpoints are unreachable from the current build environment, so a
   recorded contract cannot be made for them, and writing adapters whose
@@ -515,3 +576,39 @@ Stated here rather than discovered later.
 - Evans' anti-corruption layer, via *What is Domain-Driven Design?* ch. 4 (Context Mapping) — <https://oreilly.com/library/view/what-is-domain-driven/9781492057802/ch04.html>
 - W3C PROV-O — <https://www.w3.org/TR/prov-o/>
 - Standard Webhooks, on using the delivery id as the idempotency key — <https://www.standardwebhooks.com/>
+
+---
+
+## 12. What the linter found that was worth a second look
+
+Four locals are assigned and never read. Two are nothing; two were
+reporting something that was not true.
+
+- `workflows/delegation_engine.py` `profile_map`, and
+  `workflows/task_board_engine.py` `remaining` — built and dropped.
+  Harmless, left in place with the rest of the lint debt.
+- `scenarios/queries.py` `controllable` — `summarize_path_risk`
+  computes which transitions on a path are controllable and discards
+  the result. It is not an omission: `rank_paths_by_quadrant` computes
+  the same thing again for the `most_preventable` view. Duplicated and
+  then thrown away rather than missing.
+- `scenarios/miscommunication.py` `superseded` — **a real defect, now
+  fixed.** `assess_decision_propagation` accepted
+  `superseded_decision_ids`, turned it into a set, and never read it,
+  while its explanation told every reader that the stale recipients
+  "reflect a superseded decision" — a claim the function had no basis
+  for, since it classified *any* mismatch as stale.
+
+  The first attempt at a fix changed the classification so that only a
+  known-superseded decision counted as stale. An existing test caught
+  it: under the documented contract, `downstream_state_decisions` maps
+  an entity to the decision its state reflects *within this lineage*,
+  so a mismatch genuinely is stale and the parameter is not needed for
+  that. The classification was right and the wording was wrong. The fix
+  keeps the classification and uses the parameter for what it can
+  honestly support — distinguishing "reflects a decision this one is
+  known to supersede" from "reflects an earlier one" — so the stronger
+  claim is only made where there is evidence for it.
+
+  Worth recording that the test suite caught a change that was made on
+  a misreading, and the linter caught the misreading's cause.

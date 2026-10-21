@@ -266,3 +266,48 @@ class TestRiskModelInvariants:
             impact=0.6,
         )
         assert risk.probability != risk.probability_confidence
+
+
+class TestSupersededDecisionsAreNamedNotAssumed:
+    """Commit 40 — the `superseded_decision_ids` parameter was dead.
+
+    It was accepted, turned into a set, and never read, while the
+    explanation told every reader that the stale recipients "reflect a
+    superseded decision" — a claim the function had no basis for. The
+    classification was right; the wording was not.
+    """
+
+    def _assess(self, **extra):
+        return assess_decision_propagation(
+            decision_id="dec-v3",
+            expected_recipients=["payments", "mobile"],
+            downstream_state_decisions={
+                "payments": "dec-v3", "mobile": "dec-v2",
+            },
+            **extra,
+        )
+
+    def test_classification_does_not_depend_on_the_parameter(self):
+        """A state reflecting a different decision of this lineage is
+        stale whether or not we were told what this one supersedes."""
+        without = self._assess()
+        with_list = self._assess(superseded_decision_ids=["dec-v2"])
+        assert without.stale_context_entity_ids == ["mobile"]
+        assert with_list.stale_context_entity_ids == ["mobile"]
+        assert without.propagation_coverage == with_list.propagation_coverage
+
+    def test_a_known_supersession_is_claimed(self):
+        assessment = self._assess(superseded_decision_ids=["dec-v2"])
+        assert "known to supersede" in assessment.explanation
+
+    def test_an_unexplained_mismatch_is_not_called_superseded(self):
+        assessment = self._assess()
+        assert "known to supersede" not in assessment.explanation
+        assert "reflect an earlier one" in assessment.explanation
+
+    def test_an_unrelated_superseded_id_claims_nothing(self):
+        assessment = self._assess(superseded_decision_ids=["dec-v1"])
+        assert "known to supersede" not in assessment.explanation, (
+            "mobile reflects dec-v2, which is not in the list; the claim "
+            "must be about the decision actually reflected"
+        )

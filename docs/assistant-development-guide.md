@@ -168,11 +168,23 @@ These are enforced by tests and should not be relaxed casually:
   a surname is worse than reporting an unlinked identity.
 - **Replay touches nothing external** — rebuilding history never re-sends a
   message or re-finalizes a decision.
-- **No worker scoring or activity tracking** — the system models
-  organizational mechanics (capacity, dependencies, authority, information
-  flow), never individual productivity, and source-level guardrail tests
-  enforce it. This covers logs too: the log field vocabulary is a closed
-  list and a guardrail walks every log call in `src/lltpm`.
+- **No worker scoring or activity tracking — in the layered stack.** The
+  organizational-reasoning packages model capacity, dependencies, authority
+  and information flow, never individual productivity, and
+  `tests/test_person_measurement_scope.py` asserts that no model in them
+  has a person as its subject *and* a grade, score, rate or hours count.
+  It covers logs too: the log field vocabulary is a closed list and a
+  guardrail walks every log call in `src/lltpm`.
+
+  The original TPM surface (`models/`, `workflows/`, `tools/`) predates
+  this rule and contains five per-person measurement models —
+  `AttendeeInfo.engagement_score`, `EngagementProfile`, `PersonMetrics`,
+  `QuarterlyEvaluation` (four letter grades, reachable from the agent via
+  `generate_evaluation`) and `PersonTrend`. They are enumerated with
+  justifications in that test, which fails if the list grows, shrinks, or
+  a new module joins it. Do not describe the whole system as free of
+  worker scoring; say which part is, and read that test first if the
+  subject comes up.
 - **Logs are not a second journal** — the journal records what happened
   to the organization (durable, hash-chained, replayed); logs record what
   the process did (transient, never authoritative, never replayed).
