@@ -182,7 +182,7 @@ Instead:
 # Install with dev dependencies
 python -m pip install -e ".[dev]"
 
-# Run tests (2850+)
+# Run tests (3,400+)
 python -m pytest tests/ -q
 
 # Run with integrations
@@ -249,6 +249,9 @@ Design decisions are checked against the published work they overlap
 with in [docs/research-alignment.md](docs/research-alignment.md) — including
 three places where reading the literature exposed a real gap, and two
 where LLTPM departs from the standard answer on purpose.
+
+What was checked before publishing this — and what was deliberately
+not checked — is in [docs/release-audit.md](docs/release-audit.md).
 
 ### What the stack guarantees
 
@@ -352,6 +355,25 @@ log line is authoritative and none is ever replayed.
 Nothing in the log describes an individual's activity. The field
 vocabulary is a closed list and a source guardrail walks every log call
 in the package to keep it that way.
+
+### Optional extras
+
+The core install needs no account and no network. Everything else is an
+extra, so nothing heavy is pulled in by default:
+
+```bash
+pip install lltpm                  # core: the stack, the CLI, the journal
+pip install "lltpm[integrations]"  # GitHub, Jira, Slack, Google Calendar
+pip install "lltpm[dashboard]"     # the FastAPI dashboard
+pip install "lltpm[email]"         # SendGrid delivery
+pip install "lltpm[openai]"        # an OpenAI-compatible model backend
+pip install "lltpm[pdf]"           # PDF export (WeasyPrint)
+pip install "lltpm[voice]"         # local TTS backends
+pip install "lltpm[all]"           # integrations, email, openai, dashboard
+```
+
+`all` deliberately leaves out `pdf` and `voice`: both pull in large
+native dependencies, and neither is needed to run the stack.
 
 ### Reading a real source system
 

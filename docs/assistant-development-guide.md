@@ -43,7 +43,7 @@ This is not urgent — TypeScript handles significant scale. Rust migration is a
 - **Auth**: RBAC (4 roles, 14 permissions), HMAC-SHA256 JWTs, API key → JWT bridge
 - **TTS**: 5 backends — Chatterbox (recommended), Piper, Kokoro, ElevenLabs, System
 - **Integrations**: GitHub, Jira, Slack, Google Calendar, SendGrid
-- **Testing**: pytest, 2850+ tests
+- **Testing**: pytest, 3,400+ tests
 - **Packaging**: Hatchling build system
 - **Durability**: append-only hash-chained event journal, SQLite reference
   backend (stdlib `sqlite3`), deterministic replay
@@ -143,6 +143,12 @@ Fowler's self-initializing fake, W3C PROV-O). Read it before relaxing
 an invariant: several were arrived at independently and then found to
 match prior art, and §11 lists the open limitations so they are not
 rediscovered as bugs.
+
+`docs/release-audit.md` records the open-source release audit: what
+ships, dependency licences, public claims, and an explicit list of
+what it does *not* cover (git history, vulnerability scanning, SBOM,
+dashboard XSS). The assertable parts live in
+`tests/test_release_readiness.py`.
 
 ### Architectural invariants
 

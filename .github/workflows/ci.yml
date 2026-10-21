@@ -51,6 +51,25 @@ jobs:
             tests/test_architecture_boundaries.py \
             tests/test_persistence_architecture.py -q
 
+  release-readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]" build
+
+      # Builds a wheel and inspects it: nothing private ships, the PEP
+      # 561 marker and the recorded contracts do, versions agree, and no
+      # credential is committed outside the test suite. Run separately so
+      # "this is not publishable" is visible in the checks list rather
+      # than buried in three thousand passing tests.
+      - name: Release readiness
+        run: python -m pytest tests/test_release_readiness.py -q
+
   offline-quickstart:
     runs-on: ubuntu-latest
     steps:

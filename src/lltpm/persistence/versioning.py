@@ -53,7 +53,7 @@ def _installed_version(fallback: str) -> str:
         return fallback
 
 
-DECLARED_LLTPM_VERSION = "0.31.0"
+DECLARED_LLTPM_VERSION = "0.41.0"
 LLTPM_VERSION = _installed_version(DECLARED_LLTPM_VERSION)
 JOURNAL_SCHEMA_VERSION = 1
 SNAPSHOT_SCHEMA_VERSION = 1

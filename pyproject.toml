@@ -4,11 +4,34 @@ build-backend = "hatchling.build"
 
 [project]
 name = "lltpm"
-version = "0.31.0"
+version = "0.41.0"
 description = "AI-powered Technical Program Manager agent that replaces meetings with insight"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
+authors = [{ name = "Sphoenix" }]
+keywords = [
+    "technical-program-management",
+    "ai-agent",
+    "organizational-intelligence",
+    "event-sourcing",
+    "bitemporal",
+    "scenario-analysis",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Office/Business :: Scheduling",
+    "Typing :: Typed",
+]
 dependencies = [
     "anthropic>=0.45.0",
     "pydantic>=2.0",
@@ -53,6 +76,12 @@ all = [
 dev = [
     "pytest>=8.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/SphoenixAI/LLTPM"
+Repository = "https://github.com/SphoenixAI/LLTPM"
+Issues = "https://github.com/SphoenixAI/LLTPM/issues"
+Changelog = "https://github.com/SphoenixAI/LLTPM/blob/main/CHANGELOG.md"
 
 [project.scripts]
 lltpm = "lltpm.main:cli"
