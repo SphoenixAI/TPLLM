@@ -84,6 +84,22 @@ def combine_independent_transmissions(probabilities: list[float]) -> float:
     Two separate routes each carrying 0.6 give 0.84, not 1.2. Summing
     would have produced a probability greater than one — which is not a
     probability.
+
+    **No leak term, deliberately.** The canonical noisy-OR of the
+    Bayesian-network literature usually carries a leak: a standing
+    probability that the effect occurs even when every modelled cause is
+    absent, representing causes nobody enumerated. That is a true
+    statement about the world — a project can slip for reasons outside
+    this graph — and it is still left out here, because a leak would
+    give every project a non-zero propagated impact with no mechanism
+    behind it, and this system's job is to say what the structure
+    implies rather than to manufacture risk.
+
+    The consequence is stated rather than hidden: these probabilities
+    under-estimate total risk rather than over-estimating it. For a tool
+    that asks a person to act on them, that is the safer direction to be
+    wrong in, and "no modelled mechanism" reads as no claim rather than
+    as a floor the system invented.
     """
     survival = 1.0
     for probability in probabilities:

@@ -245,6 +245,11 @@ src/lltpm/
 └── tools/                # LLM tool definitions
 ```
 
+Design decisions are checked against the published work they overlap
+with in [docs/research-alignment.md](docs/research-alignment.md) — including
+three places where reading the literature exposed a real gap, and two
+where LLTPM departs from the standard answer on purpose.
+
 ### What the stack guarantees
 
 - **Probability honesty** — likelihood and confidence are separate numbers,

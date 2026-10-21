@@ -163,6 +163,40 @@ AUTHORITATIVE_EVENT_TYPES = frozenset(
 # ── Position and record ──────────────────────────────────────────────
 
 
+class JournalAnchor(BaseModel):
+    """A head hash retained outside the database.
+
+    Hash chaining makes an in-place edit detectable: the link to the
+    predecessor breaks, or a record stops matching its own hash. It does
+    not make a wholesale rewrite detectable, because whoever rewrites
+    the file can recompute every link after the one they changed. Haber
+    and Stornetta's answer in 1990 was to publish the head hash where it
+    could not be retracted; this is that idea at the scale of one local
+    file — the operator keeps the anchor somewhere the database is not,
+    and verification compares against it.
+
+    Frozen, because an anchor that could be edited in place would be
+    the thing it exists to detect.
+    """
+    global_sequence: int
+    record_hash: str
+    created_at: datetime
+    organization_id: str = ""
+    lltpm_version: str = ""
+
+    model_config = {"frozen": True}
+
+    @model_validator(mode="after")
+    def _check(self) -> "JournalAnchor":
+        if self.global_sequence < 1:
+            raise ValueError(
+                "An anchor describes a journal with at least one record."
+            )
+        if not self.record_hash:
+            raise ValueError("An anchor without a hash anchors nothing.")
+        return self
+
+
 class JournalPosition(BaseModel):
     """Where a record sits, by sequence rather than by clock.
 

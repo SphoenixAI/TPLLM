@@ -79,8 +79,16 @@ def status(db: str, organization: str) -> None:
             snapshots=persistence.snapshots,
             state_store=persistence.state,
         )
+        from lltpm.persistence import build_journal_anchor
+
+        anchor = build_journal_anchor(
+            journal=persistence.journal, created_at=_now(),
+            organization_id=organization,
+        )
         console.print(Panel(
             f"Journal head: {report.journal_head_sequence}\n"
+            f"Head hash:    "
+            f"{(anchor.record_hash if anchor else '-')[:32]}\n"
             f"Hash chain:   "
             f"{'valid' if report.journal_hash_valid else 'BROKEN'}\n"
             f"Revision:     {report.current_revision_id or 'none'}\n"
@@ -174,25 +182,130 @@ def _follow(
     "--db", default=DEFAULT_DB,
     help="SQLite path; defaults to $LLTPM_DATA_DIR/lltpm.db",
 )
-def verify(db: str) -> None:
-    """Verify the journal hash chain. Read-only; never repairs."""
-    from lltpm.persistence import verify_journal
+@click.option(
+    "--anchor", "anchor_file", type=click.Path(exists=True), default=None,
+    help="Anchor file from `lltpm runtime anchor`, retained out of band",
+)
+@click.option(
+    "--expect-head", default="",
+    help="Expected head hash, if you kept it rather than a file",
+)
+def verify(db: str, anchor_file: str | None, expect_head: str) -> None:
+    """Verify the journal hash chain. Read-only; never repairs.
+
+    Without an anchor this checks internal consistency: an in-place
+    edit, a reorder, a removed record, a truncation. It cannot detect a
+    history that was rewritten wholesale, because every link in a
+    rewritten chain recomputes correctly.
+
+    With `--anchor` or `--expect-head` it also checks the head against
+    a value you kept somewhere the database is not, which is what
+    catches that case.
+    """
+    from lltpm.persistence import JournalAnchor, verify_journal
+
+    anchor = None
+    if anchor_file:
+        anchor = JournalAnchor.model_validate_json(
+            Path(anchor_file).read_text()
+        )
+    elif expect_head:
+        head = _head_sequence_for(db)
+        if head == 0:
+            errors.print("[red]corrupt[/red] journal is empty")
+            raise SystemExit(1)
+        anchor = JournalAnchor(
+            global_sequence=head, record_hash=expect_head.strip(),
+            created_at=_now(),
+        )
 
     persistence = _open_persistence(_resolve_db(db))
     try:
-        report = verify_journal(journal=persistence.journal)
+        report = verify_journal(journal=persistence.journal, anchor=anchor)
         if report.valid:
             console.print(f"[green]ok[/green] {report.explanation}")
+            if anchor is None:
+                errors.print(
+                    "[dim]no anchor supplied — run `lltpm runtime anchor` "
+                    "and keep the result somewhere this database is "
+                    "not[/dim]"
+                )
             return
         console.print(f"[red]corrupt[/red] {report.explanation}")
         if report.corrupted_at_sequence is not None:
             console.print(
                 f"       first bad sequence: {report.corrupted_at_sequence}"
             )
+        if report.anchor_matched is False:
+            console.print(
+                f"       anchored head: {report.expected_hash}\n"
+                f"       actual head:   {report.actual_hash}"
+            )
         console.print(
             "       History is reported as found, never silently repaired."
         )
         raise SystemExit(1)
+    finally:
+        persistence.close()
+
+
+def _head_sequence_for(db: str) -> int:
+    persistence = _open_persistence(_resolve_db(db))
+    try:
+        return _head_sequence(persistence)
+    finally:
+        persistence.close()
+
+
+@runtime_cli.command()
+@db_option
+@click.option("--organization", default=DEFAULT_ORGANIZATION)
+@click.option(
+    "--output", "-o", type=click.Path(), default="",
+    help="Write the anchor here instead of stdout",
+)
+def anchor(db: str, organization: str, output: str) -> None:
+    """Record the journal head as an anchor to retain out of band.
+
+    Hash chaining makes an in-place edit detectable; it cannot make a
+    wholesale rewrite detectable, because whoever rewrites the file can
+    recompute every link. Haber and Stornetta's answer in 1990 was to
+    publish the head hash where it could not be retracted. This is that
+    idea at the scale of one local file: keep the anchor somewhere the
+    database is not — another host, a ticket, a printout — and pass it
+    back to `lltpm runtime verify --anchor`.
+
+    Read-only. Writes nothing to the journal.
+    """
+    from lltpm.persistence import LLTPM_VERSION, build_journal_anchor
+
+    persistence = _open_persistence(_resolve_db(db))
+    try:
+        built = build_journal_anchor(
+            journal=persistence.journal, created_at=_now(),
+            organization_id=organization, lltpm_version=LLTPM_VERSION,
+        )
+        if built is None:
+            errors.print(
+                "[yellow]journal is empty[/yellow] — there is nothing yet "
+                "to anchor, and an anchor at sequence zero would be a "
+                "statement about history that does not exist"
+            )
+            raise SystemExit(1)
+        text = json.dumps(built.model_dump(mode="json"), indent=2, default=str)
+        if output:
+            Path(output).write_text(text + "\n")
+            console.print(
+                f"[green]anchored[/green] sequence "
+                f"{built.global_sequence} to {output}"
+            )
+        else:
+            click.echo(text)
+        errors.print(
+            "[dim]keep this where the database is not; an anchor stored "
+            "beside the file it anchors protects against accident, not "
+            "against rewriting[/dim]"
+        )
     finally:
         persistence.close()
 

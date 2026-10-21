@@ -42,6 +42,12 @@ class JournalCorruptionReport(BaseModel):
     broken_link_at_sequence: int | None = None
     truncated_after_sequence: int | None = None
     missing_sequences: list[int] = []
+    #: The hash of the last record walked. This is the anchor: retained
+    #: outside the database, it is what distinguishes an edited history
+    #: from a rewritten one.
+    head_record_hash: str | None = None
+    head_sequence: int = 0
+    anchor_matched: bool | None = None
     explanation: str = ""
 
 
@@ -159,21 +165,39 @@ def verify_journal_hash_chain(
     *,
     expected_head_sequence: int | None = None,
     starting_previous_hash: str | None = None,
+    expected_head_hash: str | None = None,
 ) -> JournalCorruptionReport:
     """Walk the chain and report the first place it breaks.
 
     Reports rather than repairs. Silently fixing history would destroy
     the only evidence that something went wrong with it.
+
+    **What the chain alone can and cannot detect.** Hash chaining in the
+    Haber–Stornetta sense makes it impossible to insert, delete or edit a
+    record *in place*: the link to the predecessor breaks, or the
+    record's own hash stops matching. That catches a bad restore, a
+    partial write, a manual UPDATE — the realistic failures. It does not
+    catch an actor who can rewrite the whole file, because they can
+    recompute every link after the one they changed. Their original
+    answer to this was to publish the head hash where it could not be
+    retracted.
+
+    ``expected_head_hash`` is that mechanism, scaled to a single local
+    file: an operator retains the head hash out of band and passes it
+    back. A rewritten history is internally consistent and will not
+    match it. Without an anchor this function is honest about what it
+    checked, which is internal consistency.
     """
     if not records:
-        if expected_head_sequence:
+        if expected_head_sequence or expected_head_hash:
             return JournalCorruptionReport(
                 valid=False,
                 truncated_after_sequence=0,
+                anchor_matched=False if expected_head_hash else None,
                 explanation=(
                     f"Journal is empty but sequence "
-                    f"{expected_head_sequence} was expected; history is "
-                    f"missing rather than absent."
+                    f"{expected_head_sequence or '?'} was expected; history "
+                    f"is missing rather than absent."
                 ),
             )
         return JournalCorruptionReport(valid=True, explanation="Empty journal.")
@@ -226,11 +250,14 @@ def verify_journal_hash_chain(
         previous_sequence = sequence
 
     head = ordered[-1].position.global_sequence
+    head_hash = ordered[-1].record_hash
     if expected_head_sequence is not None and head < expected_head_sequence:
         return JournalCorruptionReport(
             valid=False,
             truncated_after_sequence=head,
             missing_sequences=missing,
+            head_record_hash=head_hash,
+            head_sequence=head,
             explanation=(
                 f"Journal ends at sequence {head} but {expected_head_sequence}"
                 f" was expected; history is incomplete. The missing records "
@@ -242,15 +269,48 @@ def verify_journal_hash_chain(
             valid=False,
             missing_sequences=missing,
             broken_link_at_sequence=missing[0],
+            head_record_hash=head_hash,
+            head_sequence=head,
             explanation=(
                 f"Sequence gap at {missing}; records were removed from the "
                 f"middle of history."
             ),
         )
 
+    if expected_head_hash is not None and expected_head_hash != head_hash:
+        # The chain is internally consistent and still wrong: every link
+        # recomputes, which is exactly what a wholesale rewrite produces.
+        return JournalCorruptionReport(
+            valid=False,
+            head_record_hash=head_hash,
+            head_sequence=head,
+            anchor_matched=False,
+            expected_hash=expected_head_hash,
+            actual_hash=head_hash,
+            explanation=(
+                f"The chain is internally consistent through sequence "
+                f"{head} but its head does not match the retained anchor. "
+                f"An in-place edit breaks a link; a rewritten history does "
+                f"not. This is the case an anchor exists to catch."
+            ),
+        )
+
     return JournalCorruptionReport(
         valid=True,
-        explanation=f"Hash chain verified through sequence {head}.",
+        head_record_hash=head_hash,
+        head_sequence=head,
+        anchor_matched=(
+            True if expected_head_hash is not None else None
+        ),
+        explanation=(
+            f"Hash chain verified through sequence {head}"
+            + (
+                " and matches the retained anchor."
+                if expected_head_hash is not None
+                else ". Internal consistency only: no anchor was supplied, "
+                     "so a wholesale rewrite would not be detected."
+            )
+        ),
     )
 
 

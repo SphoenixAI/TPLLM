@@ -232,3 +232,34 @@ class TestTransmissionIsStructural:
                 f"propagation must not model '{forbidden}' — transmission "
                 f"is a property of shared resources, not of people."
             )
+
+
+class TestNoLeakTerm:
+    """Commit 39 — a documented departure from the canonical noisy-OR.
+
+    The Bayesian-network form usually carries a leak: a standing
+    probability that the effect happens even when every modelled cause
+    is absent. It is left out here on purpose, and a test keeps it a
+    decision rather than something that drifts in.
+    """
+
+    def test_no_modelled_mechanism_means_no_claim(self):
+        assert combine_independent_transmissions([]) == 0.0, (
+            "a leak term would give every project a floor probability "
+            "with no mechanism behind it; absence of a mechanism must "
+            "read as no claim"
+        )
+
+    def test_a_certain_mechanism_saturates_without_exceeding_one(self):
+        assert combine_independent_transmissions([1.0, 0.5]) == 1.0
+
+    def test_two_moderate_routes_combine_below_their_sum(self):
+        assert combine_independent_transmissions([0.6, 0.6]) == 0.84
+
+    def test_the_error_direction_is_under_estimation(self):
+        """Stated as a property: with no leak, the combined probability
+        can never exceed what the modelled mechanisms justify."""
+        mechanisms = [0.3, 0.4, 0.2]
+        combined = combine_independent_transmissions(mechanisms)
+        assert combined < sum(mechanisms)
+        assert combined >= max(mechanisms)

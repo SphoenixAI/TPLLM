@@ -61,6 +61,7 @@ from lltpm.persistence.integrity import (
 )
 from lltpm.persistence.journal import (
     InMemoryEventJournalStore,
+    build_journal_anchor,
     build_journal_record,
     inspect_journal_range,
     records_by_event_type,
@@ -69,6 +70,7 @@ from lltpm.persistence.journal import (
 from lltpm.persistence.models import (
     AUTHORITATIVE_EVENT_TYPES,
     EVENT_TYPE_CATEGORY,
+    JournalAnchor,
     DurableEvidenceRecord,
     DurableOutboundIntent,
     ExecutionContext,
@@ -160,6 +162,8 @@ from lltpm.persistence.versioning import (
 
 __all__ = [
     "AUTHORITATIVE_EVENT_TYPES",
+    "JournalAnchor",
+    "build_journal_anchor",
     "DEFAULT_BATCH_SIZE",
     "DEFAULT_POLL_SECONDS",
     "follow_journal",

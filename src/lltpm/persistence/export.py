@@ -73,6 +73,11 @@ class ExportIntegrity(BaseModel):
     hash_chain_valid: bool = True
     verification_explanation: str = ""
     corrupted_at_sequence: int | None = None
+    #: The head hash, so a recipient can anchor this export against a
+    #: value they were given separately. An export that carried only
+    #: "the chain verified" would be re-verifiable against itself and
+    #: nothing else.
+    journal_head_hash: str | None = None
 
 
 class EvidenceProvenance(BaseModel):
@@ -287,6 +292,7 @@ def export_journal(
             corrupted_at_sequence=(
                 chain.corrupted_at_sequence or chain.broken_link_at_sequence
             ),
+            journal_head_hash=chain.head_record_hash,
         ),
         manifest=manifest,
         record_count=len(rows),

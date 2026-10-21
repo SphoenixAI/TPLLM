@@ -61,6 +61,7 @@ class ForecastQualityReport(BaseModel):
     base_rate: float
     coverage: float
     buckets: list[CalibrationBucket] = Field(default_factory=list)
+    decomposition: object | None = None
     explanation: str = ""
 
 
@@ -155,6 +156,92 @@ def expected_calibration_error(
     return sum(b.gap * b.sample_count for b in buckets) / total
 
 
+class BrierDecomposition(BaseModel):
+    """Murphy's three-term decomposition of the Brier score.
+
+    ``reliability − resolution + uncertainty``. The terms answer three
+    different questions that one number cannot:
+
+    - **reliability** — when the forecaster said 0.7, did it happen 70%
+      of the time? Lower is better; it is miscalibration.
+    - **resolution** — did the forecaster distinguish cases at all?
+      Higher is better. A forecaster that always says the base rate has
+      zero resolution and perfect reliability, which is the failure a
+      single score hides.
+    - **uncertainty** — the base rate's own variance. It depends on the
+      world, not the forecaster, and is the score a constant base-rate
+      forecast would achieve.
+
+    ``residual`` is not cosmetic. The identity is exact only for a
+    forecaster emitting finitely many distinct probabilities; binning a
+    continuous forecast leaves a within-bin variance term. Reporting it
+    is better than quietly presenting an approximation as an identity.
+
+    The empirical decomposition is also known to be optimistic about
+    reliability and resolution on small samples, so ``sample_count`` and
+    ``bucket_count`` travel with the numbers.
+    """
+    reliability: float
+    resolution: float
+    uncertainty: float
+    residual: float
+    sample_count: int
+    bucket_count: int
+
+    @property
+    def recombined(self) -> float:
+        return (
+            self.reliability - self.resolution + self.uncertainty
+            + self.residual
+        )
+
+    @property
+    def is_better_than_the_base_rate(self) -> bool:
+        """Whether the forecaster beat saying the base rate every time.
+
+        The honest bar. A model that cannot clear it is not forecasting,
+        however good its Brier score looks next to nothing.
+        """
+        return self.resolution > self.reliability
+
+
+def brier_decomposition(
+    observations: list[ProbabilityForecastObservation],
+    *,
+    bucket_count: int = 10,
+) -> BrierDecomposition:
+    """Split the Brier score into reliability, resolution and uncertainty."""
+    if not observations:
+        raise ValueError("A decomposition requires observations.")
+
+    total = len(observations)
+    base_rate = sum(1 for o in observations if o.actual_occurred) / total
+    buckets = build_calibration_buckets(
+        observations, bucket_count=bucket_count,
+    )
+
+    reliability = sum(
+        b.sample_count * (b.predicted_mean - b.observed_frequency) ** 2
+        for b in buckets
+    ) / total
+    resolution = sum(
+        b.sample_count * (b.observed_frequency - base_rate) ** 2
+        for b in buckets
+    ) / total
+    uncertainty = base_rate * (1.0 - base_rate)
+    score = brier_score(observations)
+    residual = score - (reliability - resolution + uncertainty)
+
+    return BrierDecomposition(
+        reliability=round(reliability, 6),
+        resolution=round(resolution, 6),
+        uncertainty=round(uncertainty, 6),
+        residual=round(residual, 6),
+        sample_count=total,
+        bucket_count=bucket_count,
+    )
+
+
 def sharpness(
     observations: list[ProbabilityForecastObservation],
 ) -> float:
@@ -195,6 +282,10 @@ def evaluate_forecast_quality(
         else 1.0
     )
 
+    decomposition = brier_decomposition(
+        observations, bucket_count=bucket_count,
+    )
+
     return ForecastQualityReport(
         sample_count=len(observations),
         brier_score=round(score, 6),
@@ -206,10 +297,23 @@ def evaluate_forecast_quality(
         buckets=build_calibration_buckets(
             observations, bucket_count=bucket_count,
         ),
+        decomposition=decomposition,
         explanation=(
-            f"Brier {score:.3f}, ECE {ece:.3f}, sharpness {sharp:.3f} over "
-            f"{len(observations)} observation(s). Sharpness is reported "
-            f"separately because an always-0.5 forecaster can score well "
-            f"on accuracy while being useless."
+            f"Brier {score:.3f} = reliability {decomposition.reliability:.3f}"
+            f" − resolution {decomposition.resolution:.3f} + uncertainty "
+            f"{decomposition.uncertainty:.3f}"
+            + (
+                f" (+{decomposition.residual:.3f} left by binning)"
+                if abs(decomposition.residual) >= 5e-4 else ""
+            )
+            + f". ECE {ece:.3f}, sharpness {sharp:.3f} over "
+            f"{len(observations)} observation(s). Sharpness and resolution "
+            f"are reported separately because an always-0.5 forecaster can "
+            f"score well on accuracy while being useless."
+            + (
+                "" if decomposition.is_better_than_the_base_rate
+                else " This forecaster did not beat saying the base rate "
+                     "every time."
+            )
         ),
     )

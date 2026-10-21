@@ -32,6 +32,7 @@ from lltpm.persistence.integrity import (
 )
 from lltpm.persistence.models import (
     EVENT_TYPE_CATEGORY,
+    JournalAnchor,
     JournalEventType,
     JournalPosition,
     JournalRecord,
@@ -330,11 +331,50 @@ def verify_journal(
     *,
     journal: Any,
     expected_head_sequence: int | None = None,
+    anchor: JournalAnchor | None = None,
 ) -> Any:
-    """Verify the whole chain from the beginning."""
+    """Verify the whole chain from the beginning.
+
+    With an ``anchor`` the check also covers wholesale rewriting, which
+    the chain alone cannot detect — see ``verify_journal_hash_chain``.
+    """
     return verify_journal_hash_chain(
         journal.read_from(global_sequence=1),
-        expected_head_sequence=expected_head_sequence,
+        expected_head_sequence=(
+            expected_head_sequence
+            if anchor is None else anchor.global_sequence
+        ),
+        expected_head_hash=anchor.record_hash if anchor else None,
+    )
+
+
+def build_journal_anchor(
+    *,
+    journal: Any,
+    created_at: datetime,
+    organization_id: str = "",
+    lltpm_version: str = "",
+) -> JournalAnchor | None:
+    """The current head, as something to retain out of band.
+
+    ``None`` for an empty journal: there is nothing yet to anchor, and
+    an anchor claiming sequence zero would be a statement about history
+    that does not exist.
+    """
+    head = journal.latest_position()
+    if head is None:
+        return None
+    records = journal.read_from(
+        global_sequence=head.global_sequence, limit=1,
+    )
+    if not records:
+        return None
+    return JournalAnchor(
+        global_sequence=head.global_sequence,
+        record_hash=records[-1].record_hash,
+        created_at=created_at,
+        organization_id=organization_id,
+        lltpm_version=lltpm_version,
     )
 
 

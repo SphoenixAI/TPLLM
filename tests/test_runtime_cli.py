@@ -940,3 +940,87 @@ class TestJournalFollow:
         before = _head_sequence(seeded)
         self._follow(runner, seeded, "--start", "1")
         assert _head_sequence(seeded) == before
+
+
+class TestAnchorCommand:
+    """Commit 39: the retained anchor.
+
+    Hash chaining catches an in-place edit. It cannot catch a history
+    rewritten wholesale, because every link in a rewritten chain
+    recomputes. The anchor is the operator's copy of the head, kept
+    where the database is not.
+    """
+
+    @pytest.fixture
+    def seeded(self, runner, workspace):
+        _, db, evidence = workspace
+        _ingest(runner, db, evidence)
+        return db
+
+    def test_an_anchor_records_the_head(self, runner, seeded):
+        result = runner.invoke(
+            runtime_cli, ["anchor", "--db", seeded, "--organization", "acme"],
+        )
+        assert result.exit_code == 0, result.output
+        anchor = json.loads(result.stdout)
+        assert anchor["global_sequence"] == _head_sequence(seeded)
+        assert anchor["record_hash"]
+
+    def test_it_can_be_written_to_a_file(self, runner, seeded, tmp_path):
+        path = tmp_path / "anchor.json"
+        result = runner.invoke(runtime_cli, [
+            "anchor", "--db", seeded, "--organization", "acme",
+            "-o", str(path),
+        ])
+        assert result.exit_code == 0
+        assert json.loads(path.read_text())["record_hash"]
+
+    def test_an_empty_journal_cannot_be_anchored(self, runner, tmp_path):
+        result = runner.invoke(
+            runtime_cli, ["anchor", "--db", str(tmp_path / "empty.db")],
+        )
+        assert result.exit_code == 1
+        assert "nothing yet" in _all_output(result)
+
+    def test_verifying_against_the_anchor_passes(
+        self, runner, seeded, tmp_path,
+    ):
+        path = tmp_path / "anchor.json"
+        runner.invoke(runtime_cli, [
+            "anchor", "--db", seeded, "-o", str(path),
+        ])
+        result = runner.invoke(runtime_cli, [
+            "verify", "--db", seeded, "--anchor", str(path),
+        ])
+        assert result.exit_code == 0
+        assert "matches the retained anchor" in result.output
+
+    def test_verifying_against_a_wrong_head_fails(self, runner, seeded):
+        result = runner.invoke(runtime_cli, [
+            "verify", "--db", seeded, "--expect-head", "0" * 64,
+        ])
+        assert result.exit_code == 1
+        # rich wraps the explanation, so match on a phrase that cannot
+        # straddle a line break rather than on a whole sentence.
+        assert "retained anchor" in result.output
+        assert "anchored head" in result.output
+
+    def test_an_unanchored_verify_says_what_it_did_not_check(
+        self, runner, seeded,
+    ):
+        result = runner.invoke(runtime_cli, ["verify", "--db", seeded])
+        assert result.exit_code == 0
+        output = _all_output(result)
+        assert "wholesale rewrite would not be detected" in output
+        assert "run `lltpm runtime anchor`" in output
+
+    def test_status_shows_the_head_hash(self, runner, seeded):
+        result = runner.invoke(
+            runtime_cli, ["status", "--db", seeded, "--organization", "acme"],
+        )
+        assert "Head hash" in result.output
+
+    def test_anchoring_changes_nothing(self, runner, seeded):
+        before = _head_sequence(seeded)
+        runner.invoke(runtime_cli, ["anchor", "--db", seeded])
+        assert _head_sequence(seeded) == before

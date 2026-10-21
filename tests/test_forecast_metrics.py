@@ -9,6 +9,7 @@ import pytest
 from lltpm.evaluation import (
     BaselineStrategy,
     ProbabilityForecastObservation,
+    brier_decomposition,
     brier_score,
     build_calibration_buckets,
     build_organizational_value_metrics,
@@ -262,3 +263,122 @@ class TestOrganizationalValue:
         )
         assert metrics.authority_routing_accuracy == 0.0
         assert metrics.decision_context_completeness == 0.0
+
+
+class TestBrierDecomposition:
+    """Commit 39 — Murphy's three-term decomposition.
+
+    A single Brier score hides the failure that matters most here: a
+    forecaster that always predicts the base rate is perfectly
+    calibrated and tells you nothing. Reliability and resolution
+    separate those two cases; the score alone cannot.
+    """
+
+    def _discriminating(self):
+        """Confident and mostly right, in two separated groups."""
+        return (
+            [_obs(0.9, True, index=i) for i in range(9)]
+            + [_obs(0.9, False, index=9)]
+            + [_obs(0.1, False, index=10 + i) for i in range(9)]
+            + [_obs(0.1, True, index=19)]
+        )
+
+    def _base_rate_only(self):
+        return [_obs(0.5, i % 2 == 0, index=i) for i in range(20)]
+
+    def _overconfident(self):
+        """Says 0.9 and is right half the time: badly calibrated."""
+        return [_obs(0.9, i % 2 == 0, index=i) for i in range(20)]
+
+    def test_the_identity_holds_on_separated_forecasts(self):
+        observations = self._discriminating()
+        decomposition = brier_decomposition(observations)
+        assert decomposition.recombined == pytest.approx(
+            brier_score(observations), abs=1e-6
+        )
+
+    def test_uncertainty_is_the_base_rate_variance(self):
+        decomposition = brier_decomposition(self._base_rate_only())
+        assert decomposition.uncertainty == pytest.approx(0.25)
+
+    def test_a_base_rate_forecaster_has_no_resolution(self):
+        decomposition = brier_decomposition(self._base_rate_only())
+        assert decomposition.resolution == pytest.approx(0.0)
+        assert decomposition.reliability == pytest.approx(0.0), (
+            "it is perfectly calibrated, which is exactly why calibration "
+            "alone is not a quality measure"
+        )
+
+    def test_a_base_rate_forecaster_scores_the_uncertainty(self):
+        observations = self._base_rate_only()
+        assert brier_score(observations) == pytest.approx(
+            brier_decomposition(observations).uncertainty
+        )
+
+    def test_a_discriminating_forecaster_has_resolution(self):
+        decomposition = brier_decomposition(self._discriminating())
+        assert decomposition.resolution > 0.1
+
+    def test_the_base_rate_bar_is_reported(self):
+        assert brier_decomposition(
+            self._discriminating()
+        ).is_better_than_the_base_rate
+        assert not brier_decomposition(
+            self._base_rate_only()
+        ).is_better_than_the_base_rate
+
+    def test_miscalibration_shows_up_as_reliability(self):
+        decomposition = brier_decomposition(self._overconfident())
+        assert decomposition.reliability > 0.1, (
+            "saying 0.9 and being right half the time is miscalibration, "
+            "and it belongs in the reliability term"
+        )
+
+    def test_the_residual_is_reported_rather_than_hidden(self):
+        """The identity is exact only for finitely many distinct
+        forecasts. Binning a continuous forecast leaves a within-bin
+        term, and presenting an approximation as an identity would be the
+        dishonest option."""
+        observations = [
+            _obs(0.01 + i * 0.004, i % 3 == 0, index=i) for i in range(20)
+        ]
+        decomposition = brier_decomposition(observations)
+        assert decomposition.recombined == pytest.approx(
+            brier_score(observations), abs=1e-6
+        )
+        assert decomposition.residual != 0.0
+
+    def test_the_sample_and_bucket_counts_travel_with_the_numbers(self):
+        """The empirical decomposition is known to be optimistic about
+        reliability and resolution on small samples, so a reader needs to
+        see what it was computed from."""
+        decomposition = brier_decomposition(
+            self._discriminating(), bucket_count=5,
+        )
+        assert decomposition.sample_count == 20
+        assert decomposition.bucket_count == 5
+
+    def test_it_requires_observations(self):
+        with pytest.raises(ValueError, match="requires observations"):
+            brier_decomposition([])
+
+    def test_the_quality_report_carries_it(self):
+        report = evaluate_forecast_quality(self._discriminating())
+        assert report.decomposition is not None
+        assert report.decomposition.resolution > 0.1
+
+    def test_the_report_explains_the_decomposition(self):
+        report = evaluate_forecast_quality(self._discriminating())
+        assert "reliability" in report.explanation
+        assert "resolution" in report.explanation
+
+    def test_the_report_says_when_the_base_rate_was_not_beaten(self):
+        report = evaluate_forecast_quality(self._base_rate_only())
+        assert "did not beat saying the base rate" in report.explanation
+
+    def test_nothing_here_measures_a_person(self):
+        """The metrics evaluate the forecaster, not the forecasted."""
+        report = evaluate_forecast_quality(self._discriminating())
+        serialized = report.model_dump_json()
+        for word in ("employee", "productivity", "person", "assignee"):
+            assert word not in serialized

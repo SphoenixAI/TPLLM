@@ -133,6 +133,17 @@ tests/             — Test suite (pytest); `_*_fixtures.py` modules are shared
                      fixtures, not test files
 ```
 
+### Research alignment
+
+`docs/research-alignment.md` checks the design against the published
+work it overlaps with (CloudEvents, Snodgrass bitemporality,
+Haber–Stornetta hash chaining, Fellegi–Sunter record linkage, Murphy's
+Brier decomposition, Pearl's noisy-OR, Evans' anti-corruption layer,
+Fowler's self-initializing fake, W3C PROV-O). Read it before relaxing
+an invariant: several were arrived at independently and then found to
+match prior art, and §11 lists the open limitations so they are not
+rediscovered as bugs.
+
 ### Architectural invariants
 
 These are enforced by tests and should not be relaxed casually:
