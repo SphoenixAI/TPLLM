@@ -1,0 +1,51 @@
+{
+ "fixtures": {
+  "events": {
+   "derivation": "",
+   "endpoint": "GET /repos/{owner}/{repo}/events?per_page=30",
+   "payload_kind": "event",
+   "provenance": "recorded",
+   "recorded_at": "2026-10-21T04:30:00Z",
+   "samples": 3,
+   "source_system": "github"
+  },
+  "issues": {
+   "derivation": "Derived from the recorded pull requests. In GitHub's model a pull request is an issue and the /issues endpoint returns both, marking a pull request with a pull_request key; a non-pull-request issue is the same object without the pull-request-only keys. Every issue the recorded repository has is a pull request, so there was no non-pull-request issue to record. Labels and state are varied to cover the declared-blocker mapping.",
+   "endpoint": "GET /repos/{owner}/{repo}/issues?state=all&per_page=5",
+   "payload_kind": "issue",
+   "provenance": "derived",
+   "recorded_at": "2026-10-21T04:30:00Z",
+   "samples": 3,
+   "source_system": "github"
+  },
+  "pull_request_variants": {
+   "derivation": "Derived from the first recorded pull request by varying state, draft and merged_at. Every recorded pull request was merged, so the open, draft and closed-unmerged mappings had no recorded sample; the shape is the recorded one and only those fields differ.",
+   "endpoint": "GET /repos/{owner}/{repo}/pulls?state=all&per_page=5",
+   "payload_kind": "pull_request",
+   "provenance": "derived",
+   "recorded_at": "2026-10-21T04:30:00Z",
+   "samples": 3,
+   "source_system": "github"
+  },
+  "pull_requests": {
+   "derivation": "",
+   "endpoint": "GET /repos/{owner}/{repo}/pulls?state=all&per_page=5",
+   "payload_kind": "pull_request",
+   "provenance": "recorded",
+   "recorded_at": "2026-10-21T04:30:00Z",
+   "samples": 5,
+   "source_system": "github"
+  },
+  "reviews": {
+   "derivation": "Not a recording. The recorded repository has no submitted reviews, so there was nothing to record. This payload follows the documented shape and exercises the review mapping, but it is not evidence that the live API still matches it, and the contract report says so rather than letting it pass as verified.",
+   "endpoint": "GET /repos/{owner}/{repo}/pulls/{number}/reviews",
+   "payload_kind": "review",
+   "provenance": "hand_written",
+   "recorded_at": "",
+   "samples": 4,
+   "source_system": "github"
+  }
+ },
+ "note": "Recorded provider payloads for offline contract tests. Shape is faithful to the live API; values are pseudonymized, so no real handle, account id or repository name is committed. `provenance` says what each file is: a recording, something derived from one, or hand-written. Only a recording is evidence about the live API.",
+ "repository_alias": "acme/atlas-service"
+}

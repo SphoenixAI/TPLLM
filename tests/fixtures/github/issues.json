@@ -1,0 +1,116 @@
+[
+ {
+  "active_lock_reason": null,
+  "assignee": null,
+  "assignees": [],
+  "author_association": "COLLABORATOR",
+  "body": "[session link removed]",
+  "closed_at": null,
+  "comments": 0,
+  "comments_url": "https://api.github.com/repos/acme/atlas-service/issues/8/comments",
+  "created_at": "2026-02-25T05:45:31Z",
+  "html_url": "https://github.com/acme/atlas-service/pull/8",
+  "id": 3323918221,
+  "labels": [
+   {
+    "name": "blocked"
+   }
+  ],
+  "locked": false,
+  "milestone": null,
+  "node_id": "NODE-75c33f00e84c",
+  "number": 8,
+  "state": "open",
+  "title": "Add Kimi K2.5 to supported models and Moonshot to known base URLs",
+  "updated_at": "2026-02-25T05:45:40Z",
+  "url": "https://api.github.com/repos/acme/atlas-service/pulls/8",
+  "user": {
+   "events_url": "https://api.github.com/users/contributor-8fa8fddba828/events{/privacy}",
+   "html_url": "https://github.com/contributor-8fa8fddba828",
+   "id": 680694365,
+   "login": "contributor-8fa8fddba828",
+   "node_id": "NODE-951ec52be4ee",
+   "repos_url": "https://api.github.com/users/contributor-8fa8fddba828/repos",
+   "site_admin": false,
+   "type": "User",
+   "url": "https://api.github.com/users/contributor-8fa8fddba828",
+   "user_view_type": "public"
+  }
+ },
+ {
+  "active_lock_reason": null,
+  "assignee": null,
+  "assignees": [],
+  "author_association": "COLLABORATOR",
+  "body": null,
+  "closed_at": "2026-02-25T05:30:45Z",
+  "comments": 0,
+  "comments_url": "https://api.github.com/repos/acme/atlas-service/issues/7/comments",
+  "created_at": "2026-02-25T05:30:36Z",
+  "html_url": "https://github.com/acme/atlas-service/pull/7",
+  "id": 3323880321,
+  "labels": [
+   {
+    "name": "blocker"
+   }
+  ],
+  "locked": false,
+  "milestone": null,
+  "node_id": "NODE-18c14302e87d",
+  "number": 7,
+  "state": "closed",
+  "title": "Development updates",
+  "updated_at": "2026-02-25T05:30:45Z",
+  "url": "https://api.github.com/repos/acme/atlas-service/pulls/7",
+  "user": {
+   "events_url": "https://api.github.com/users/contributor-8fa8fddba828/events{/privacy}",
+   "html_url": "https://github.com/contributor-8fa8fddba828",
+   "id": 680694365,
+   "login": "contributor-8fa8fddba828",
+   "node_id": "NODE-951ec52be4ee",
+   "repos_url": "https://api.github.com/users/contributor-8fa8fddba828/repos",
+   "site_admin": false,
+   "type": "User",
+   "url": "https://api.github.com/users/contributor-8fa8fddba828",
+   "user_view_type": "public"
+  }
+ },
+ {
+  "active_lock_reason": null,
+  "assignee": null,
+  "assignees": [],
+  "author_association": "COLLABORATOR",
+  "body": "conda init defaults to bash, but modern macOS uses zsh. Now detects the user's actual shell via $SHELL and runs conda init for that shell.\r\n\r\n[session link removed]",
+  "closed_at": "2026-02-25T05:08:39Z",
+  "comments": 0,
+  "comments_url": "https://api.github.com/repos/acme/atlas-service/issues/6/comments",
+  "created_at": "2026-02-25T05:08:32Z",
+  "html_url": "https://github.com/acme/atlas-service/pull/6",
+  "id": 3323821708,
+  "labels": [
+   {
+    "name": "enhancement"
+   }
+  ],
+  "locked": false,
+  "milestone": null,
+  "node_id": "NODE-d2efd5c3687e",
+  "number": 6,
+  "state": "closed",
+  "title": "Detect user shell for conda init (zsh on macOS, not just bash)",
+  "updated_at": "2026-02-25T05:08:39Z",
+  "url": "https://api.github.com/repos/acme/atlas-service/pulls/6",
+  "user": {
+   "events_url": "https://api.github.com/users/contributor-8fa8fddba828/events{/privacy}",
+   "html_url": "https://github.com/contributor-8fa8fddba828",
+   "id": 680694365,
+   "login": "contributor-8fa8fddba828",
+   "node_id": "NODE-951ec52be4ee",
+   "repos_url": "https://api.github.com/users/contributor-8fa8fddba828/repos",
+   "site_admin": false,
+   "type": "User",
+   "url": "https://api.github.com/users/contributor-8fa8fddba828",
+   "user_view_type": "public"
+  }
+ }
+]

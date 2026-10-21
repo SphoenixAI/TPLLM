@@ -10,6 +10,7 @@ source system; they never carry OAuth tokens, secrets, or signing keys
 from __future__ import annotations
 
 import hashlib
+import re
 from datetime import datetime, timezone
 from typing import Any
 
@@ -37,6 +38,48 @@ def sanitize_metadata(metadata: dict[str, Any]) -> dict[str, Any]:
     """Drop secret-looking keys before an envelope is built. Secrets live
     in the existing secrets infrastructure, never in evidence."""
     return {k: v for k, v in metadata.items() if not is_secret_metadata_key(k)}
+
+
+#: Credential shapes that turn up inside human prose: a token pasted
+#: into a pull request body, a curl command in a ticket, a key in a
+#: chat message. The key-level rule above cannot catch these, because
+#: the field is called ``body`` and the secret is a substring of it.
+_SECRET_TEXT_PATTERNS = (
+    re.compile(r"\bgh[pousr]_[A-Za-z0-9]{16,}"),
+    re.compile(r"\bgithub_pat_[A-Za-z0-9_]{20,}"),
+    re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}"),
+    re.compile(r"\bsk-[A-Za-z0-9_-]{16,}"),
+    re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
+    re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]+"),
+    re.compile(r"(?i)\b(?:bearer|authorization:)\s+[A-Za-z0-9._~+/-]{16,}=*"),
+    re.compile(
+        r"-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?"
+        r"-----END [A-Z ]*PRIVATE KEY-----"
+    ),
+)
+
+SECRET_TEXT_PLACEHOLDER = "[redacted-credential]"
+
+
+def redact_secret_text(text: str | None) -> tuple[str | None, bool]:
+    """Remove credential material from free text. Returns (text, found).
+
+    Evidence content is prose a person wrote in someone else's system,
+    so it can contain anything — including a token pasted into a pull
+    request description. The journal is append-only, which makes a
+    credential that reaches it permanent, so the substring is replaced
+    here rather than at the storage boundary where refusing the write
+    would also lose the legitimate evidence around it.
+
+    Only the credential is removed; the surrounding sentence survives,
+    because the sentence is the evidence.
+    """
+    if not text:
+        return text, False
+    redacted = text
+    for pattern in _SECRET_TEXT_PATTERNS:
+        redacted = pattern.sub(SECRET_TEXT_PLACEHOLDER, redacted)
+    return redacted, redacted != text
 
 
 def build_idempotency_key(
@@ -99,14 +142,34 @@ def make_envelope(
     source_pointer: str | None = None,
     retention_class: str = "excerpt",
     received_at: datetime | None = None,
+    idempotency_key: str | None = None,
 ) -> EvidenceEnvelope:
-    """Build a sanitized envelope with a deterministic idempotency key."""
-    key = build_idempotency_key(
+    """Build a sanitized envelope with a deterministic idempotency key.
+
+    ``idempotency_key`` overrides the derived one, and a normalizer that
+    has the provider's own event identity should always pass it. The
+    derived key folds in ``observed_at``, which is right for a polled
+    resource whose timestamp is its version and wrong for a webhook: the
+    same delivery can arrive carrying a different timestamp, and a key
+    that moved with it would turn one event into two facts. Keying on
+    the provider's event id is the published guidance, and this is the
+    parameter that lets a caller follow it.
+    """
+    key = idempotency_key or build_idempotency_key(
         source_system=source_system,
         source_id=source_id,
         event_type=event_type,
         observed_at=observed_at,
     )
+    safe_content, content_had_secret = redact_secret_text(content)
+    safe_title, title_had_secret = redact_secret_text(title)
+    safe_metadata = sanitize_metadata(metadata or {})
+    if content_had_secret or title_had_secret:
+        # Said out loud: an operator reading this evidence should know
+        # the excerpt is not verbatim, and why. The flag is named to
+        # avoid the secret-key markers above, which — correctly — would
+        # otherwise refuse a key containing the word "credential".
+        safe_metadata["redaction_applied"] = True
     return EvidenceEnvelope(
         id=f"env-{key[:16]}",
         source_system=source_system,
@@ -117,9 +180,9 @@ def make_envelope(
         received_at=received_at or datetime.now(timezone.utc),
         project_ids=list(project_ids),
         actor_refs=list(actor_refs or []),
-        title=title,
-        content=content,
-        metadata=sanitize_metadata(metadata or {}),
+        title=safe_title,
+        content=safe_content,
+        metadata=safe_metadata,
         source_pointer=source_pointer,
         idempotency_key=key,
         retention_class=retention_class,

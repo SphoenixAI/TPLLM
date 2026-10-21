@@ -1,0 +1,58 @@
+[
+ {
+  "author_association": "MEMBER",
+  "body": "Contract standard looks right. Approving.",
+  "html_url": "https://github.com/acme/atlas-service/pull/8#pullrequestreview-900001",
+  "id": 900001,
+  "node_id": "NODE-review-approved",
+  "state": "APPROVED",
+  "submitted_at": "2026-02-25T05:45:35Z",
+  "user": {
+   "id": 1,
+   "login": "contributor-reviewer",
+   "type": "User"
+  }
+ },
+ {
+  "author_association": "MEMBER",
+  "body": "Blocked on the activation threshold; please align with Platform.",
+  "html_url": "https://github.com/acme/atlas-service/pull/8#pullrequestreview-900002",
+  "id": 900002,
+  "node_id": "NODE-review-changes",
+  "state": "CHANGES_REQUESTED",
+  "submitted_at": "2026-02-25T06:10:00Z",
+  "user": {
+   "id": 1,
+   "login": "contributor-reviewer",
+   "type": "User"
+  }
+ },
+ {
+  "author_association": "CONTRIBUTOR",
+  "body": "Personally I would have split this.",
+  "html_url": "https://github.com/acme/atlas-service/pull/8#pullrequestreview-900003",
+  "id": 900003,
+  "node_id": "NODE-review-comment",
+  "state": "COMMENTED",
+  "submitted_at": "2026-02-25T06:15:00Z",
+  "user": {
+   "id": 2,
+   "login": "contributor-other",
+   "type": "User"
+  }
+ },
+ {
+  "author_association": "CONTRIBUTOR",
+  "body": "",
+  "html_url": "https://github.com/acme/atlas-service/pull/8#pullrequestreview-900004",
+  "id": 900004,
+  "node_id": "NODE-review-dismissed",
+  "state": "DISMISSED",
+  "submitted_at": "2026-02-25T06:20:00Z",
+  "user": {
+   "id": 2,
+   "login": "contributor-other",
+   "type": "User"
+  }
+ }
+]

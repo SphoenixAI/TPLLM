@@ -1,0 +1,88 @@
+"""Shared access to the recorded GitHub fixtures (Commit 37).
+
+Not a test module. Both the normalizer tests and the contract tests read
+the same recordings, and both need to know which files are real
+recordings and which are not — so the provenance index is loaded here
+once rather than parsed in two places with two different idea of what
+``derived`` means.
+"""
+
+from __future__ import annotations
+
+import json
+import pathlib
+from typing import Any
+
+FIXTURE_DIR = pathlib.Path(__file__).resolve().parent / "fixtures" / "github"
+
+#: The alias every recorded payload was scrubbed to.
+REPOSITORY = "acme/atlas-service"
+PROJECT = "atlas"
+
+#: What a fixture file may claim to be. ``recorded`` is the only value
+#: that makes a file evidence about the live API.
+PROVENANCE_VALUES = frozenset({"recorded", "derived", "hand_written"})
+
+
+def index() -> dict[str, Any]:
+    return json.loads((FIXTURE_DIR / "index.json").read_text())
+
+
+def load(name: str) -> list[dict[str, Any]]:
+    return json.loads((FIXTURE_DIR / f"{name}.json").read_text())
+
+
+def fixture_names() -> list[str]:
+    return sorted(index()["fixtures"])
+
+
+def provenance(name: str) -> str:
+    return str(index()["fixtures"][name]["provenance"])
+
+
+def recorded_names() -> list[str]:
+    return [n for n in fixture_names() if provenance(n) == "recorded"]
+
+
+def bindings():
+    """Bindings that bind the recorded repository to one project."""
+    from lltpm.integrations.normalizers import ProjectBindings
+
+    return ProjectBindings.from_mapping(
+        source_system="github", mapping={REPOSITORY: [PROJECT]},
+    )
+
+
+def merged_pull_request() -> dict[str, Any]:
+    for pull in load("pull_requests"):
+        if pull.get("merged_at"):
+            return pull
+    raise AssertionError("no merged pull request in the recordings")
+
+
+def variant(number: int) -> dict[str, Any]:
+    for pull in load("pull_request_variants"):
+        if pull.get("number") == number:
+            return pull
+    raise AssertionError(f"no variant numbered {number}")
+
+
+#: The derived variants, by what each one exists to exercise.
+OPEN_PULL_REQUEST = 101
+DRAFT_PULL_REQUEST = 102
+CLOSED_UNMERGED_PULL_REQUEST = 103
+
+
+def review(state: str) -> dict[str, Any]:
+    for item in load("reviews"):
+        if str(item.get("state", "")).upper() == state.upper():
+            return item
+    raise AssertionError(f"no review in state {state}")
+
+
+def issue_with_label(label: str) -> dict[str, Any]:
+    for item in load("issues"):
+        names = {str(x.get("name", "")) for x in item.get("labels") or []}
+        if label in names:
+            return item
+    raise AssertionError(f"no issue labelled {label}")
