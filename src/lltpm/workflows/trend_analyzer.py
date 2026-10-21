@@ -15,7 +15,6 @@ from datetime import date, datetime, timedelta
 from lltpm.artifacts.store import ArtifactStore
 from lltpm.models.trends import (
     HealthSnapshot,
-    PersonTrend,
     RiskTrend,
     TrendDirection,
     TrendReport,
@@ -116,15 +115,9 @@ class TrendAnalyzer:
         health_trend = self._compute_health_trend(health_snaps)
         velocity_trend = self._compute_velocity_trend(velocity_points)
         risk_trend_data = self._compute_risk_trend(program_id, health_snaps)
-        person_trends = self._compute_person_trends(program_id)
-
-        # Engagement trend from person trends
-        engagement_trend = TrendDirection.STABLE
-        degrading = [p for p in person_trends if p.is_degrading]
-        if len(degrading) >= 3:
-            engagement_trend = TrendDirection.DECLINING
-        elif degrading:
-            engagement_trend = TrendDirection.VOLATILE
+        latency_trend, median_hours = self._compute_latency_trend(
+            program_id
+        )
 
         # Generate warnings and recommendations
         warnings = []
@@ -136,19 +129,21 @@ class TrendAnalyzer:
             warnings.append("Velocity is declining — may need scope or resource adjustment")
         if risk_trend_data and risk_trend_data.current_open > risk_trend_data.peak_open * 0.8:
             warnings.append("Risk count approaching peak levels")
-        for p in degrading:
+        if median_hours > 48:
             warnings.append(
-                f"{p.person}'s responsiveness is degrading "
-                f"({p.avg_response_hours_7d:.0f}h recent vs {p.avg_response_hours_30d:.0f}h average)"
+                f"Requests are waiting a median of {median_hours:.0f}h for "
+                f"a reply — look for a shared approval point or a person "
+                f"on several critical paths"
             )
 
         if warnings:
             recommendations.append("Schedule a retrospective to address declining trends")
         if velocity_trend == TrendDirection.DECLINING:
             recommendations.append("Review scope — consider cutting non-critical items")
-        if engagement_trend == TrendDirection.DECLINING:
+        if latency_trend == TrendDirection.DECLINING:
             recommendations.append(
-                "Check team morale and workload — multiple people becoming less responsive"
+                "Time to reply is lengthening — check where requests queue "
+                "before concluding anything about who is answering them"
             )
 
         report = TrendReport(
@@ -156,10 +151,10 @@ class TrendAnalyzer:
             health_trend=health_trend,
             velocity_trend=velocity_trend,
             risk_trend=risk_trend_data.direction if risk_trend_data else TrendDirection.STABLE,
-            engagement_trend=engagement_trend,
+            response_latency_trend=latency_trend,
+            median_response_hours=median_hours,
             health_snapshots=health_snaps[-20:],  # keep last 20
             velocity_points=velocity_points[-12:],  # keep last 12
-            person_trends=person_trends,
             risk_trends=risk_trend_data,
             warnings=warnings,
             recommendations=recommendations,
@@ -259,41 +254,53 @@ class TrendAnalyzer:
             peak_open=peak,
         )
 
-    def _compute_person_trends(self, program_id: str) -> list[PersonTrend]:
-        """Compute engagement trends per person from engagement profiles."""
+    def _compute_latency_trend(
+        self, program_id: str,
+    ) -> tuple[TrendDirection, float]:
+        """Program-level time-to-reply, with nobody named.
+
+        Returns a direction and the median hours across every routing
+        profile that has observations. Deliberately an aggregate: the
+        per-person version of this produced "Engagement Alerts" naming
+        individuals, which is the finding this system is built not to
+        make.
+        """
         import json as json_mod
 
         raw = self._store.load_raw(program_id, "engagement_profiles")
         if not raw:
-            return []
+            return TrendDirection.STABLE, 0.0
 
         try:
             profiles = json_mod.loads(raw)
         except (json_mod.JSONDecodeError, TypeError):
-            return []
+            return TrendDirection.STABLE, 0.0
 
-        trends = []
-        for person, data in profiles.items():
-            avg_h = data.get("avg_response_hours", 0)
-            rate = data.get("response_rate", 1.0)
-            if isinstance(rate, str):
-                try:
-                    rate = float(rate)
-                except ValueError:
-                    rate = 1.0
+        samples = []
+        for data in profiles.values():
+            if not isinstance(data, dict):
+                continue
+            if not data.get("observed_responses"):
+                continue
+            hours = data.get("median_response_hours")
+            if isinstance(hours, (int, float)):
+                samples.append(float(hours))
 
-            trend = PersonTrend(
-                person=person,
-                program_id=program_id,
-                avg_response_hours_30d=avg_h,
-                avg_response_hours_7d=avg_h,  # would need time-series for real 7d
-                response_rate_30d=rate if isinstance(rate, float) else 1.0,
-                response_rate_7d=rate if isinstance(rate, float) else 1.0,
-                direction=TrendDirection.STABLE,
-            )
-            trends.append(trend)
+        if not samples:
+            return TrendDirection.STABLE, 0.0
 
-        return trends
+        samples.sort()
+        middle = len(samples) // 2
+        median = (
+            samples[middle] if len(samples) % 2
+            else (samples[middle - 1] + samples[middle]) / 2
+        )
+        # One snapshot cannot establish a direction; saying STABLE is
+        # honest where inventing DECLINING from a single reading is not.
+        direction = (
+            TrendDirection.DECLINING if median > 48 else TrendDirection.STABLE
+        )
+        return direction, round(median, 2)
 
     # ── Persistence ───────────────────────────────────────────
 

@@ -313,18 +313,11 @@ def create_app(config: LLTPMConfig | None = None) -> Any:
             "summary": predictor.get_prediction_summary(program_id),
         }
 
-    @app.get("/api/programs/{program_id}/evaluations/{person}")
-    def get_evaluation(program_id: str, person: str, quarter: str = ""):
-        """Get quarterly evaluation for a person."""
-        from lltpm.workflows.risk_predictor import RiskPredictor
-        predictor = RiskPredictor(store)
-        evaluation = predictor.get_evaluation(program_id, person, quarter)
-        if not evaluation:
-            raise HTTPException(404, f"No evaluation found for {person}")
-        return {
-            "evaluation": evaluation.model_dump(),
-            "rendered": predictor.render_evaluation(evaluation),
-        }
+    # GET /api/programs/{id}/evaluations/{person} was removed in Commit
+    # 41. It served a per-person quarterly performance review over HTTP.
+    # Nothing replaces it: the structural endpoints above answer what it
+    # was reached for, without turning a shared approval queue into
+    # somebody's letter grade.
 
     # ── Document Generation ───────────────────────────────
 

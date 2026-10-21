@@ -28,11 +28,10 @@ def get_engagement_tools(store: ArtifactStore) -> list[dict[str, Any]]:
         channel: str = "SLACK",
         had_quick_options: bool = False,
         used_quick_option: bool = False,
-        ignored: bool = False,
     ) -> str:
         profile = tracker.record_response(
             program_id, person, request_type, response_hours,
-            channel, had_quick_options, used_quick_option, ignored,
+            channel, had_quick_options, used_quick_option,
         )
         return profile.summary()
 
@@ -115,8 +114,10 @@ def get_engagement_tools(store: ArtifactStore) -> list[dict[str, Any]]:
         {
             "name": "record_engagement",
             "description": (
-                "Record how someone responded (or didn't) to a request. "
-                "Builds their engagement profile for smarter outreach."
+                "Record that someone replied to a request, and how long "
+                "it took. Builds a routing profile: which channel and "
+                "window reaches them, and how long to allow for a reply. "
+                "A request that was not answered is not recorded."
             ),
             "input_schema": {
                 "type": "object",
@@ -128,7 +129,6 @@ def get_engagement_tools(store: ArtifactStore) -> list[dict[str, Any]]:
                     "channel": {"type": "string", "enum": ["SLACK", "GCHAT", "EMAIL", "PR_COMMENT", "TICKET"]},
                     "had_quick_options": {"type": "boolean"},
                     "used_quick_option": {"type": "boolean"},
-                    "ignored": {"type": "boolean"},
                 },
                 "required": ["program_id", "person"],
             },

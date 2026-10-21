@@ -1,36 +1,33 @@
-"""Where the no-worker-scoring invariant actually holds (Commit 40).
+"""Where the no-worker-scoring invariant holds (Commits 40–41).
 
-The project states, in docs/assistant-development-guide.md and in the README, that it models
-organizational mechanics and never individual productivity, and that
-source-level guardrail tests enforce it. The first half is the design
-intent. The second half was not true as written: the existing guardrails
-enumerate the runtime modules by hand, so they cover the layered
-organizational-reasoning stack and say nothing about the original TPM
-surface — which contains per-person response rates, responsiveness
-grades and a quarterly evaluation report with four letter grades,
-exposed to the agent as callable tools.
+Commit 40 found that the documented guarantee was scoped wrongly: the
+existing guardrails enumerated runtime modules by hand, so they covered
+the layered stack and said nothing about the original TPM surface,
+which graded individuals. It inventoried five classes rather than
+resolving them, because deleting a shipped feature is its owner's
+decision.
 
-This module replaces the claim with a measured one. It detects the
-*shape* of per-person measurement rather than a vocabulary — a model
-whose declared subject is a person and which also carries a grade, a
-score, a rate or an hours count — because the three previous attempts at
-vocabulary matching in this codebase each flagged something innocent
-(a rendered timestamp, a docstring, ordinary list building) and had to
-be narrowed. Shape is harder to get wrong: ``sprint.utilization``
-measures a sprint, and no term list can see that.
+Commit 41 is that decision, made: the grading surface is gone.
+``PerformanceGrade``, ``PersonMetrics``, ``QuarterlyEvaluation``,
+``ResponsivenessGrade``, ``PersonTrend`` and
+``AttendeeInfo.engagement_score`` were removed, along with the two agent
+tools, the dashboard endpoint and the two risk models that predicted
+people rather than structure. The invariant is now one statement about
+the whole system rather than two about different halves of it.
 
-Two assertions carry the weight:
+This module is what keeps it that way. It detects the *shape* of
+per-person measurement rather than a vocabulary — a model whose declared
+subject is a person and which also carries a grade, a score, a rate or
+an hours count — because the three previous attempts at vocabulary
+matching in this codebase each flagged something innocent (a rendered
+timestamp, a docstring, ordinary list building) and had to be narrowed.
+Shape is harder to get wrong: ``sprint.utilization`` measures a sprint,
+and no term list can see that.
 
-- the layered stack has **no** per-person measurement at all, which is
-  the invariant as stated and is true;
-- every class in the legacy surface that does measure a person is
-  enumerated here with a justification, and the set must match exactly
-  — so nothing new joins it quietly and the inventory cannot rot.
-
-What this file does not do is decide whether the legacy surface should
-exist. That is a product question about a shipped feature, and the
-honest engineering answer is to make the contradiction impossible to
-miss rather than to resolve it unilaterally.
+What remains flagged measures the *work* or states a *preference*, not
+the worker, and each is listed below with the reason. One borderline
+case is kept deliberately and argued rather than hidden: response
+latency on a routing profile.
 """
 
 from __future__ import annotations
@@ -66,41 +63,16 @@ LAYERED_STACK = (
     "advisory",
 )
 
-#: Legacy classes that genuinely measure a person. Each entry is a
-#: statement that this contradicts the product guardrail, not a licence.
-PERSON_MEASUREMENT_EXCEPTIONS: dict[tuple[str, str], str] = {
-    ("models/calendar.py", "AttendeeInfo"): (
-        "engagement_score rates an attendee. Predates the guardrail; used "
-        "to decide who needs a meeting rather than to evaluate anyone, but "
-        "it is still a per-person score."
-    ),
-    ("models/engagement.py", "EngagementProfile"): (
-        "Per-person response rate, response hours, ignored-message count "
-        "and a responsiveness grade. Its stated purpose is choosing when "
-        "and how to contact someone, which is a different purpose from "
-        "evaluation — and the same data."
-    ),
-    ("models/prediction.py", "PersonMetrics"): (
-        "Per-person response rate, commitments missed and late, times they "
-        "were the blocker, delegations overdue. This is individual "
-        "productivity measurement by any reading."
-    ),
-    ("models/prediction.py", "QuarterlyEvaluation"): (
-        "A quarterly performance review: responsiveness, reliability, "
-        "collaboration and overall letter grades, strengths, areas for "
-        "improvement and a trend. Directly contradicts the guardrail, and "
-        "is reachable from the agent through generate_evaluation."
-    ),
-    ("models/trends.py", "PersonTrend"): (
-        "Per-person response rate and response hours over 7 and 30 days, "
-        "with an is_degrading flag. Behavioural tracking over time."
-    ),
-}
+#: Classes that measure a person. Commit 41 emptied this. It stays here
+#: as the thing the test asserts remains empty — an exception list with
+#: no mechanism to keep it empty is a comment.
+PERSON_MEASUREMENT_EXCEPTIONS: dict[tuple[str, str], str] = {}
 
-#: Classes the detector flags whose subject field is a person but whose
-#: measurements are of the *work*, not the worker. Listed with the reason
-#: rather than tuning the detector until they vanish — a detector bent to
-#: produce a clean result stops being evidence of anything.
+#: Classes the detector flags whose subject field is a person but which
+#: measure the *work*, state a *preference*, or describe *routing*.
+#: Listed with the reason rather than tuning the detector until they
+#: vanish — a detector bent to produce a clean result stops being
+#: evidence of anything.
 MEASURES_THE_WORK_NOT_THE_WORKER: dict[tuple[str, str], str] = {
     ("models/task_board.py", "BoardTask"): (
         "effort_hours and actual_hours estimate the task; is_overdue is a "
@@ -110,7 +82,43 @@ MEASURES_THE_WORK_NOT_THE_WORKER: dict[tuple[str, str], str] = {
         "quiet_hours is a stated preference about when not to be "
         "contacted, not a measurement of anybody."
     ),
+    ("models/calendar.py", "AttendeeInfo"): (
+        "preferred_hours is a working-hours window used to find a slot. "
+        "engagement_score, which did rate the attendee — and made a "
+        "prompt replier a *required* attendee — was removed in Commit 41."
+    ),
+    ("models/engagement.py", "EngagementProfile"): (
+        "The borderline case, kept deliberately. avg/median_response_hours "
+        "is how long to allow for a reply, which is a scheduling fact of "
+        "the same kind as 'this approval queue takes three days'. What "
+        "made the old version an evaluation was the grade on top of it, "
+        "the response rate and ignored count it was computed from, and the "
+        "escalation it drove — all removed. observed_responses is the "
+        "sample size behind the estimate, a property of the estimate. "
+        "Nothing here can rank two people: there is no rate, no count of "
+        "unanswered requests, and no grade to sort on."
+    ),
 }
+
+def _executable_source(path: pathlib.Path) -> str:
+    """The module's code with every docstring removed, lowercased.
+
+    A note explaining why something was deleted should not read as the
+    thing still being there.
+    """
+    tree = ast.parse(path.read_text())
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef,
+                                 ast.AsyncFunctionDef)):
+            continue
+        body = node.body
+        if (
+            body and isinstance(body[0], ast.Expr)
+            and isinstance(body[0].value, ast.Constant)
+            and isinstance(body[0].value.value, str)
+        ):
+            body.pop(0)
+    return ast.unparse(tree).lower()
 
 
 def _model_fields(node: ast.ClassDef) -> list[str]:
@@ -156,10 +164,31 @@ def flagged() -> dict[tuple[str, str], list[str]]:
 
 
 class TestTheDetectorWorks:
-    def test_it_finds_the_known_evaluation_model(self, flagged):
-        """If this stops matching, the detector has gone blind and every
-        assertion below becomes vacuous."""
-        assert ("models/prediction.py", "QuarterlyEvaluation") in flagged
+    def test_it_finds_a_planted_per_person_measurement(self, tmp_path):
+        """The evaluation model it used to catch is gone, so the detector
+        is proved against a synthetic one instead. Without this, every
+        assertion below could be passing because the walker is blind."""
+        module = tmp_path / "planted.py"
+        module.write_text(
+            "from pydantic import BaseModel\n\n\n"
+            "class Offender(BaseModel):\n"
+            "    person: str\n"
+            "    reliability_grade: float = 0.0\n"
+        )
+        import ast
+
+        tree = ast.parse(module.read_text())
+        found = [
+            node for node in ast.walk(tree)
+            if isinstance(node, ast.ClassDef)
+            and set(_model_fields(node)) & PERSON_SUBJECT_FIELDS
+            and any(
+                hint in field.lower()
+                for field in _model_fields(node)
+                for hint in MEASUREMENT_HINTS
+            )
+        ]
+        assert [node.name for node in found] == ["Offender"]
 
     def test_it_does_not_flag_sprint_capacity(self, flagged):
         """`sprint.utilization` is committed work over capacity — an
@@ -233,10 +262,12 @@ class TestTheLegacySurfaceIsEnumerated:
             f"nobody prunes stops being an inventory."
         )
 
-    def test_the_count_is_what_the_documentation_claims(self, flagged):
-        assert len(PERSON_MEASUREMENT_EXCEPTIONS) == 5, (
-            "the README and the research note state how many legacy "
-            "classes measure a person; this is the number they cite"
+    def test_nothing_measures_a_person_anywhere(self, flagged):
+        """The invariant, now as one statement about the whole system."""
+        assert PERSON_MEASUREMENT_EXCEPTIONS == {}, (
+            f"{sorted(PERSON_MEASUREMENT_EXCEPTIONS)} measure a person. "
+            f"Commit 41 emptied this list; adding to it needs the "
+            f"argument that Commit 41 made in the other direction."
         )
 
     @pytest.mark.parametrize(
@@ -257,40 +288,55 @@ class TestTheLegacySurfaceIsEnumerated:
     def test_each_benign_entry_says_why(self, key):
         assert len(MEASURES_THE_WORK_NOT_THE_WORKER[key]) > 80
 
-    def test_the_exceptions_are_confined_to_the_original_surface(self):
-        """A new module may not join this list. The invariant holds going
-        forward whatever is decided about what already exists."""
+    def test_the_benign_entries_stay_in_the_original_surface(self):
+        """A new package may not need an entry here at all."""
         allowed_roots = {"models", "workflows", "tools"}
-        for path, name in PERSON_MEASUREMENT_EXCEPTIONS:
+        for path, name in MEASURES_THE_WORK_NOT_THE_WORKER:
             root = path.split("/")[0]
             assert root in allowed_roots, (
-                f"{path}:{name} is outside the original TPM surface; the "
-                f"guardrail is not negotiable for new code"
+                f"{path}:{name} is outside the original TPM surface; new "
+                f"code should not need an entry here"
             )
 
 
-class TestTheAgentSurfaceIsNamed:
+class TestTheAgentCannotGradeAnybody:
     """The part that matters most: what the model can actually call."""
 
-    def test_the_evaluation_tool_is_known_to_exist(self):
-        source = (_SRC / "tools" / "prediction_tools.py").read_text()
-        assert "generate_evaluation" in source, (
-            "if this tool is removed, update the README, the research "
-            "note and this test together — the claim and the code have "
-            "to move at the same time"
-        )
+    def test_no_tool_module_grades_a_person(self):
+        """Checked against executable code only.
 
-    def test_no_tool_module_outside_prediction_tools_grades_a_person(self):
+        Docstrings and comments recording *why* something was removed
+        must not trip this; a reference that actually resolves must. The
+        codebase already uses this technique for its other source
+        guardrails, after earlier versions kept catching prose.
+        """
         offenders = []
         for path in sorted((_SRC / "tools").glob("*.py")):
-            if path.name == "prediction_tools.py":
-                continue
-            source = path.read_text().lower()
+            source = _executable_source(path)
             for term in ("performance_grade", "quarterly_evaluation",
-                         "productivity", "employee_score"):
+                         "productivity", "employee_score",
+                         "responsiveness_grade", "generate_evaluation",
+                         "engagement_score"):
                 if term in source:
                     offenders.append(f"{path.name}:{term}")
         assert offenders == [], (
-            f"{offenders} — person grading must not spread to another "
-            f"tool module"
+            f"{offenders} — the agent must not be able to ask for a "
+            f"verdict on a colleague"
         )
+
+    def test_the_dashboard_exposes_no_evaluation_endpoint(self):
+        source = (_SRC / "dashboard.py").read_text()
+        assert "/evaluations/" not in source.replace(
+            "# GET /api/programs/{id}/evaluations/{person}", "",
+        ), "a per-person performance review must not be served over HTTP"
+
+    def test_no_workflow_assigns_a_grade(self):
+        offenders = []
+        for path in sorted((_SRC / "workflows").glob("*.py")):
+            source = _executable_source(path)
+            for term in ("performancegrade", "responsivenessgrade",
+                         "quarterlyevaluation", "personmetrics",
+                         "persontrend"):
+                if term in source:
+                    offenders.append(f"{path.name}:{term}")
+        assert offenders == [], f"{offenders} grade an individual"

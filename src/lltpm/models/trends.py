@@ -1,4 +1,19 @@
-"""Historical trend analysis models — track patterns over time."""
+"""Trend models — where a program is heading, not who is slipping.
+
+**What was removed in Commit 41, and why.** This module held
+``PersonTrend``: per-person response rate and response hours over 7 and
+30 days with an ``is_degrading`` flag, which the trend report rendered
+as "Engagement Alerts" naming individuals, and which the program's
+``engagement_trend`` was computed by counting.
+
+A program whose replies are slowing down is a real and useful signal.
+Attributing it to the people who replied slowest is a different claim,
+and usually the wrong one — the same evidence more often means requests
+are queuing at a shared authority, or that one person sits on four
+critical paths. ``response_latency_trend`` keeps the signal at the level
+where it can be acted on, as time-to-reply across the program with no
+per-person breakdown to sort.
+"""
 
 from __future__ import annotations
 
@@ -55,26 +70,6 @@ class VelocityPoint(BaseModel):
         return self.items_closed - self.items_opened
 
 
-class PersonTrend(BaseModel):
-    """Response time and engagement trend for a person."""
-
-    person: str
-    program_id: str = ""
-    data_points: list[dict] = Field(default_factory=list)  # [{date, avg_response_h, response_rate}]
-    direction: TrendDirection = TrendDirection.STABLE
-    avg_response_hours_30d: float = 0.0
-    avg_response_hours_7d: float = 0.0
-    response_rate_30d: float = 1.0
-    response_rate_7d: float = 1.0
-
-    @property
-    def is_degrading(self) -> bool:
-        return (
-            self.avg_response_hours_7d > self.avg_response_hours_30d * 1.5
-            or self.response_rate_7d < self.response_rate_30d * 0.8
-        )
-
-
 class RiskTrend(BaseModel):
     """Track whether risks are accumulating or being resolved."""
 
@@ -95,10 +90,13 @@ class TrendReport(BaseModel):
     health_trend: TrendDirection = TrendDirection.STABLE
     velocity_trend: TrendDirection = TrendDirection.STABLE
     risk_trend: TrendDirection = TrendDirection.STABLE
-    engagement_trend: TrendDirection = TrendDirection.STABLE
+    # Program-level time-to-reply, not a per-person breakdown. See
+    # the module note: the old engagement_trend aggregated
+    # individual responsiveness grades.
+    response_latency_trend: TrendDirection = TrendDirection.STABLE
+    median_response_hours: float = 0.0
     health_snapshots: list[HealthSnapshot] = Field(default_factory=list)
     velocity_points: list[VelocityPoint] = Field(default_factory=list)
-    person_trends: list[PersonTrend] = Field(default_factory=list)
     risk_trends: Optional[RiskTrend] = None
     warnings: list[str] = Field(default_factory=list)
     recommendations: list[str] = Field(default_factory=list)
@@ -112,7 +110,11 @@ class TrendReport(BaseModel):
             f"- Health: {self.health_trend.value}",
             f"- Velocity: {self.velocity_trend.value}",
             f"- Risk exposure: {self.risk_trend.value}",
-            f"- Engagement: {self.engagement_trend.value}",
+            f"- Time to reply: {self.response_latency_trend.value}"
+            + (
+                f" (median {self.median_response_hours:.0f}h)"
+                if self.median_response_hours else ""
+            ),
         ]
 
         if self.warnings:
@@ -124,14 +126,5 @@ class TrendReport(BaseModel):
             lines.append(f"\n## Recommendations ({len(self.recommendations)})")
             for r in self.recommendations:
                 lines.append(f"- {r}")
-
-        degrading = [p for p in self.person_trends if p.is_degrading]
-        if degrading:
-            lines.append(f"\n## Engagement Alerts ({len(degrading)})")
-            for p in degrading:
-                lines.append(
-                    f"- **{p.person}**: response time {p.avg_response_hours_7d:.0f}h (7d) "
-                    f"vs {p.avg_response_hours_30d:.0f}h (30d) — {p.direction.value}"
-                )
 
         return "\n".join(lines)

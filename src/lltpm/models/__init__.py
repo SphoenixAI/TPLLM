@@ -15,7 +15,7 @@ from lltpm.models.memory import MemoryStore, ConversationTurn, ContextSnapshot, 
 from lltpm.models.calendar import SmartScheduleRequest, ScheduleResult, AttendeeInfo, AvailabilitySlot
 from lltpm.models.zoom import ZoomMeeting, AINotesIngestion, ZoomWebhookEvent
 from lltpm.models.webhook import NormalizedEvent, WebhookSource, EventBatch
-from lltpm.models.prediction import RiskPrediction, QuarterlyEvaluation, PersonMetrics
+from lltpm.models.prediction import RiskPrediction
 from lltpm.models.security import APIKey, AuditEntry, AuditLog, Role, Permission
 from lltpm.models.portfolio import PortfolioView, ResourceConflict, SharedDependency, CrossProgramRisk
 from lltpm.models.trends import HealthSnapshot, TrendReport, TrendDirection, VelocityPoint
@@ -38,7 +38,7 @@ __all__ = [
     "SmartScheduleRequest", "ScheduleResult", "AttendeeInfo", "AvailabilitySlot",
     "ZoomMeeting", "AINotesIngestion", "ZoomWebhookEvent",
     "NormalizedEvent", "WebhookSource", "EventBatch",
-    "RiskPrediction", "QuarterlyEvaluation", "PersonMetrics",
+    "RiskPrediction",
     "APIKey", "AuditEntry", "AuditLog", "Role", "Permission",
     "PortfolioView", "ResourceConflict", "SharedDependency", "CrossProgramRisk",
     "HealthSnapshot", "TrendReport", "TrendDirection", "VelocityPoint",

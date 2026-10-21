@@ -168,23 +168,32 @@ These are enforced by tests and should not be relaxed casually:
   a surname is worse than reporting an unlinked identity.
 - **Replay touches nothing external** — rebuilding history never re-sends a
   message or re-finalizes a decision.
-- **No worker scoring or activity tracking — in the layered stack.** The
-  organizational-reasoning packages model capacity, dependencies, authority
-  and information flow, never individual productivity, and
-  `tests/test_person_measurement_scope.py` asserts that no model in them
-  has a person as its subject *and* a grade, score, rate or hours count.
-  It covers logs too: the log field vocabulary is a closed list and a
-  guardrail walks every log call in `src/lltpm`.
+- **No worker scoring or activity tracking.** The system measures
+  dependency congestion, approval queues, information divergence, capacity
+  constraints, decision latency, KPI state, context handoff depth and
+  organizational topology. It does not grade anyone's responsiveness,
+  reliability or collaboration, and it does not name who "was the
+  blocker". `tests/test_person_measurement_scope.py` asserts that no model
+  anywhere has a person as its subject *and* a grade, score, rate or hours
+  count, that no tool module can be asked for a verdict on a colleague,
+  and that the dashboard serves no per-person review. It covers logs too:
+  the log field vocabulary is a closed list and a guardrail walks every
+  log call in `src/lltpm`.
 
-  The original TPM surface (`models/`, `workflows/`, `tools/`) predates
-  this rule and contains five per-person measurement models —
-  `AttendeeInfo.engagement_score`, `EngagementProfile`, `PersonMetrics`,
-  `QuarterlyEvaluation` (four letter grades, reachable from the agent via
-  `generate_evaluation`) and `PersonTrend`. They are enumerated with
-  justifications in that test, which fails if the list grows, shrinks, or
-  a new module joins it. Do not describe the whole system as free of
-  worker scoring; say which part is, and read that test first if the
-  subject comes up.
+  Commit 41 removed the surface that broke this — `PerformanceGrade`,
+  `PersonMetrics`, `QuarterlyEvaluation`, `ResponsivenessGrade`,
+  `PersonTrend`, `AttendeeInfo.engagement_score`, two agent tools, a
+  dashboard endpoint, and two risk models that predicted people rather
+  than structure. The structural reading is also the more capable one: a
+  team that looks slow because four projects share one approval authority
+  is a finding about the approval authority, and a letter grade destroys
+  it.
+
+  One borderline case is kept and argued in that test rather than hidden:
+  `EngagementProfile` holds a response-latency estimate, because "allow
+  ~8h for a reply" is a scheduling fact of the same kind as "this approval
+  queue takes three days". It carries no rate, no count of unanswered
+  requests and no grade, so it cannot be used to rank anyone.
 - **Logs are not a second journal** — the journal records what happened
   to the organization (durable, hash-chained, replayed); logs record what
   the process did (transient, never authoritative, never replayed).

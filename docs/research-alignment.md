@@ -490,31 +490,54 @@ Stated here rather than discovered later.
   `datetime.now(UTC)` returns aware, and the bitemporal layer is
   sensitive to the difference (§3). The new ingest boundary is already
   explicit about it.
-- **The no-worker-scoring claim was scoped wrongly.** The README and
-  docs/assistant-development-guide.md stated that the system models organizational mechanics and
-  never individual productivity, and that source-level tests enforce
-  it. The first half is the design intent of the layered stack and is
-  true there. The second half was not: the existing guardrails enumerate
-  runtime modules by hand and never looked at the original TPM surface,
-  which contains five per-person measurement models — including
-  `QuarterlyEvaluation`, a performance review with responsiveness,
-  reliability, collaboration and overall letter grades, reachable from
-  the agent through a `generate_evaluation` tool.
+- **The no-worker-scoring claim was scoped wrongly, and the gap is now
+  closed in the other direction.** Commit 40 found that the README and
+  docs/assistant-development-guide.md stated the system never models individual productivity and
+  that source-level tests enforce it, while the guardrails only ever
+  covered the layered stack. The original TPM surface contained five
+  per-person measurement models, including `QuarterlyEvaluation` — a
+  performance review with responsiveness, reliability, collaboration and
+  overall letter grades, reachable from the agent through a
+  `generate_evaluation` tool. Commit 40 inventoried them rather than
+  deleting them, because removing shipped functionality is its owner's
+  decision.
 
-  Both documents now say which part of the system the invariant covers,
-  and `tests/test_person_measurement_scope.py` detects per-person
-  measurement by model *shape* — a person as the declared subject plus a
-  grade, score, rate or hours count — rather than by vocabulary, because
-  the three earlier vocabulary-based guardrails in this codebase each
-  flagged something innocent and had to be narrowed. The layered stack
-  is asserted clean; the legacy classes are enumerated with
-  justifications, and the test fails if the list grows, shrinks, or a
-  new module joins it.
+  Commit 41 is that decision. The grading surface is gone:
+  `PerformanceGrade`, `PersonMetrics`, `QuarterlyEvaluation`,
+  `ResponsivenessGrade`, `PersonTrend`,
+  `AttendeeInfo.engagement_score`, two agent tools, one dashboard
+  endpoint, and the two risk models that predicted individuals ("Alice
+  has UNRESPONSIVE engagement"; "Bob required escalation 3 times —
+  consider reassigning critical-path items from Bob"). Four risk signal
+  types went with them. The invariant is now a single statement about
+  the whole system, and `tests/test_person_measurement_scope.py`
+  asserts the exception list is **empty**.
 
-  Whether that surface should exist is a product decision about shipped,
-  agent-callable functionality and is deliberately left open rather than
-  resolved here. What is closed is the gap between the claim and the
-  code.
+  Three replacements are worth naming, because each keeps a real signal
+  while dropping the attribution:
+
+  - `CAPACITY_OVERLOAD` became `ALLOCATION_LOAD`. "Nine concurrent items
+    are assigned to Alice; redistribute four" is a statement about how
+    work was distributed. "Alice may be overloaded — review her
+    workload" was the same count written as an accusation.
+  - The trend report's `engagement_trend`, computed by counting
+    individually degrading people, became `response_latency_trend`:
+    median time-to-reply across the program, with no per-person
+    breakdown to sort.
+  - Outreach advice no longer branches on a grade. The old version grew
+    progressively more punitive as the number worsened, ending at "loop
+    in their lead for important requests"; the replacement states the
+    same latency as a scheduling allowance and changes the plan rather
+    than the person.
+
+  One borderline case is kept and argued rather than hidden: a
+  response-latency estimate on a routing profile. "Allow ~8h for a
+  reply" is a scheduling fact of the same kind as "this approval queue
+  takes three days", and what made the old version an evaluation was the
+  grade on top of it, the response rate and ignored-message count it was
+  computed from, and the escalation it drove. All three are gone, so
+  nothing remaining can rank two people.
+
 - **There is pre-existing lint debt in the original TPM surface, and it
   was deliberately not swept.** `python -m pyflakes src/lltpm/` reports
   103 findings that are not already annotated: 88 unused imports, 11

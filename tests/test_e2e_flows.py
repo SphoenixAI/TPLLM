@@ -268,19 +268,23 @@ class TestEngagementTrendFlow:
         })
         assert "Alice" in result or "engagement" in result.lower()
 
-        # 3. Record another engagement
+        # 3. Record another reply. There is deliberately no way to
+        # record a non-response: Commit 41 removed it, because counting
+        # unanswered requests against someone is how a latency estimate
+        # becomes a reliability score.
         self.registry.execute("record_engagement", {
             "program_id": "engage-flow",
             "person": "Bob",
             "channel": "EMAIL",
-            "ignored": True,
+            "response_hours": 36.0,
         })
 
-        # 4. Get engagement summary
+        # 4. Get the routing summary
         result = self.registry.execute("get_engagement_summary", {
             "program_id": "engage-flow",
         })
-        assert "Alice" in result or "engagement" in result.lower()
+        assert "Alice" in result and "Bob" in result
+        assert "Outreach routing" in result
 
         # 5. Record health snapshot for trend analysis
         result = self.registry.execute("record_health_snapshot", {

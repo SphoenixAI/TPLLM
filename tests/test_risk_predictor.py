@@ -1,17 +1,19 @@
-"""Tests for Risk Prediction Engine and Quarterly Evaluations."""
+"""Tests for the risk prediction engine (Commit 41).
 
-import json
+Half this file used to test a quarterly employee evaluation —
+responsiveness, reliability and collaboration letter grades — and one
+prediction model that reported "Alice has UNRESPONSIVE engagement". Both
+are gone. What is tested here predicts milestones, scope and allocation
+load, and the last class asserts that the removed surface stays removed:
+a deletion nothing guards is a deletion that comes back.
+"""
+
 import tempfile
 from datetime import date, timedelta
 from pathlib import Path
 
 from lltpm.artifacts.store import ArtifactStore
-from lltpm.models.prediction import (
-    PerformanceGrade,
-    PersonMetrics,
-    PredictionConfidence,
-    RiskSignalType,
-)
+from lltpm.models.prediction import PredictionConfidence, RiskSignalType
 from lltpm.workflows.risk_predictor import RiskPredictor
 
 
@@ -51,21 +53,6 @@ def _seed_delegations(store, person="Alice", count=6):
     store.save("test-prog", "delegation_plan", DelegationPlan(items=items))
 
 
-def _seed_engagement(store, person="Alice", grade="SLOW"):
-    from lltpm.models.engagement import EngagementProfile, PreferredChannel, ResponsivenessGrade
-    profile = EngagementProfile(
-        person=person,
-        program_id="test-prog",
-        avg_response_hours=48.0 if grade == "SLOW" else 2.0,
-        total_requests=10,
-        total_ignored=3 if grade == "SLOW" else 0,
-        grade=ResponsivenessGrade(grade),
-        preferred_channel=PreferredChannel.SLACK,
-    )
-    data = {person: profile.model_dump()}
-    store.save_raw("test-prog", "engagement_profiles", json.dumps(data, default=str))
-
-
 def _seed_scope(store, change_count=5):
     from lltpm.models.scope import ScopeBaseline, ScopeChangeRequest, ScopeChangeStatus
     crs = [
@@ -92,28 +79,42 @@ def test_predict_milestone_slips():
     assert len(milestone_preds) >= 1
 
 
-def test_predict_capacity_overload():
+def test_predict_allocation_load():
     store = _make_store()
     _seed_delegations(store, person="Alice", count=7)
 
     predictor = RiskPredictor(store)
     predictions = predictor.predict_risks("test-prog")
 
-    capacity_preds = [p for p in predictions if p.signal_type == RiskSignalType.CAPACITY_OVERLOAD]
-    assert len(capacity_preds) == 1
-    assert "Alice" in capacity_preds[0].affected_people
+    load = [
+        p for p in predictions
+        if p.signal_type == RiskSignalType.ALLOCATION_LOAD
+    ]
+    assert len(load) == 1
+    assert "Alice" in load[0].affected_people
 
 
-def test_predict_engagement_drop():
+def test_allocation_load_reads_as_distribution_not_judgement():
+    """The same count can be written as a capacity observation or as an
+    accusation. This asserts which one it is."""
     store = _make_store()
-    _seed_engagement(store, person="Alice", grade="SLOW")
+    _seed_delegations(store, person="Alice", count=9)
 
-    predictor = RiskPredictor(store)
-    predictions = predictor.predict_risks("test-prog")
+    predictions = RiskPredictor(store).predict_risks("test-prog")
+    load = next(
+        p for p in predictions
+        if p.signal_type == RiskSignalType.ALLOCATION_LOAD
+    )
 
-    eng_preds = [p for p in predictions if p.signal_type == RiskSignalType.ENGAGEMENT_DROP]
-    assert len(eng_preds) == 1
-    assert "Alice" in eng_preds[0].title
+    assert "assigned to" in load.title
+    assert "whoever holds it" in load.description
+    text = f"{load.title} {load.description} {' '.join(load.recommended_actions)}"
+    for word in ("overloaded", "workload", "performance", "slow"):
+        assert word not in text.lower(), (
+            f"'{word}' makes this a statement about Alice rather than "
+            f"about how work was distributed"
+        )
+    assert any("Redistribute" in a for a in load.recommended_actions)
 
 
 def test_predict_scope_creep():
@@ -164,119 +165,61 @@ def test_predictions_persist():
     assert len(loaded) > 0
 
 
-# ── Quarterly evaluation tests ────────────────────────────
+class TestThePersonGradingSurfaceIsGone:
+    """Commit 41 removed it. A deletion nothing guards comes back."""
 
-def test_generate_evaluation_with_metrics():
-    store = _make_store()
-    predictor = RiskPredictor(store)
+    def test_no_performance_grade_model_exists(self):
+        import lltpm.models.prediction as prediction
 
-    metrics = PersonMetrics(
-        person="Alice",
-        total_requests_received=50,
-        total_responses=48,
-        avg_response_hours=3.5,
-        high_priority_requests=10,
-        high_priority_responses=10,
-        commitments_made=20,
-        commitments_met=18,
-        unblocked_others=5,
-        was_blocker=1,
-    )
+        for name in ("PerformanceGrade", "PersonMetrics",
+                     "QuarterlyEvaluation"):
+            assert not hasattr(prediction, name), (
+                f"{name} is back; it graded a colleague"
+            )
 
-    evaluation = predictor.generate_evaluation(
-        "test-prog", "Alice", "2026-Q1", metrics,
-    )
+    def test_no_predictor_method_generates_an_evaluation(self):
+        for name in ("generate_evaluation", "get_evaluation",
+                     "render_evaluation", "_collect_metrics",
+                     "_grade_responsiveness", "_grade_reliability",
+                     "_grade_collaboration", "_compute_overall_grade"):
+            assert not hasattr(RiskPredictor, name), f"{name} is back"
 
-    assert evaluation.person == "Alice"
-    assert evaluation.quarter == "2026-Q1"
-    assert evaluation.responsiveness_grade == PerformanceGrade.EXCEPTIONAL
-    assert evaluation.reliability_grade in (PerformanceGrade.EXCEPTIONAL, PerformanceGrade.STRONG)
+    def test_no_signal_type_names_an_individual_as_the_risk(self):
+        for name in ("RESPONSE_DEGRADATION", "ENGAGEMENT_DROP",
+                     "COMMITMENT_MISS", "BLOCKER_PATTERN"):
+            assert not hasattr(RiskSignalType, name), (
+                f"{name} made a person the risk rather than the structure"
+            )
 
+    def test_the_remaining_signals_are_structural(self):
+        assert {s.value for s in RiskSignalType} == {
+            "milestone_slip", "scope_creep", "dependency_chain",
+            "allocation_load",
+        }
 
-def test_evaluation_identifies_strengths():
-    store = _make_store()
-    predictor = RiskPredictor(store)
+    def test_the_agent_cannot_ask_for_an_evaluation(self):
+        from lltpm.tools.prediction_tools import get_prediction_tools
 
-    metrics = PersonMetrics(
-        person="Alice",
-        total_requests_received=20,
-        total_responses=19,
-        avg_response_hours=2.0,
-        commitments_made=10,
-        commitments_met=10,
-    )
+        names = {t["name"] for t in get_prediction_tools(_make_store())}
+        assert names == {"predict_risks", "get_prediction_summary"}
+        assert "generate_evaluation" not in names
 
-    evaluation = predictor.generate_evaluation(
-        "test-prog", "Alice", "2026-Q1", metrics,
-    )
+    def test_no_prediction_names_a_person_outside_affected_people(self):
+        """A person may be named as somewhere a risk lands. The risk
+        itself must be about structure."""
+        store = _make_store()
+        _seed_milestones(store, at_risk=True)
+        _seed_delegations(store, person="Alice", count=8)
+        _seed_scope(store, change_count=5)
 
-    assert len(evaluation.strengths) > 0
-    assert any("response" in s.lower() for s in evaluation.strengths)
-
-
-def test_evaluation_identifies_improvements():
-    store = _make_store()
-    predictor = RiskPredictor(store)
-
-    metrics = PersonMetrics(
-        person="Bob",
-        total_requests_received=20,
-        total_responses=10,
-        avg_response_hours=30.0,
-        ignored_messages=5,
-        commitments_made=10,
-        commitments_met=4,
-    )
-
-    evaluation = predictor.generate_evaluation(
-        "test-prog", "Bob", "2026-Q1", metrics,
-    )
-
-    assert evaluation.responsiveness_grade in (PerformanceGrade.BELOW, PerformanceGrade.CRITICAL)
-    assert len(evaluation.areas_for_improvement) > 0
-
-
-def test_render_evaluation():
-    store = _make_store()
-    predictor = RiskPredictor(store)
-
-    metrics = PersonMetrics(
-        person="Alice",
-        total_requests_received=30,
-        total_responses=28,
-        avg_response_hours=4.0,
-        commitments_made=15,
-        commitments_met=14,
-    )
-
-    evaluation = predictor.generate_evaluation(
-        "test-prog", "Alice", "2026-Q1", metrics,
-    )
-
-    rendered = predictor.render_evaluation(evaluation)
-    assert "Quarterly Evaluation: Alice" in rendered
-    assert "Grades" in rendered
-    assert "Key Metrics" in rendered
-
-
-def test_evaluation_persists():
-    store = _make_store()
-    predictor = RiskPredictor(store)
-
-    metrics = PersonMetrics(person="Alice", total_requests_received=10, total_responses=9)
-    predictor.generate_evaluation("test-prog", "Alice", "2026-Q1", metrics)
-
-    loaded = predictor.get_evaluation("test-prog", "Alice", "2026-Q1")
-    assert loaded is not None
-    assert loaded.person == "Alice"
-
-
-def test_auto_quarter_detection():
-    store = _make_store()
-    predictor = RiskPredictor(store)
-
-    metrics = PersonMetrics(person="Alice")
-    evaluation = predictor.generate_evaluation("test-prog", "Alice", metrics=metrics)
-
-    assert evaluation.quarter != ""
-    assert "Q" in evaluation.quarter
+        for prediction in RiskPredictor(store).predict_risks("test-prog"):
+            blob = " ".join([
+                prediction.title, prediction.description,
+                *prediction.recommended_actions, *prediction.data_points,
+            ]).lower()
+            for word in ("unresponsive", "response rate", "escalat",
+                         "reliability", "grade", "pattern of not"):
+                assert word not in blob, (
+                    f"'{word}' in {prediction.signal_type.value}: "
+                    f"{prediction.title}"
+                )

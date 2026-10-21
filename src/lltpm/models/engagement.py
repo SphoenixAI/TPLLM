@@ -1,25 +1,35 @@
-"""Models for Engagement Scoring — track responsiveness and optimize outreach.
+"""Outreach routing — how to reach someone, and when to expect a reply.
 
-Not punitive. Used to understand *when* and *how* each person prefers
-to be reached, so the agent can adapt its communication style.
+This model answers a logistics question: which channel reaches this
+person, what time of day they are reachable, whether they act on
+one-click options, and how long a reply typically takes so a plan can
+allow for it. Response latency is a routing and scheduling fact of the
+same kind as "this approval queue takes three days".
+
+**What was removed in Commit 41, and why.** This module used to compute
+a ``ResponsivenessGrade`` — HIGHLY_RESPONSIVE, RESPONSIVE, SLOW,
+UNRELIABLE — from a per-person response rate and ignored-message count,
+and the outreach recommendation built on it escalated: "Bob has a 30%
+response rate; loop in their lead for important requests."
+
+That is performance management, not routing. It also reads a structural
+cause as a personal quality: somebody copied on forty requests a week
+across four programs responds to a smaller fraction of them, and the
+finding there is about how requests are distributed, not about them.
+
+So there is no grade, no response rate and no ignored count. What
+remains cannot be used to rank anyone: a latency estimate and the
+number of observations behind it, which is a property of the estimate
+rather than of the person.
 """
 
 from __future__ import annotations
 
-from datetime import datetime, date, time
+from datetime import datetime
 from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel, Field
-
-
-class ResponsivenessGrade(str, Enum):
-    """How responsive someone typically is."""
-
-    HIGHLY_RESPONSIVE = "HIGHLY_RESPONSIVE"  # Usually responds within hours
-    RESPONSIVE = "RESPONSIVE"                 # Usually responds within a day
-    SLOW = "SLOW"                            # Takes 2-3 days
-    UNRELIABLE = "UNRELIABLE"                # Often doesn't respond
 
 
 class PreferredChannel(str, Enum):
@@ -31,7 +41,13 @@ class PreferredChannel(str, Enum):
 
 
 class ResponseEvent(BaseModel):
-    """A single response (or non-response) event for scoring."""
+    """One observed reply, and how it arrived.
+
+    A request that was never answered contributes no observation. It is
+    deliberately not counted as a non-response against anyone: the
+    reason is unknowable from here, and counting it is how a latency
+    estimate turns into a reliability score.
+    """
 
     nudge_id: str = ""
     request_type: str = ""     # "status_update", "decision", "review", etc.
@@ -41,85 +57,84 @@ class ResponseEvent(BaseModel):
     channel: PreferredChannel = PreferredChannel.SLACK
     had_quick_options: bool = False
     used_quick_option: bool = False
-    ignored: bool = False
 
 
 class EngagementProfile(BaseModel):
-    """Per-person engagement profile built from observed behavior.
-
-    The agent uses this to optimize *when*, *how*, and *what* to send.
-    """
+    """Where to send something, and how long to allow for a reply."""
 
     person: str
     program_id: str = ""
 
-    # Observed patterns
+    # Observed latency, and how many observations it rests on.
     avg_response_hours: float = 24.0
     median_response_hours: float = 24.0
-    response_rate: float = 1.0      # 0.0-1.0
-    grade: ResponsivenessGrade = ResponsivenessGrade.RESPONSIVE
+    observed_responses: int = 0
 
-    # Preferences (learned from behavior)
+    # Routing preferences, learned from what worked.
     preferred_channel: PreferredChannel = PreferredChannel.SLACK
-    best_response_window: str = "9am-12pm"  # When they typically respond fastest
+    best_response_window: str = "9am-12pm"  # When replies usually arrive
     prefers_quick_options: bool = True       # Do they use one-click options?
     prefers_batched: bool = False            # Do they prefer all items at once?
 
-    # History
-    total_requests: int = 0
-    total_responses: int = 0
-    total_ignored: int = 0
-    events: list[ResponseEvent] = Field(default_factory=list)
-
     # Tracking
+    events: list[ResponseEvent] = Field(default_factory=list)
     last_interaction: Optional[datetime] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
+    @property
+    def has_observations(self) -> bool:
+        """Whether the latency estimate rests on anything.
+
+        Callers should say "no observations yet" rather than quoting the
+        default as though it had been measured.
+        """
+        return self.observed_responses > 0
+
     def record_response(self, event: ResponseEvent) -> None:
-        """Record a response event and update scoring."""
+        """Record an observed reply and update the latency estimate."""
         self.events.append(event)
-        self.total_requests += 1
-        if event.responded_at:
-            self.total_responses += 1
-            if event.response_hours is not None:
-                # Update running average
-                self.avg_response_hours = (
-                    (self.avg_response_hours * (self.total_responses - 1) + event.response_hours)
-                    / self.total_responses
-                )
-        elif event.ignored:
-            self.total_ignored += 1
+        if event.responded_at and event.response_hours is not None:
+            self.observed_responses += 1
+            # Running mean over observations, not over requests sent.
+            self.avg_response_hours = (
+                (
+                    self.avg_response_hours * (self.observed_responses - 1)
+                    + event.response_hours
+                ) / self.observed_responses
+            )
+            self.median_response_hours = self._median_latency()
 
-        # Update rate
-        self.response_rate = self.total_responses / self.total_requests if self.total_requests > 0 else 1.0
-
-        # Update grade
-        self._update_grade()
-
-        # Update preference detection
         if event.used_quick_option:
             self.prefers_quick_options = True
 
         self.last_interaction = datetime.utcnow()
         self.updated_at = datetime.utcnow()
 
-    def _update_grade(self) -> None:
-        if self.response_rate < 0.5:
-            self.grade = ResponsivenessGrade.UNRELIABLE
-        elif self.avg_response_hours > 48:
-            self.grade = ResponsivenessGrade.SLOW
-        elif self.avg_response_hours > 12:
-            self.grade = ResponsivenessGrade.RESPONSIVE
-        else:
-            self.grade = ResponsivenessGrade.HIGHLY_RESPONSIVE
+    def _median_latency(self) -> float:
+        samples = sorted(
+            event.response_hours for event in self.events
+            if event.response_hours is not None
+        )
+        if not samples:
+            return self.median_response_hours
+        middle = len(samples) // 2
+        if len(samples) % 2:
+            return samples[middle]
+        return (samples[middle - 1] + samples[middle]) / 2
 
     def summary(self) -> str:
+        if not self.has_observations:
+            return (
+                f"**{self.person}** — no replies observed yet\n"
+                f"  Channel: {self.preferred_channel.value} | "
+                f"Window: {self.best_response_window}"
+            )
         return (
-            f"**{self.person}** — {self.grade.value}\n"
-            f"  Avg response: {self.avg_response_hours:.1f}h | "
-            f"Rate: {self.response_rate:.0%} | "
-            f"Best window: {self.best_response_window} | "
+            f"**{self.person}** — replies in ~"
+            f"{self.median_response_hours:.1f}h "
+            f"({self.observed_responses} observation(s))\n"
+            f"  Best window: {self.best_response_window} | "
             f"Channel: {self.preferred_channel.value} | "
             f"Quick options: {'yes' if self.prefers_quick_options else 'no'}"
         )

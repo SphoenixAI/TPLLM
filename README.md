@@ -263,16 +263,20 @@ where LLTPM departs from the standard answer on purpose.
   finalized inside one guarded call, kill switch first.
 - **Durability** — an append-only hash-chained journal is the source of
   truth; every derived projection can be deleted and rebuilt from it.
-- **The reasoning stack is not a surveillance tool** — it models
-  organizational mechanics, never individual productivity, and a source-level
-  guardrail asserts that no model in the layered stack measures a person.
-  The original TPM surface predates that rule and is **not** clean: five
-  models there measure individuals, including a quarterly performance
-  review with letter grades that the agent can generate.
-  `tests/test_person_measurement_scope.py` enumerates every one of them
-  and why it is there, and fails if the list changes in either direction.
-  Whether that surface should exist is a product decision; what is not
-  negotiable is that it stays enumerated and cannot spread to new code.
+- **Not a surveillance tool** — it measures dependency congestion, approval
+  queues, information divergence, capacity constraints, decision latency,
+  KPI state, context handoff depth and organizational topology. It does not
+  grade anyone's responsiveness, reliability or collaboration, and it does
+  not name who "was the blocker". A source-level guardrail asserts that no
+  model anywhere has a person as its subject *and* a grade, score, rate or
+  hours count, that no agent tool can be asked for a verdict on a
+  colleague, and that no per-person review is served over HTTP.
+
+  This is also why the structural reading is the more capable one. A team
+  can look slow because four projects share one approval authority. The
+  system can say that. A quarterly letter grade takes the same evidence
+  and converts a structural failure into an individual's score — less
+  true, and less useful to everyone including the person graded.
 - **Your history is yours** — durable state is JSON in one SQLite file, and
   `lltpm runtime export` gives you the journal, decisions, recommendations
   and evidence provenance without parsing anything opaque.

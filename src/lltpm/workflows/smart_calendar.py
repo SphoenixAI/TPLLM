@@ -96,12 +96,16 @@ class SmartCalendarEngine:
     ) -> list[AttendeeInfo]:
         """Determine who actually needs to be in a meeting.
 
-        Uses scope relevance and engagement scores to recommend
-        required vs optional vs just-send-notes attendees.
+        Uses scope relevance — how much this topic actually concerns
+        someone — to recommend required vs optional vs just-send-notes.
+
+        Commit 41 removed engagement score from this decision. It made
+        a responsive person required and an unresponsive one optional,
+        which is attendance by reply speed rather than by relevance.
         """
         optimized = []
         for att in candidate_attendees:
-            if att.scope_relevance >= 0.7 or att.engagement_score >= 0.8:
+            if att.scope_relevance >= 0.7:
                 att.role = AttendeeRole.REQUIRED
             elif att.scope_relevance >= 0.3:
                 att.role = AttendeeRole.OPTIONAL
@@ -288,13 +292,11 @@ class SmartCalendarEngine:
         if relevance_scores:
             score += 0.15 * (sum(relevance_scores) / len(relevance_scores))
 
-        # 4. Engagement optimization (10% weight) — schedule when people are most responsive
-        engagement_scores = []
-        for att in request.attendees:
-            if att.person in slot.attendees_available:
-                engagement_scores.append(att.engagement_score)
-        if engagement_scores:
-            score += 0.10 * (sum(engagement_scores) / len(engagement_scores))
+        # The engagement term that sat here (10% weight) was removed in
+        # Commit 41. Besides scoring people, it could not have worked:
+        # the score was a per-person constant, so it shifted every
+        # candidate slot by the same amount and never ranked one above
+        # another.
 
         # 5. Meeting load penalty (5% weight) — avoid overloading people
         overloaded = [

@@ -1,8 +1,13 @@
-"""Engagement Tracker — learn how each person prefers to be reached.
+"""Outreach routing — learn how each person prefers to be reached.
 
-Not punitive. Used to optimize *when*, *how*, and *what* to send to
-each person so the agent's outreach is maximally effective and
-minimally disruptive.
+A logistics concern: which channel reaches someone, when they are
+reachable, whether one-click options work for them, and how long to
+allow for a reply.
+
+Commit 41 removed the responsiveness grade this module used to assign
+and the escalation it drove ("loop in their lead for important
+requests"). What is left routes outreach and cannot rank anybody: there
+is no rate, no ignored count and no grade to sort on.
 """
 
 from __future__ import annotations
@@ -15,7 +20,6 @@ from lltpm.models.engagement import (
     EngagementProfile,
     PreferredChannel,
     ResponseEvent,
-    ResponsivenessGrade,
 )
 
 ENGAGEMENT_ARTIFACT = "engagement_profiles"
@@ -36,9 +40,13 @@ class EngagementTracker:
         channel: str = "SLACK",
         had_quick_options: bool = False,
         used_quick_option: bool = False,
-        ignored: bool = False,
     ) -> EngagementProfile:
-        """Record a response event and update the person's profile."""
+        """Record an observed reply and update the routing profile.
+
+        A request that was never answered is not recorded as anything.
+        The reason is unknowable from here, and counting it is how a
+        latency estimate becomes a reliability score.
+        """
         profile = self._get_or_create(program_id, person)
 
         try:
@@ -52,7 +60,6 @@ class EngagementTracker:
             channel=ch,
             had_quick_options=had_quick_options,
             used_quick_option=used_quick_option,
-            ignored=ignored,
         )
         if response_hours is not None:
             event.responded_at = datetime.utcnow()
@@ -71,8 +78,8 @@ class EngagementTracker:
     def get_summary(self, program_id: str) -> str:
         profiles = self._load_profiles(program_id)
         if not profiles:
-            return "No engagement data yet."
-        lines = ["# Engagement Profiles"]
+            return "No outreach observations yet."
+        lines = ["# Outreach routing"]
         for profile in sorted(profiles.values(), key=lambda p: p.avg_response_hours):
             lines.append(profile.summary())
         return "\n".join(lines)
@@ -88,45 +95,57 @@ class EngagementTracker:
         return profile.best_response_window
 
     def get_outreach_recommendation(self, program_id: str, person: str) -> dict:
-        """Get a full recommendation for how to reach someone."""
+        """How to reach someone, and how long to allow for a reply."""
         profile = self._get_or_create(program_id, person)
         return {
             "person": person,
-            "grade": profile.grade.value,
             "best_channel": profile.preferred_channel.value,
             "best_time": profile.best_response_window,
             "use_quick_options": profile.prefers_quick_options,
             "batch_requests": profile.prefers_batched,
-            "avg_response_hours": profile.avg_response_hours,
-            "response_rate": profile.response_rate,
+            "typical_response_hours": (
+                profile.median_response_hours if profile.has_observations
+                else None
+            ),
+            "observations": profile.observed_responses,
             "recommendation": self._build_recommendation(profile),
         }
 
     def _build_recommendation(self, profile: EngagementProfile) -> str:
-        if profile.grade == ResponsivenessGrade.HIGHLY_RESPONSIVE:
+        """Routing advice, stated as logistics.
+
+        Deliberately the same shape whatever the latency is. The old
+        version branched on a grade and became progressively more
+        punitive as the number got worse, ending at "loop in their
+        lead" — which is what made it an evaluation rather than a
+        routing hint.
+        """
+        channel = profile.preferred_channel.value
+        if not profile.has_observations:
             return (
-                f"Reach {profile.person} on {profile.preferred_channel.value}. "
-                f"They typically respond within {profile.avg_response_hours:.0f}h. "
-                f"Quick options {'work well' if profile.prefers_quick_options else 'not preferred'}."
+                f"No replies observed from {profile.person} yet. Try "
+                f"{channel} during {profile.best_response_window} and "
+                f"include quick options."
             )
-        elif profile.grade == ResponsivenessGrade.RESPONSIVE:
-            return (
-                f"Reach {profile.person} on {profile.preferred_channel.value} "
-                f"during {profile.best_response_window}. Allow ~{profile.avg_response_hours:.0f}h for response. "
-                f"{'Use quick options.' if profile.prefers_quick_options else 'They prefer free-text.'}"
+
+        allowance = profile.median_response_hours
+        plan = (
+            f"Reach {profile.person} on {channel} during "
+            f"{profile.best_response_window}. Allow ~{allowance:.0f}h for a "
+            f"reply ({profile.observed_responses} observation(s))."
+        )
+        if profile.prefers_quick_options:
+            plan += " Quick options have worked."
+        if profile.prefers_batched:
+            plan += " Batch requests rather than sending them singly."
+        if allowance > 48:
+            # A long latency is a scheduling fact, so it changes the
+            # plan — not a judgement, so it does not change the person.
+            plan += (
+                " At this latency, ask earlier than the deadline rather "
+                "than asking more often."
             )
-        elif profile.grade == ResponsivenessGrade.SLOW:
-            return (
-                f"{profile.person} is typically slow to respond ({profile.avg_response_hours:.0f}h avg). "
-                f"Use {profile.preferred_channel.value} with quick options. "
-                f"Consider batching requests. Set explicit deadlines."
-            )
-        else:
-            return (
-                f"{profile.person} has a {profile.response_rate:.0%} response rate. "
-                f"Recommend: quick options only, explicit deadlines, "
-                f"and loop in their lead for important requests."
-            )
+        return plan
 
     def _get_or_create(self, program_id: str, person: str) -> EngagementProfile:
         profiles = self._load_profiles(program_id)

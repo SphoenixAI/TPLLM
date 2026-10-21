@@ -53,7 +53,10 @@ class AttendeeInfo(BaseModel):
     email: str = ""
     role: AttendeeRole = AttendeeRole.REQUIRED
     scope_relevance: float = 1.0  # how relevant they are to this topic
-    engagement_score: float = 1.0  # from engagement tracker
+    # engagement_score was removed in Commit 41. It was a per-person
+    # score, and it made somebody a *required* attendee for
+    # answering messages promptly rather than for being relevant to
+    # the topic. scope_relevance is the criterion that was meant.
     preferred_hours: tuple[int, int] = (9, 17)  # start, end hour
     timezone: str = "UTC"
     meeting_load_today: int = 0  # how many meetings they already have today

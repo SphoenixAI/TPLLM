@@ -37,7 +37,6 @@ def get_smart_calendar_tools(store: ArtifactStore) -> list[dict[str, Any]]:
                 email=a.get("email", ""),
                 role=AttendeeRole(a.get("role", "required")),
                 scope_relevance=a.get("scope_relevance", 1.0),
-                engagement_score=a.get("engagement_score", 1.0),
                 preferred_hours=tuple(a.get("preferred_hours", [9, 17])),
                 timezone=a.get("timezone", "UTC"),
                 meeting_load_today=a.get("meeting_load_today", 0),
@@ -94,7 +93,6 @@ def get_smart_calendar_tools(store: ArtifactStore) -> list[dict[str, Any]]:
             AttendeeInfo(
                 person=c.get("person", ""),
                 scope_relevance=c.get("scope_relevance", 0.5),
-                engagement_score=c.get("engagement_score", 0.5),
             )
             for c in candidates
         ]
@@ -106,7 +104,6 @@ def get_smart_calendar_tools(store: ArtifactStore) -> list[dict[str, Any]]:
                     "person": a.person,
                     "role": a.role.value,
                     "scope_relevance": a.scope_relevance,
-                    "engagement_score": a.engagement_score,
                 }
                 for a in optimized
             ]
@@ -171,7 +168,6 @@ def get_smart_calendar_tools(store: ArtifactStore) -> list[dict[str, Any]]:
                                 "email": {"type": "string"},
                                 "role": {"type": "string", "enum": ["required", "optional", "informed"]},
                                 "scope_relevance": {"type": "number"},
-                                "engagement_score": {"type": "number"},
                                 "preferred_hours": {"type": "array", "items": {"type": "integer"}},
                                 "timezone": {"type": "string"},
                                 "meeting_load_today": {"type": "integer"},
@@ -209,7 +205,6 @@ def get_smart_calendar_tools(store: ArtifactStore) -> list[dict[str, Any]]:
                             "properties": {
                                 "person": {"type": "string"},
                                 "scope_relevance": {"type": "number"},
-                                "engagement_score": {"type": "number"},
                             },
                         },
                     },

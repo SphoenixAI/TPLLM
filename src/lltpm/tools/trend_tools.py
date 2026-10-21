@@ -54,13 +54,13 @@ def get_trend_tools(store: ArtifactStore) -> list[dict[str, Any]]:
             "health_trend": report.health_trend.value,
             "velocity_trend": report.velocity_trend.value,
             "risk_trend": report.risk_trend.value,
-            "engagement_trend": report.engagement_trend.value,
+            # Program-level time-to-reply. The `degrading_people` list
+            # this replaced (Commit 41) handed the model a ranked list of
+            # colleagues to comment on.
+            "response_latency_trend": report.response_latency_trend.value,
+            "median_response_hours": report.median_response_hours,
             "warnings": report.warnings,
             "recommendations": report.recommendations,
-            "degrading_people": [
-                {"person": p.person, "direction": p.direction.value}
-                for p in report.person_trends if p.is_degrading
-            ],
         })
 
     return [
