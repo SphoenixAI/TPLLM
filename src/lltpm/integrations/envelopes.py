@@ -61,6 +61,16 @@ _SECRET_TEXT_PATTERNS = (
 SECRET_TEXT_PLACEHOLDER = "[redacted-credential]"
 
 
+def _envelope_id_digest(idempotency_key: str) -> str:
+    """A stable, collision-free id derived from the whole key.
+
+    Derived rather than random so that re-normalizing the same payload
+    produces the same envelope id, which is what lets a caller address a
+    piece of evidence across a replay.
+    """
+    return hashlib.sha256(idempotency_key.encode()).hexdigest()[:16]
+
+
 def redact_secret_text(text: str | None) -> tuple[str | None, bool]:
     """Remove credential material from free text. Returns (text, found).
 
@@ -171,7 +181,16 @@ def make_envelope(
         # otherwise refuse a key containing the word "credential".
         safe_metadata["redaction_applied"] = True
     return EvidenceEnvelope(
-        id=f"env-{key[:16]}",
+        # Hashed, not sliced. This was `key[:16]`, which was fine while
+        # every key was a sha256 digest — and became a collision the
+        # moment Commit 37 let a normalizer supply a readable key, since
+        # the first sixteen characters of
+        # `github:pull_request:NODE-…` are the same for every pull
+        # request. Eight envelopes shared two ids. The id reaches the
+        # journal as `DurableEvidenceRecord.evidence_id` and the runtime
+        # as `root_evidence_ids`, so evidence provenance was naming a
+        # group of unrelated facts.
+        id=f"env-{_envelope_id_digest(key)}",
         source_system=source_system,
         source_type=source_type,
         source_id=source_id,

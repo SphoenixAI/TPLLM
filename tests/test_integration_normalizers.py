@@ -907,3 +907,95 @@ class TestRealPayloadsReachTheJournal:
                 "we polled for it"
             )
             assert record.recorded_at >= record.occurred_at
+
+
+class TestEnvelopeIdentityIsUnique:
+    """A regression found by the Slack lane, introduced by Commit 37.
+
+    `make_envelope` built its id as `env-{key[:16]}`. That was safe
+    while every key was a sha256 digest, and became a collision the
+    moment a normalizer could supply a readable key: the first sixteen
+    characters of `github:pull_request:NODE-…` are identical for every
+    pull request, so eight envelopes shared two ids.
+
+    It mattered because the id does not stay in the envelope. It becomes
+    `DurableEvidenceRecord.evidence_id`, the journal record's
+    `evidence_ids`, and the runtime's `root_evidence_ids` — so evidence
+    provenance, temporal event ids and source-availability records all
+    addressed a *group* of unrelated facts under one name. Journal
+    deduplication was unaffected, because that keys on the idempotency
+    key, which is why the suite stayed green and only a second reader
+    found this.
+    """
+
+    def _envelopes(self, bindings):
+        return normalize_github_payloads(
+            pull_requests=(
+                fx.load("pull_requests") + fx.load("pull_request_variants")
+            ),
+            issues=fx.load("issues"),
+            bindings=bindings, received_at=RECEIVED,
+            repository=fx.REPOSITORY,
+        ).envelopes
+
+    def test_every_envelope_has_its_own_id(self, bindings):
+        envelopes = self._envelopes(bindings)
+        ids = [envelope.id for envelope in envelopes]
+        assert len(set(ids)) == len(ids), (
+            f"{len(ids)} envelopes share {len(set(ids))} id(s); evidence "
+            f"provenance would name a group of unrelated facts"
+        )
+
+    def test_the_id_does_not_leak_the_key_prefix(self, bindings):
+        """The specific shape of the bug: a readable key prefix."""
+        for envelope in self._envelopes(bindings):
+            assert "github:" not in envelope.id
+            assert envelope.id.startswith("env-")
+            assert len(envelope.id) == len("env-") + 16
+
+    def test_the_id_is_derived_so_it_survives_a_replay(self, bindings):
+        """Derived rather than random: re-normalizing the same payload
+        has to address the same evidence, or a replay cannot join back
+        to what it rebuilt."""
+        first = self._envelopes(bindings)
+        second = normalize_github_payloads(
+            pull_requests=(
+                fx.load("pull_requests") + fx.load("pull_request_variants")
+            ),
+            issues=fx.load("issues"),
+            bindings=fx.bindings(), received_at=LATER,
+            repository=fx.REPOSITORY,
+        ).envelopes
+        assert [e.id for e in first] == [e.id for e in second]
+
+    def test_distinct_facts_from_one_resource_get_distinct_ids(self):
+        """One pull request yields a review request and later a merge.
+        Two facts, two ids."""
+        from lltpm.integrations.envelopes import make_envelope
+
+        shared = dict(
+            source_system="github", source_type="pull_request",
+            source_id="acme/atlas#8", observed_at=RECEIVED,
+            received_at=RECEIVED, project_ids=["atlas"],
+        )
+        requested = make_envelope(
+            event_type="action_requested",
+            idempotency_key="github:pull_request:N:v1:action_requested",
+            **shared,
+        )
+        merged = make_envelope(
+            event_type="pr_merged",
+            idempotency_key="github:pull_request:N:v1:pr_merged",
+            **shared,
+        )
+        assert requested.id != merged.id
+
+    def test_the_durable_record_inherits_the_unique_id(self, bindings):
+        """Where it actually mattered."""
+        from lltpm.runtime.durability import envelope_to_durable_record
+
+        records = [
+            envelope_to_durable_record(e) for e in self._envelopes(bindings)
+        ]
+        evidence_ids = [r.evidence_id for r in records]
+        assert len(set(evidence_ids)) == len(evidence_ids)
