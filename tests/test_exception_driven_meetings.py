@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     ActionRequestStatus,
     ActionRequestType,
     DiscussionNeed,

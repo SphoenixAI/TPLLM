@@ -12,7 +12,7 @@ import random
 
 import pytest
 
-from lltpm.portfolio import (
+from tpllm.portfolio import (
     SharedScenarioFactor,
     deduplicate_shared_factors,
     factors_affecting_project,

@@ -12,9 +12,9 @@ import tempfile
 from datetime import date, timedelta
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.models.prediction import PredictionConfidence, RiskSignalType
-from lltpm.workflows.risk_predictor import RiskPredictor
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.models.prediction import PredictionConfidence, RiskSignalType
+from tpllm.workflows.risk_predictor import RiskPredictor
 
 
 def _make_store():
@@ -22,7 +22,7 @@ def _make_store():
 
 
 def _seed_milestones(store, at_risk=True):
-    from lltpm.models.milestone import MilestonePlan, Milestone, MilestoneStatus
+    from tpllm.models.milestone import MilestonePlan, Milestone, MilestoneStatus
     milestones = [
         Milestone(
             id="MS-001", name="Beta", owner="Alice",
@@ -42,7 +42,7 @@ def _seed_milestones(store, at_risk=True):
 
 
 def _seed_delegations(store, person="Alice", count=6):
-    from lltpm.models.delegation import DelegationPlan, DelegationItem, DelegationStatus
+    from tpllm.models.delegation import DelegationPlan, DelegationItem, DelegationStatus
     items = [
         DelegationItem(
             id=f"DEL-{i:03}", title=f"Task {i}",
@@ -54,7 +54,7 @@ def _seed_delegations(store, person="Alice", count=6):
 
 
 def _seed_scope(store, change_count=5):
-    from lltpm.models.scope import ScopeBaseline, ScopeChangeRequest, ScopeChangeStatus
+    from tpllm.models.scope import ScopeBaseline, ScopeChangeRequest, ScopeChangeStatus
     crs = [
         ScopeChangeRequest(
             id=f"SCR-{i:03}", title=f"Change {i}",
@@ -169,7 +169,7 @@ class TestThePersonGradingSurfaceIsGone:
     """It was removed. A deletion nothing guards comes back."""
 
     def test_no_performance_grade_model_exists(self):
-        import lltpm.models.prediction as prediction
+        import tpllm.models.prediction as prediction
 
         for name in ("PerformanceGrade", "PersonMetrics",
                      "QuarterlyEvaluation"):
@@ -198,7 +198,7 @@ class TestThePersonGradingSurfaceIsGone:
         }
 
     def test_the_agent_cannot_ask_for_an_evaluation(self):
-        from lltpm.tools.prediction_tools import get_prediction_tools
+        from tpllm.tools.prediction_tools import get_prediction_tools
 
         names = {t["name"] for t in get_prediction_tools(_make_store())}
         assert names == {"predict_risks", "get_prediction_summary"}

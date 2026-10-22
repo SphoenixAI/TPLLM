@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "lltpm"
+name = "tpllm"
 version = "0.41.0"
 description = "AI-powered Technical Program Manager agent that replaces meetings with insight"
 readme = "README.md"
@@ -71,20 +71,20 @@ dashboard = [
     "uvicorn>=0.30.0",
 ]
 all = [
-    "lltpm[integrations,email,openai,dashboard]",
+    "tpllm[integrations,email,openai,dashboard]",
 ]
 dev = [
     "pytest>=8.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/SphoenixAI/LLTPM"
-Repository = "https://github.com/SphoenixAI/LLTPM"
-Issues = "https://github.com/SphoenixAI/LLTPM/issues"
-Changelog = "https://github.com/SphoenixAI/LLTPM/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/SphoenixAI/TPLLM"
+Repository = "https://github.com/SphoenixAI/TPLLM"
+Issues = "https://github.com/SphoenixAI/TPLLM/issues"
+Changelog = "https://github.com/SphoenixAI/TPLLM/blob/main/CHANGELOG.md"
 
 [project.scripts]
-lltpm = "lltpm.main:cli"
+tpllm = "tpllm.main:cli"
 
 [tool.hatch.build.targets.sdist]
 # A source distribution should carry what is needed to build and test
@@ -98,14 +98,14 @@ exclude = [
     "deploy",
     "Dockerfile",
     "docker-compose.yml",
-    ".lltpm",
+    ".tpllm",
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/lltpm"]
+packages = ["src/tpllm"]
 # PEP 561: the package is annotated throughout, so say so — without this
 # marker a consumer's type checker ignores every annotation here.
-artifacts = ["src/lltpm/py.typed"]
+artifacts = ["src/tpllm/py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

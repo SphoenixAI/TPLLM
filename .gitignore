@@ -17,7 +17,7 @@ venv/
 .coverage.*
 htmlcov/
 
-# Local state. `lltpm runtime` writes a SQLite file wherever it is
+# Local state. `tpllm runtime` writes a SQLite file wherever it is
 # pointed, and the README's quickstart points it at the working
 # directory — so an unwary contributor would otherwise commit their
 # organization's journal.
@@ -27,6 +27,13 @@ htmlcov/
 *.db-shm
 *.sqlite
 *.sqlite3
+.tpllm/
+.tpllm-example/
+# The pre-rename directory name. Keeping it is not tidiness: renaming
+# this rule in the rename commit un-ignored a local data directory,
+# `git add -A` swept up the JWT signing key inside it, and it reached a
+# commit. An obsolete ignore rule costs nothing; dropping one costs a
+# secret.
 .lltpm/
 .lltpm-example/
 

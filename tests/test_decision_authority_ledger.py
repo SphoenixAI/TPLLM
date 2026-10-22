@@ -7,7 +7,7 @@ from datetime import timedelta
 
 import pytest
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     DECISION_ORIGIN_HUMAN_VALIDATED_AGENT,
     ActorRelationType,
     DecisionEvaluationAction,
@@ -36,7 +36,7 @@ from lltpm.coordination import (
     render_panel_sections,
     select_agent_recommendation,
 )
-from lltpm.core import ActorReference
+from tpllm.core import ActorReference
 from tests._coordination_fixtures import AS_OF, PROJECT, WS, actor, request
 from tests._recommendation_fixtures import (
     POLICY,
@@ -418,14 +418,14 @@ class TestGuardrails:
         assert "forbidden_marker_call()" in stripped
 
     def test_no_calibration_governance_reuse(self):
-        import lltpm.coordination.authority_policy as pol
-        import lltpm.coordination.autonomous_decisions as auto
-        import lltpm.coordination.decision_authority_ledger as led
+        import tpllm.coordination.authority_policy as pol
+        import tpllm.coordination.autonomous_decisions as auto
+        import tpllm.coordination.decision_authority_ledger as led
 
         for mod in (pol, auto, led):
             source = executable_source(mod)
             for pattern in (
-                "is_application_eligible", "lltpm.application",
+                "is_application_eligible", "tpllm.application",
                 "apply_calibration", "issue_approval",
                 "register_active_calibration",
             ):
@@ -436,9 +436,9 @@ class TestGuardrails:
                 )
 
     def test_no_worker_scoring(self):
-        import lltpm.coordination.authority_policy as pol
-        import lltpm.coordination.autonomous_decisions as auto
-        import lltpm.coordination.decision_authority_ledger as led
+        import tpllm.coordination.authority_policy as pol
+        import tpllm.coordination.autonomous_decisions as auto
+        import tpllm.coordination.decision_authority_ledger as led
 
         for mod in (pol, auto, led):
             source = executable_source(mod).lower()

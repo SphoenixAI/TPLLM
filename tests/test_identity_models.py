@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.identity import (
+from tpllm.identity import (
     CanonicalEntity,
     CanonicalEntityType,
     EntityMergeStatus,
@@ -22,7 +22,7 @@ from lltpm.identity import (
     normalize_handle,
     propose_entity_merge,
 )
-from lltpm.identity import ExternalIdentityType
+from tpllm.identity import ExternalIdentityType
 from tests._identity_fixtures import AS_OF, entity, identity
 
 
@@ -132,15 +132,15 @@ class TestNormalization:
 class TestSourceGuardrails:
     def test_identity_layer_grants_and_sends_nothing(self):
         import inspect
-        import lltpm.identity.evidence as evidence_mod
-        import lltpm.identity.graph as graph_mod
-        import lltpm.identity.merge as merge_mod
-        import lltpm.identity.models as models_mod
-        import lltpm.identity.registry as registry_mod
-        import lltpm.identity.resolution as resolution_mod
+        import tpllm.identity.evidence as evidence_mod
+        import tpllm.identity.graph as graph_mod
+        import tpllm.identity.merge as merge_mod
+        import tpllm.identity.models as models_mod
+        import tpllm.identity.registry as registry_mod
+        import tpllm.identity.resolution as resolution_mod
 
         forbidden = (
-            "lltpm.application",
+            "tpllm.application",
             "apply_calibration",
             "issue_approval",
             "approve_calibration",

@@ -6,7 +6,7 @@ from datetime import datetime
 
 import pytest
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     AgentDecisionRecommendation,
     AgentRecommendationStatus,
     DecisionCriterion,
@@ -17,7 +17,7 @@ from lltpm.coordination import (
     DecisionRecommendationPolicy,
     HumanDecisionEvaluation,
 )
-from lltpm.core import ActorReference
+from tpllm.core import ActorReference
 from tests._coordination_fixtures import AS_OF, PROJECT
 
 

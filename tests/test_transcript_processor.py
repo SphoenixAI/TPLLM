@@ -1,6 +1,6 @@
 """Tests for Meeting Transcript Processor."""
 
-from lltpm.workflows.transcript_processor import TranscriptProcessor
+from tpllm.workflows.transcript_processor import TranscriptProcessor
 
 
 SAMPLE_TRANSCRIPT = """\

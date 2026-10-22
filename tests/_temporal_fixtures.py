@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from lltpm.temporal import (
+from tpllm.temporal import (
     DecisionLineageNode,
     TemporalEvent,
     TemporalEventType,

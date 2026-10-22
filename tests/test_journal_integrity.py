@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.persistence import (
+from tpllm.persistence import (
     InMemoryEventJournalStore,
     JournalIntegrityError,
     assert_journal_hash_chain,
@@ -191,10 +191,10 @@ class TestRealFileCorruption:
     def test_a_hand_edited_database_fails_verification(self, tmp_path):
         import sqlite3
 
-        from lltpm.persistence import SQLitePersistenceConfig
-        from lltpm.persistence.sqlite import initialize_sqlite_persistence
+        from tpllm.persistence import SQLitePersistenceConfig
+        from tpllm.persistence.sqlite import initialize_sqlite_persistence
 
-        config = SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+        config = SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
         db = initialize_sqlite_persistence(config)
         for i in range(4):
             db.journal.append(record=record(source_key=f"k{i}"))

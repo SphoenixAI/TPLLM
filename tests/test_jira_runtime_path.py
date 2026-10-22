@@ -27,7 +27,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from lltpm.integrations.jira_normalizer import normalize_jira_payloads
+from tpllm.integrations.jira_normalizer import normalize_jira_payloads
 from tests import _jira_fixtures as fx
 
 RECEIVED = datetime(2026, 10, 22, 4, 40)
@@ -36,15 +36,15 @@ LATER = datetime(2026, 10, 25, 9, 15)
 
 class TestJiraPayloadsReachTheJournal:
     def _ingest(self, envelopes, *, db, now):
-        from lltpm.persistence import build_manifest
-        from lltpm.runtime import (
+        from tpllm.persistence import build_manifest
+        from tpllm.runtime import (
             RuntimeStateStore as RuntimeProjection,
             process_durable_organizational_events,
         )
-        from lltpm.runtime.baselines import baseline_providers
-        from lltpm.runtime.services import LiveIntelligenceServices
-        from lltpm.runtime.sources import JournalBackedDataSource
-        from lltpm.scenarios.models import ScenarioHorizon
+        from tpllm.runtime.baselines import baseline_providers
+        from tpllm.runtime.services import LiveIntelligenceServices
+        from tpllm.runtime.sources import JournalBackedDataSource
+        from tpllm.scenarios.models import ScenarioHorizon
 
         journal = db["journal"]
         services = LiveIntelligenceServices(
@@ -72,7 +72,7 @@ class TestJiraPayloadsReachTheJournal:
 
     @pytest.fixture
     def db(self):
-        from lltpm.persistence import (
+        from tpllm.persistence import (
             InMemoryEventJournalStore,
             InMemoryIntelligenceArtifactStore,
             InMemoryRuntimeStateStore,
@@ -108,7 +108,7 @@ class TestJiraPayloadsReachTheJournal:
         assert len(db["journal"]) >= len(envelopes)
 
     def test_the_journal_hash_chain_stays_valid(self, db, envelopes):
-        from lltpm.persistence import verify_journal
+        from tpllm.persistence import verify_journal
 
         self._ingest(envelopes, db=db, now=RECEIVED)
         assert verify_journal(journal=db["journal"]).valid
@@ -208,7 +208,7 @@ class TestJiraPayloadsReachTheJournal:
         """What makes the journal worth writing to: the normalized Jira
         evidence can be rebuilt into temporal events without re-reading
         Jira, which is also why replay never re-sends anything."""
-        from lltpm.runtime.sources import evidence_to_temporal_event
+        from tpllm.runtime.sources import evidence_to_temporal_event
 
         self._ingest(envelopes, db=db, now=RECEIVED)
         events = []
@@ -231,6 +231,6 @@ class TestJiraPayloadsReachTheJournal:
 
 
 def _durable_evidence(record):
-    from lltpm.persistence.models import DurableEvidenceRecord
+    from tpllm.persistence.models import DurableEvidenceRecord
 
     return DurableEvidenceRecord.model_validate(record.payload["evidence"])

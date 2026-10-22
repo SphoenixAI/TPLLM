@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from lltpm.evaluation import (
+from tpllm.evaluation import (
     MINIMUM_BUCKET_SAMPLES,
     MINIMUM_FAMILY_SAMPLES_FOR_PROMOTION,
     ProbabilityForecastObservation,
@@ -17,7 +17,7 @@ from lltpm.evaluation import (
     can_promote_method,
     resolve_method_label,
 )
-from lltpm.scenarios import ScenarioProbabilityMethod
+from tpllm.scenarios import ScenarioProbabilityMethod
 
 T0 = datetime(2026, 10, 1, 9, 0, 0)
 
@@ -251,7 +251,7 @@ class TestAuthorityGuard:
     def test_calibration_source_touches_no_policy(self):
         import ast
         import inspect
-        import lltpm.evaluation.scenario_calibration as mod
+        import tpllm.evaluation.scenario_calibration as mod
 
         tree = ast.parse(inspect.getsource(mod))
         for node in ast.walk(tree):
@@ -273,7 +273,7 @@ class TestAuthorityGuard:
         for forbidden in (
             "maximum_autonomous_risk", "minimum_autonomous_confidence",
             "autonomous_allowed_decision_types", "OrganizationalDecisionMode",
-            "can_agent_finalize_decision", "lltpm.coordination",
+            "can_agent_finalize_decision", "tpllm.coordination",
         ):
             assert forbidden not in source, (
                 f"calibration must not reference '{forbidden}' — historical "

@@ -12,13 +12,13 @@ projects, not three uncertainties. D's exposure is genuinely its own.
 
 from __future__ import annotations
 
-from lltpm.portfolio import (
+from tpllm.portfolio import (
     PortfolioSimulationState,
     SharedScenarioFactor,
     allocation_from_capacity,
     allocation_from_order,
 )
-from lltpm.scenarios import ScenarioHorizon
+from tpllm.scenarios import ScenarioHorizon
 
 from tests._portfolio_fixtures import (  # noqa: F401 — re-exported
     ACCOUNT_GRAPH,

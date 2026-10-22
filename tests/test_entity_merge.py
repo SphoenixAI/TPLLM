@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.identity import (
+from tpllm.identity import (
     CanonicalEntityType,
     EntityMergeStatus,
     EntityResolutionEvidence,
@@ -22,7 +22,7 @@ from tests._identity_fixtures import (
     identity,
     registry_with,
 )
-from lltpm.identity import ExternalIdentityType
+from tpllm.identity import ExternalIdentityType
 
 
 def _evidence(evidence_type, strength, positive=True, eid="e1"):

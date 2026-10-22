@@ -32,7 +32,7 @@ import pathlib
 
 import pytest
 
-from lltpm.integrations.contracts import (
+from tpllm.integrations.contracts import (
     PROVENANCE_RANK,
     ContractEvidence,
     PayloadContract,
@@ -43,7 +43,7 @@ from lltpm.integrations.contracts import (
     load_contract_bundle,
     serialize_contract_bundle,
 )
-from lltpm.integrations.jira_contracts import (
+from tpllm.integrations.jira_contracts import (
     JIRA_CHANGELOG_FIELDS,
     JIRA_COMMENT_FIELDS,
     JIRA_CONTRACT_PATHS,
@@ -54,7 +54,7 @@ from lltpm.integrations.jira_contracts import (
 )
 from tests import _jira_fixtures as fx
 
-_NORMALIZER = pathlib.Path("src/lltpm/integrations/jira_normalizer.py")
+_NORMALIZER = pathlib.Path("src/tpllm/integrations/jira_normalizer.py")
 
 #: Which fixture file covers which payload kind.
 FIXTURE_FOR_KIND = {
@@ -303,7 +303,7 @@ class TestTheContractCoversWhatIsRead:
 
 
 class TestFixtureProvenance:
-    """``lltpm runtime coverage`` refuses to let a derived projection
+    """``tpllm runtime coverage`` refuses to let a derived projection
     pass for an engine. The same honesty applies here, and more sharply:
     nothing in this directory is a recording, and the labels say so."""
 
@@ -466,7 +466,7 @@ class TestTheShippedBundleMatchesTheFixtures:
     def test_the_bundle_is_shipped_inside_the_package(self):
         path = contract_bundle_path("jira")
         assert path.exists()
-        assert "src/lltpm/integrations" in str(path).replace("\\", "/"), (
+        assert "src/tpllm/integrations" in str(path).replace("\\", "/"), (
             "a contract that only exists in a git checkout cannot be "
             "checked by the person running the installed tool"
         )

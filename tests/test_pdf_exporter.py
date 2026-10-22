@@ -5,8 +5,8 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.workflows.pdf_exporter import (
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.workflows.pdf_exporter import (
     PDFExporter,
     PDFBackend,
     PDFResult,
@@ -105,7 +105,7 @@ def test_pdf_base_css_defined():
     """Base CSS contains expected styles."""
     assert "@page" in PDF_BASE_CSS
     assert "font-family" in PDF_BASE_CSS
-    assert "LLTPM" in PDF_BASE_CSS
+    assert "TPLLM" in PDF_BASE_CSS
 
 
 def test_get_summary():

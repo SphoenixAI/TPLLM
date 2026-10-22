@@ -1,0 +1,526 @@
+{
+ "contracts": {
+  "channel_scope": {
+   "fields": [
+    {
+     "always_present": true,
+     "path": "type",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "subtype",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "channel",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "ts",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "user",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "text",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "topic",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "purpose",
+     "types": [
+      "str"
+     ]
+    }
+   ],
+   "payload_kind": "channel_scope",
+   "recorded_from_samples": 2,
+   "source_system": "slack"
+  },
+  "conversations_history": {
+   "fields": [
+    {
+     "always_present": true,
+     "path": "ok",
+     "types": [
+      "bool"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "has_more",
+     "types": [
+      "bool"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "messages[].type",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "messages[].ts",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "response_metadata.next_cursor",
+     "types": [
+      "str"
+     ]
+    }
+   ],
+   "payload_kind": "conversations_history",
+   "recorded_from_samples": 1,
+   "source_system": "slack"
+  },
+  "event": {
+   "fields": [
+    {
+     "always_present": true,
+     "path": "type",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "event_id",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "event_time",
+     "types": [
+      "int"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "team_id",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "api_app_id",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "event.type",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "event.subtype",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "event.channel",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "event.channel_type",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "event.user",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "event.text",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "event.ts",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "event.thread_ts",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "event.event_ts",
+     "types": [
+      "str"
+     ]
+    }
+   ],
+   "payload_kind": "event",
+   "recorded_from_samples": 4,
+   "source_system": "slack"
+  },
+  "message": {
+   "fields": [
+    {
+     "always_present": true,
+     "path": "type",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "subtype",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "user",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "bot_id",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "username",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "text",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "ts",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "thread_ts",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "parent_user_id",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "channel",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "channel_type",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "team",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "edited.ts",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "edited.user",
+     "types": [
+      "str"
+     ]
+    }
+   ],
+   "payload_kind": "message",
+   "recorded_from_samples": 6,
+   "source_system": "slack"
+  },
+  "message_changed": {
+   "fields": [
+    {
+     "always_present": true,
+     "path": "type",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "subtype",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "hidden",
+     "types": [
+      "bool"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "channel",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "ts",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "event_ts",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "message.type",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "message.user",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "message.text",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "message.ts",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "message.thread_ts",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "message.edited.ts",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "message.edited.user",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "previous_message.text",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "previous_message.ts",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "previous_message.user",
+     "types": [
+      "str"
+     ]
+    }
+   ],
+   "payload_kind": "message_changed",
+   "recorded_from_samples": 1,
+   "source_system": "slack"
+  },
+  "message_deleted": {
+   "fields": [
+    {
+     "always_present": true,
+     "path": "type",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "subtype",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "hidden",
+     "types": [
+      "bool"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "channel",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "ts",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "event_ts",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "deleted_ts",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "previous_message.ts",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "previous_message.user",
+     "types": [
+      "str"
+     ]
+    }
+   ],
+   "payload_kind": "message_deleted",
+   "recorded_from_samples": 1,
+   "source_system": "slack"
+  }
+ },
+ "note": "The fields the Slack normalizers read, with the types each one was observed to take. Derived from the payloads under tests/fixtures/slack, every one of which has provenance 'official_documentation': a shape reproduced from Slack's own published API examples, with obviously synthetic workspace, channel and user ids. It is not a recording of a live response, so it is not evidence that api.slack.com still matches, and `tpllm integrations verify` reports it as unverifiable rather than passing.",
+ "provenance": {
+  "channel_scope": "official_documentation",
+  "conversations_history": "official_documentation",
+  "event": "official_documentation",
+  "message": "official_documentation",
+  "message_changed": "official_documentation",
+  "message_deleted": "official_documentation"
+ },
+ "recorded_at": {
+  "channel_scope": "",
+  "conversations_history": "",
+  "event": "",
+  "message": "",
+  "message_changed": "",
+  "message_deleted": ""
+ },
+ "source_system": "slack"
+}

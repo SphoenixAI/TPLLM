@@ -7,15 +7,15 @@ The agent has access to all TPM tools and will use them autonomously
 to manage your program.
 """
 
-from lltpm.config import LLTPMConfig
-from lltpm.agent import TPMAgent
+from tpllm.config import TPLLMConfig
+from tpllm.agent import TPMAgent
 
 
 def main():
-    config = LLTPMConfig.from_env()
+    config = TPLLMConfig.from_env()
     agent = TPMAgent(config)
 
-    print("LLTPM Agent — Interactive Mode")
+    print("TPLLM Agent — Interactive Mode")
     print("=" * 40)
     print("Example prompts:")
     print('  "Set up a new program called Phoenix to rebuild our payments service"')
@@ -43,7 +43,7 @@ def main():
                 for tc in turn.tool_calls:
                     print(f"  [tool: {tc['name']}]")
             if turn.text:
-                print(f"\nLLTPM: {turn.text}")
+                print(f"\nTPLLM: {turn.text}")
         print()
 
 

@@ -78,7 +78,7 @@ def documented_names() -> list[str]:
 
 def bindings():
     """Bindings that declare the fixture channel to be one project."""
-    from lltpm.integrations.slack_normalizer import slack_bindings
+    from tpllm.integrations.slack_normalizer import slack_bindings
 
     return slack_bindings(mapping={(WORKSPACE, CHANNEL): [PROJECT]})
 
@@ -87,7 +87,7 @@ def unbound_bindings():
     """A declared binding for a *different* channel in the same
     workspace, so an unbound-channel test cannot pass merely because
     nothing at all is declared."""
-    from lltpm.integrations.slack_normalizer import slack_bindings
+    from tpllm.integrations.slack_normalizer import slack_bindings
 
     return slack_bindings(mapping={(WORKSPACE, "C0OTHER1"): ["payments"]})
 
@@ -150,7 +150,7 @@ def contract_sources() -> list:
     committed alongside its contract fails the build rather than leaving
     the installed contract describing payloads nobody has.
     """
-    from lltpm.integrations.contracts import ContractSource
+    from tpllm.integrations.contracts import ContractSource
 
     entries = index()["fixtures"]
     return [

@@ -65,6 +65,6 @@
    "source_system": "slack"
   }
  },
- "note": "Slack payloads for offline contract tests. Every file here has provenance `official_documentation`: the shape is reproduced from Slack's own published API documentation examples, with synthetic ids. slack.com, api.slack.com and www.slack.com were unreachable from the environment this integration was built in, so every file here is documentation-faithful and not a recording of anything, and none of it is evidence that the live API still matches. `lltpm integrations verify` reports these contracts as unverifiable rather than letting them pass as verified. No real workspace, channel, person or token appears in any file.",
+ "note": "Slack payloads for offline contract tests. Every file here has provenance `official_documentation`: the shape is reproduced from Slack's own published API documentation examples, with synthetic ids. slack.com, api.slack.com and www.slack.com were unreachable from the environment this integration was built in, so every file here is documentation-faithful and not a recording of anything, and none of it is evidence that the live API still matches. `tpllm integrations verify` reports these contracts as unverifiable rather than letting them pass as verified. No real workspace, channel, person or token appears in any file.",
  "workspace_alias": "T0ABCDEF"
 }

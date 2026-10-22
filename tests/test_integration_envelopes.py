@@ -7,7 +7,7 @@ from datetime import datetime
 
 import pytest
 
-from lltpm.integrations import (
+from tpllm.integrations import (
     EvidenceEnvelope,
     IntegrationRegistry,
     RetentionClass,
@@ -21,7 +21,7 @@ from lltpm.integrations import (
     register_adapter,
     sanitize_metadata,
 )
-from lltpm.integrations.slack_integration import SlackMessage
+from tpllm.integrations.slack_integration import SlackMessage
 
 _OBSERVED = datetime(2026, 8, 10, 9, 30, 0)
 _PROJECT = "atlas"

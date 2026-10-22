@@ -3,9 +3,9 @@
 import tempfile
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.models.webhook import EventPriority, WebhookSource
-from lltpm.workflows.webhook_processor import WebhookProcessor
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.models.webhook import EventPriority, WebhookSource
+from tpllm.workflows.webhook_processor import WebhookProcessor
 
 
 def _make_store():

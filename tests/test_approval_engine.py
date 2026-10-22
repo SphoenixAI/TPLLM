@@ -3,9 +3,9 @@
 import tempfile
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.models.approval import ApprovalStatus, ApprovalType
-from lltpm.workflows.approval_engine import ApprovalEngine
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.models.approval import ApprovalStatus, ApprovalType
+from tpllm.workflows.approval_engine import ApprovalEngine
 
 
 def _make_store():

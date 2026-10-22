@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from lltpm.config import IntegrationConfig
-from lltpm.integrations.gdrive_integration import (
+from tpllm.config import IntegrationConfig
+from tpllm.integrations.gdrive_integration import (
     GoogleDriveIntegration,
     ExportFormat,
     ExportResult,

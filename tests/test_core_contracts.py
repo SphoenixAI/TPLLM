@@ -6,7 +6,7 @@ from datetime import datetime
 
 import pytest
 
-from lltpm.core import (
+from tpllm.core import (
     ActorReference,
     ActorView,
     EvidenceReferenceView,
@@ -18,8 +18,8 @@ from lltpm.core import (
     WorkstreamReference,
     summarize_readiness,
 )
-from lltpm.coordination import ActorRelationType, OrganizationalActorRef
-from lltpm.intelligence import (
+from tpllm.coordination import ActorRelationType, OrganizationalActorRef
+from tpllm.intelligence import (
     KPIResponsePlan,
     KPIResponseState,
     LaunchBlocker,

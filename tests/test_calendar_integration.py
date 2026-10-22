@@ -5,13 +5,13 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch, MagicMock
 
-from lltpm.config import IntegrationConfig
-from lltpm.integrations.calendar_integration import (
+from tpllm.config import IntegrationConfig
+from tpllm.integrations.calendar_integration import (
     CalendarIntegration,
     CalendarEvent,
     TimeSlot,
 )
-from lltpm.integrations.base import IntegrationError
+from tpllm.integrations.base import IntegrationError
 
 import pytest
 

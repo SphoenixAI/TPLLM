@@ -1,0 +1,537 @@
+{
+ "contracts": {
+  "changelog": {
+   "fields": [
+    {
+     "always_present": true,
+     "path": "id",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "created",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "author.accountId",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "author.displayName",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "items",
+     "types": [
+      "list"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "items[].field",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "items[].fieldtype",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "items[].from",
+     "types": [
+      "null",
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "items[].fromString",
+     "types": [
+      "null",
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "items[].to",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "items[].toString",
+     "types": [
+      "str"
+     ]
+    }
+   ],
+   "payload_kind": "changelog",
+   "recorded_from_samples": 7,
+   "source_system": "jira"
+  },
+  "comment": {
+   "fields": [
+    {
+     "always_present": true,
+     "path": "id",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "created",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "updated",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "body",
+     "types": [
+      "object"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "author.accountId",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "author.displayName",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "updateAuthor.accountId",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "visibility",
+     "types": [
+      "object"
+     ]
+    }
+   ],
+   "payload_kind": "comment",
+   "recorded_from_samples": 3,
+   "source_system": "jira"
+  },
+  "issue": {
+   "fields": [
+    {
+     "always_present": true,
+     "path": "id",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "key",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "self",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "fields.summary",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "fields.description",
+     "types": [
+      "null",
+      "object"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "fields.created",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "fields.updated",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "fields.duedate",
+     "types": [
+      "null",
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "fields.project.key",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "fields.status.id",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "fields.status.name",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "fields.status.statusCategory.key",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "fields.priority.name",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "fields.resolution.name",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "fields.issuetype.name",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "fields.assignee.accountId",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "fields.assignee.displayName",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "fields.reporter.accountId",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "fields.creator.accountId",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "fields.issuelinks",
+     "types": [
+      "list"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "fields.comment.comments",
+     "types": [
+      "list"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "fields.worklog",
+     "types": [
+      "object"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "changelog.histories",
+     "types": [
+      "list"
+     ]
+    }
+   ],
+   "payload_kind": "issue",
+   "recorded_from_samples": 3,
+   "source_system": "jira"
+  },
+  "issue_link": {
+   "fields": [
+    {
+     "always_present": true,
+     "path": "id",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "type.name",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "type.inward",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "type.outward",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "inwardIssue.id",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "inwardIssue.key",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "inwardIssue.fields.status.name",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "inwardIssue.fields.status.statusCategory.key",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "outwardIssue.id",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "outwardIssue.key",
+     "types": [
+      "str"
+     ]
+    }
+   ],
+   "payload_kind": "issue_link",
+   "recorded_from_samples": 5,
+   "source_system": "jira"
+  },
+  "search": {
+   "fields": [
+    {
+     "always_present": true,
+     "path": "issues",
+     "types": [
+      "list"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "nextPageToken",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": true,
+     "path": "isLast",
+     "types": [
+      "bool"
+     ]
+    }
+   ],
+   "payload_kind": "search",
+   "recorded_from_samples": 2,
+   "source_system": "jira"
+  },
+  "webhook": {
+   "fields": [
+    {
+     "always_present": true,
+     "path": "webhookEvent",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "issue.id",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "issue.key",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "issue.self",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "issue.fields.updated",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "issue.fields.project.key",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "issue.fields.status.statusCategory.key",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "changelog.id",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "changelog.created",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "changelog.items[].field",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "comment.id",
+     "types": [
+      "str"
+     ]
+    },
+    {
+     "always_present": false,
+     "path": "comment.updated",
+     "types": [
+      "str"
+     ]
+    }
+   ],
+   "payload_kind": "webhook",
+   "recorded_from_samples": 3,
+   "source_system": "jira"
+  }
+ },
+ "note": "The fields the Jira Cloud REST v3 normalizers read, with the types each one was observed to take. Derived from the payloads under tests/fixtures/jira, every one of which has provenance 'official_documentation': it follows the shape Atlassian publishes for the endpoint, with synthetic values, and none of it was recorded from a live site. That makes this contract evidence that the shape is the documented one and not evidence that the live API still matches it, so `tpllm integrations verify` reports it as unverifiable rather than passing.",
+ "provenance": {
+  "changelog": "official_documentation",
+  "comment": "official_documentation",
+  "issue": "official_documentation",
+  "issue_link": "official_documentation",
+  "search": "official_documentation",
+  "webhook": "official_documentation"
+ },
+ "recorded_at": {
+  "changelog": "",
+  "comment": "",
+  "issue": "",
+  "issue_link": "",
+  "search": "",
+  "webhook": ""
+ },
+ "source_system": "jira"
+}

@@ -3,9 +3,9 @@
 import tempfile
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.models.security import AuditAction, Permission, Role
-from lltpm.workflows.security_manager import SecurityManager
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.models.security import AuditAction, Permission, Role
+from tpllm.workflows.security_manager import SecurityManager
 
 
 def _make_store():
@@ -21,7 +21,7 @@ def test_create_api_key():
     assert key.name == "test-key"
     assert key.role == Role.ENGINEER
     assert key.is_valid
-    assert raw.startswith("lltpm_")
+    assert raw.startswith("tpllm_")
     assert key.key_prefix == raw[:12]
 
 
@@ -42,7 +42,7 @@ def test_invalid_key_rejected():
     mgr = SecurityManager(store)
 
     mgr.create_api_key("test-key", Role.VIEWER)
-    result = mgr.validate_api_key("lltpm_invalid_key_here")
+    result = mgr.validate_api_key("tpllm_invalid_key_here")
 
     assert result is None
 

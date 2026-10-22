@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.temporal import (
+from tpllm.temporal import (
     SupersessionCycleError,
     detect_supersession_cycle,
     trace_decision_lineage,

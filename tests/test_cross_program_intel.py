@@ -3,12 +3,12 @@
 import tempfile
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.models.delegation import DelegationItem, DelegationPlan, DelegationStatus
-from lltpm.models.milestone import Milestone, MilestonePlan, MilestoneStatus
-from lltpm.models.program import Program
-from lltpm.models.risk import RAIDLog, Dependency, Risk, Severity, Probability, RAIDItemStatus
-from lltpm.workflows.cross_program_intel import CrossProgramIntel
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.models.delegation import DelegationItem, DelegationPlan, DelegationStatus
+from tpllm.models.milestone import Milestone, MilestonePlan, MilestoneStatus
+from tpllm.models.program import Program
+from tpllm.models.risk import RAIDLog, Dependency, Risk, Severity, Probability, RAIDItemStatus
+from tpllm.workflows.cross_program_intel import CrossProgramIntel
 
 
 def _make_store():

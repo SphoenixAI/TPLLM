@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.coordination import WorkstreamType, build_workstream_state
-from lltpm.memory import (
+from tpllm.coordination import WorkstreamType, build_workstream_state
+from tpllm.memory import (
     CoordinationTrace,
     ResolutionPattern,
     build_playbook_suggestion,

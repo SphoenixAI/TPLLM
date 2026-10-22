@@ -16,7 +16,7 @@ from datetime import date, datetime, timedelta
 
 import pytest
 
-from lltpm.ontology.core import (
+from tpllm.ontology.core import (
     AIExtractedValue,
     ClaimType,
     Contradiction,
@@ -26,7 +26,7 @@ from lltpm.ontology.core import (
     SourceRef,
     SourceSystem,
 )
-from lltpm.ontology.interfaces import (
+from tpllm.ontology.interfaces import (
     Assignable,
     Escalatable,
     EvidenceBacked,
@@ -35,7 +35,7 @@ from lltpm.ontology.interfaces import (
     SourceMapped,
     Trackable,
 )
-from lltpm.ontology.entities import (
+from tpllm.ontology.entities import (
     ActionItem,
     AgentRecommendation,
     Artifact,
@@ -67,7 +67,7 @@ from lltpm.ontology.entities import (
     WorkItemStatus,
     Workstream,
 )
-from lltpm.ontology.actions import (
+from tpllm.ontology.actions import (
     ActionType,
     ConfirmDecisionAction,
     ConvertRiskToIssueAction,
@@ -84,14 +84,14 @@ from lltpm.ontology.actions import (
     ResolveDependencyAction,
     TriageIssueAction,
 )
-from lltpm.ontology.precedence import (
+from tpllm.ontology.precedence import (
     PRECEDENCE_RULES,
     PrecedenceField,
     explain_precedence,
     get_precedence_rank,
     resolve_conflict,
 )
-from lltpm.ontology.mapper import (
+from tpllm.ontology.mapper import (
     map_board_task,
     map_calendar_event,
     map_decision,

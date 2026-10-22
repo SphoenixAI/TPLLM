@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     OrganizationalAutonomyState,
     OrganizationalDecisionAuthorityPolicy,
     OrganizationalDecisionMode,
@@ -24,8 +24,8 @@ from lltpm.coordination import (
     can_agent_finalize_decision,
     select_agent_recommendation,
 )
-from lltpm.integrations.envelopes import make_envelope
-from lltpm.runtime import (
+from tpllm.integrations.envelopes import make_envelope
+from tpllm.runtime import (
     ArtifactRecomputeError,
     ArtifactRecomputeRequest,
     DecisionContext,
@@ -396,7 +396,7 @@ class FakeScenarioRecommendation:
         scenario_probability_confidence: float = 0.82,
         recommended_action: object = None,
     ):
-        from lltpm.coordination.decision_timing import DecisionTimingAction
+        from tpllm.coordination.decision_timing import DecisionTimingAction
 
         class _Timing:
             def __init__(self, action):

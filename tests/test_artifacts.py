@@ -3,14 +3,14 @@
 import tempfile
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.artifacts.raid_log import RAIDLogManager
-from lltpm.artifacts.decision_log import DecisionLogManager
-from lltpm.artifacts.milestone_plan import MilestonePlanManager
-from lltpm.artifacts.meeting_notes import MeetingNotesManager
-from lltpm.artifacts.status_update import StatusUpdateGenerator
-from lltpm.artifacts.program_brief import ProgramBriefGenerator
-from lltpm.artifacts.launch_checklist import LaunchChecklistManager
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.artifacts.raid_log import RAIDLogManager
+from tpllm.artifacts.decision_log import DecisionLogManager
+from tpllm.artifacts.milestone_plan import MilestonePlanManager
+from tpllm.artifacts.meeting_notes import MeetingNotesManager
+from tpllm.artifacts.status_update import StatusUpdateGenerator
+from tpllm.artifacts.program_brief import ProgramBriefGenerator
+from tpllm.artifacts.launch_checklist import LaunchChecklistManager
 
 
 def _make_store():

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from lltpm.intelligence import (
+from tpllm.intelligence import (
     KPIClaim,
     KPIClaimType,
     KPIReconciliationStatus,

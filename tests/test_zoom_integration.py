@@ -5,9 +5,9 @@ from __future__ import annotations
 import json
 from unittest.mock import patch, MagicMock
 
-from lltpm.config import IntegrationConfig
-from lltpm.integrations.zoom_integration import ZoomIntegration, _ZoomClient
-from lltpm.integrations.base import IntegrationError
+from tpllm.config import IntegrationConfig
+from tpllm.integrations.zoom_integration import ZoomIntegration, _ZoomClient
+from tpllm.integrations.base import IntegrationError
 
 import pytest
 

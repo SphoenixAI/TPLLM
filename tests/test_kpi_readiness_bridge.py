@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from lltpm.intelligence import (
+from tpllm.intelligence import (
     KPIHealthStatus,
     KPIIndicatorRole,
     KPIMilestoneLink,
@@ -102,7 +102,7 @@ class TestReadinessBridge:
 
     def test_no_direct_score_mutation(self):
         import inspect
-        import lltpm.intelligence.kpi_readiness_bridge as mod
+        import tpllm.intelligence.kpi_readiness_bridge as mod
 
         source = inspect.getsource(mod)
         for pattern in (

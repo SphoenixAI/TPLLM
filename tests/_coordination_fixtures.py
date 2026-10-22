@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from types import SimpleNamespace
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     ActionRequest,
     ActionRequestStatus,
     ActionRequestType,
@@ -16,7 +16,7 @@ from lltpm.coordination import (
     WorkstreamObjective,
     WorkstreamType,
 )
-from lltpm.intelligence import (
+from tpllm.intelligence import (
     ProjectArchitectureMap,
     ProjectPurposeModel,
     ProjectSignificanceModel,

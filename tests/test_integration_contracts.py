@@ -24,7 +24,7 @@ import pathlib
 
 import pytest
 
-from lltpm.integrations.contracts import (
+from tpllm.integrations.contracts import (
     GITHUB_CONTRACT_PATHS,
     GITHUB_EVENT_FIELDS,
     GITHUB_ISSUE_FIELDS,
@@ -337,7 +337,7 @@ class TestScrubbing:
 
 
 class TestFixtureProvenance:
-    """``lltpm runtime coverage`` refuses to let a derived projection
+    """``tpllm runtime coverage`` refuses to let a derived projection
     pass for an engine. The same honesty applies to fixtures: only a
     recording is evidence about the live API."""
 
@@ -447,7 +447,7 @@ class TestTheContractCoversWhatIsRead:
         import pathlib
 
         source = pathlib.Path(
-            "src/lltpm/integrations/normalizers.py"
+            "src/tpllm/integrations/normalizers.py"
         ).read_text()
         tree = ast.parse(source)
         function = next(

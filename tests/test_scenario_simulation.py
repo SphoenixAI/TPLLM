@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.scenarios import (
+from tpllm.scenarios import (
     probability_of_outcome,
     simulate_scenario_lattice,
 )

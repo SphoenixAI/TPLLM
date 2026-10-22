@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from lltpm.scenarios import (
+from tpllm.scenarios import (
     LOST_CONTEXT_DEPTH_THRESHOLD,
     MiscommunicationRisk,
     MiscommunicationType,

@@ -21,16 +21,16 @@ from datetime import datetime
 
 import pytest
 
-from lltpm.coordination.models import OrganizationalActorRef
-from lltpm.identity import (
+from tpllm.coordination.models import OrganizationalActorRef
+from tpllm.identity import (
     CanonicalEntity,
     CanonicalEntityRegistry,
     CanonicalEntityType,
     EntityResolutionPolicy,
 )
-from lltpm.identity.models import ExplicitEntityAlias
-from lltpm.persistence import JournalEventType, historical_records
-from lltpm.runtime.identity_resolution import (
+from tpllm.identity.models import ExplicitEntityAlias
+from tpllm.persistence import JournalEventType, historical_records
+from tpllm.runtime.identity_resolution import (
     IdentityResolutionOutcome,
     canonical_ids_for_envelope,
     registry_from_journal,
@@ -574,7 +574,7 @@ class TestNoWorkerScoring:
         import ast
         import inspect
 
-        import lltpm.runtime.identity_resolution as module
+        import tpllm.runtime.identity_resolution as module
 
         tree = ast.parse(inspect.getsource(module))
         for node in ast.walk(tree):
@@ -605,7 +605,7 @@ class TestIdentityOnTheDurablePath:
     """Resolution is wired into the ingest pass, not a side errand."""
 
     def _run(self, *, registry=None, envelopes=None):
-        from lltpm.runtime import (
+        from tpllm.runtime import (
             RuntimeStateStore as RuntimeProjection,
             process_durable_organizational_events,
         )
@@ -653,7 +653,7 @@ class TestIdentityOnTheDurablePath:
         )
 
     def test_omitting_the_registry_skips_resolution_entirely(self):
-        from lltpm.runtime import (
+        from tpllm.runtime import (
             RuntimeStateStore as RuntimeProjection,
             process_durable_organizational_events,
         )
@@ -733,7 +733,7 @@ class TestIdentityOnTheDurablePath:
     def test_resolution_survives_a_restart_without_re_resolving(self):
         """The journal carries the decision; source systems need not
         still answer."""
-        from lltpm.runtime import registry_from_journal
+        from tpllm.runtime import registry_from_journal
 
         persistence, _ = self._run()
         rebuilt = registry_from_journal(

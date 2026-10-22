@@ -17,13 +17,13 @@ from datetime import timedelta
 
 import pytest
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     OrganizationalDecisionMode,
     OrganizationalDecisionRisk,
     OrganizationalDecisionStatus,
 )
-from lltpm.coordination.decision_timing import DecisionTimingAction
-from lltpm.runtime import (
+from tpllm.coordination.decision_timing import DecisionTimingAction
+from tpllm.runtime import (
     IntelligenceArtifactType as A,
     RecommendationValidityStatus,
     RuntimeBlockReason,
@@ -229,7 +229,7 @@ class TestAuthorityIsRecheckedNotAssumed:
         import ast
         import inspect
 
-        import lltpm.runtime.validity as validity
+        import tpllm.runtime.validity as validity
 
         source = inspect.getsource(validity)
         tree = ast.parse(source)

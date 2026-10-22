@@ -4,11 +4,11 @@ import tempfile
 from datetime import date, timedelta
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.models.milestone import Milestone, MilestonePlan, MilestoneStatus
-from lltpm.models.risk import RAIDLog, Risk, Severity, Probability, RAIDItemStatus
-from lltpm.models.trends import TrendDirection
-from lltpm.workflows.trend_analyzer import TrendAnalyzer
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.models.milestone import Milestone, MilestonePlan, MilestoneStatus
+from tpllm.models.risk import RAIDLog, Risk, Severity, Probability, RAIDItemStatus
+from tpllm.models.trends import TrendDirection
+from tpllm.workflows.trend_analyzer import TrendAnalyzer
 
 
 def _make_store():
@@ -16,7 +16,7 @@ def _make_store():
 
 
 def _seed_program(store, pid="test-prog"):
-    from lltpm.models.program import Program
+    from tpllm.models.program import Program
     store.save(pid, "program", Program(id=pid, name="Test", goal="Test goal"))
     store.save(pid, "milestone_plan", MilestonePlan(milestones=[
         Milestone(id="MS-1", name="Alpha", status=MilestoneStatus.COMPLETED),

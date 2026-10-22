@@ -10,7 +10,7 @@ that nothing mutates the live graph or agent state.
 
 from __future__ import annotations
 
-from lltpm.structural import (
+from tpllm.structural import (
     CandidateEditStatus,
     CandidateEditType,
     CandidateGraphEdit,
@@ -31,12 +31,12 @@ from lltpm.structural import (
     graph_from,
     run_local_inverse_solver,
 )
-from lltpm.structural.calibration import (
+from tpllm.structural.calibration import (
     CalibrationHypothesisStatus,
     CalibrationHypothesisType,
 )
-from lltpm.structural.feedback import HumanDecisionType, record_human_decision
-from lltpm.structural.outcomes import DecisionOutcomeLog
+from tpllm.structural.feedback import HumanDecisionType, record_human_decision
+from tpllm.structural.outcomes import DecisionOutcomeLog
 
 
 # ── Fakes & helpers ─────────────────────────────────────────────────

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.persistence import (
+from tpllm.persistence import (
     CURRENT_PAYLOAD_SCHEMA_VERSION,
     DATABASE_SCHEMA_VERSION,
     JOURNAL_SCHEMA_VERSION,
@@ -46,29 +46,29 @@ class TestVersionConstants:
         """
         from importlib.metadata import PackageNotFoundError, version
 
-        from lltpm.persistence import LLTPM_VERSION
+        from tpllm.persistence import TPLLM_VERSION
 
         try:
-            installed = version("lltpm")
+            installed = version("tpllm")
         except PackageNotFoundError:
-            pytest.skip("lltpm is not installed; nothing to compare against")
-        assert LLTPM_VERSION == installed
+            pytest.skip("tpllm is not installed; nothing to compare against")
+        assert TPLLM_VERSION == installed
 
     def test_a_declared_fallback_exists_for_source_trees(self):
-        from lltpm.persistence.versioning import DECLARED_LLTPM_VERSION
+        from tpllm.persistence.versioning import DECLARED_TPLLM_VERSION
 
-        assert DECLARED_LLTPM_VERSION
+        assert DECLARED_TPLLM_VERSION
 
     def test_the_manifest_reports_the_same_version(self):
-        from lltpm.persistence import LLTPM_VERSION
+        from tpllm.persistence import TPLLM_VERSION
 
         assert build_manifest(
             policy_fingerprint="fp",
-        ).lltpm_version == LLTPM_VERSION
+        ).tpllm_version == TPLLM_VERSION
 
     def test_a_manifest_carries_every_derivation_input(self):
         built = manifest()
-        assert built.lltpm_version
+        assert built.tpllm_version
         assert built.runtime_derivation_version
         assert built.policy_fingerprint
         assert built.scenario_method_version
@@ -108,7 +108,7 @@ class TestManifestCompatibility:
 
     def test_a_library_version_bump_alone_is_compatible(self):
         assert manifests_compatible(
-            expected=manifest(), actual=manifest(lltpm_version="0.99.0"),
+            expected=manifest(), actual=manifest(tpllm_version="0.99.0"),
         ) is True, (
             "the version string is metadata; derivation identity is what "
             "decides whether the same answer would be produced"

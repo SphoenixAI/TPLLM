@@ -83,7 +83,7 @@ CONCLUSIVE_PLUGINS = frozenset({
 })
 
 #: Plugins that measure only randomness. At line granularity in this
-#: codebase they fire on `# LLTPM`, on `TPM agent`, and on
+#: codebase they fire on `# TPLLM`, on `TPM agent`, and on
 #: `from __future__ import annotations` — a docstring has enough
 #: character variety to look like base64. They are counted and reported
 #: for review, never treated as a blocker, because entropy alone cannot
@@ -132,10 +132,10 @@ EXPECTED_PREFIXES = (
     "tests/",
     "scripts/scan_history.py",
     ".env.example",
-    "src/lltpm/integrations/envelopes.py",
-    "src/lltpm/observability/redaction.py",
-    "src/lltpm/persistence/models.py",
-    "src/lltpm/integrations/contracts.py",
+    "src/tpllm/integrations/envelopes.py",
+    "src/tpllm/observability/redaction.py",
+    "src/tpllm/persistence/models.py",
+    "src/tpllm/integrations/contracts.py",
 )
 
 #: Binary and vendored content is not where a leaked credential hides,
@@ -426,7 +426,7 @@ def main() -> int:
             "  Entropy at line granularity fires on ordinary prose and "
             "identifiers in this codebase; it cannot establish that "
             "anything is a credential. Spot-checked: docstrings, import "
-            "lines and the heading '# LLTPM'."
+            "lines and the heading '# TPLLM'."
         )
 
     if triaged:

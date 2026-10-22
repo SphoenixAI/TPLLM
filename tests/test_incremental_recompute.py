@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.runtime import (
+from tpllm.runtime import (
     DIRECT_INVALIDATIONS,
     ArtifactRecomputeError,
     ArtifactRecomputeRequest,

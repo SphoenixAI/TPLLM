@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     ActionRequestStatus,
     OrganizationalDecisionStatus,
     WorkstreamCommitment,
@@ -16,7 +16,7 @@ from lltpm.coordination import (
     compute_workstream_health,
     health_rank,
 )
-from lltpm.coordination.models import CommitmentType
+from tpllm.coordination.models import CommitmentType
 from tests._coordination_fixtures import (
     AS_OF,
     PROJECT,
@@ -207,11 +207,11 @@ class TestExecutiveBrief:
 class TestGuardrails:
     def test_no_worker_performance_vocabulary(self):
         import inspect
-        import lltpm.coordination.models as models
-        import lltpm.coordination.workstreams as workstreams
-        import lltpm.coordination.projections as projections
-        import lltpm.coordination.decisions as decisions_mod
-        import lltpm.coordination.requests as requests_mod
+        import tpllm.coordination.models as models
+        import tpllm.coordination.workstreams as workstreams
+        import tpllm.coordination.projections as projections
+        import tpllm.coordination.decisions as decisions_mod
+        import tpllm.coordination.requests as requests_mod
 
         for mod in (models, workstreams, projections, decisions_mod, requests_mod):
             source = inspect.getsource(mod).lower()
@@ -230,14 +230,14 @@ class TestGuardrails:
 
     def test_no_application_authority_imports(self):
         import inspect
-        import lltpm.coordination.models as models
-        import lltpm.coordination.workstreams as workstreams
-        import lltpm.coordination.projections as projections
+        import tpllm.coordination.models as models
+        import tpllm.coordination.workstreams as workstreams
+        import tpllm.coordination.projections as projections
 
         for mod in (models, workstreams, projections):
             source = inspect.getsource(mod)
             for pattern in (
-                "lltpm.application",
+                "tpllm.application",
                 "apply_calibration",
                 "register_active_calibration",
             ):

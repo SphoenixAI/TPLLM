@@ -13,7 +13,7 @@ from types import SimpleNamespace
 import pytest
 from pydantic import ValidationError
 
-from lltpm.intelligence import (
+from tpllm.intelligence import (
     ClaimContradiction,
     HeuristicLaunchReadinessPredictor,
     LaunchBlockerSeverity,
@@ -705,12 +705,12 @@ class TestDeterminism:
 class TestGuardrails:
     def test_no_application_authority_imports(self):
         import inspect
-        import lltpm.intelligence.launch_readiness as mod
+        import tpllm.intelligence.launch_readiness as mod
 
         source = inspect.getsource(mod)
         forbidden = [
-            "lltpm.application",
-            "lltpm.structural.governance",
+            "tpllm.application",
+            "tpllm.structural.governance",
             "apply_calibration",
             "register_active_calibration",
             "transition_status",

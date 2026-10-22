@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.portfolio import (
+from tpllm.portfolio import (
     build_priority_recommendation,
     detect_bottlenecks,
     displacement_cost,

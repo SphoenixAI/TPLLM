@@ -35,7 +35,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from lltpm.integrations.providers import describe_providers
+from tpllm.integrations.providers import describe_providers
 
 #: A token-shaped string per provider. None is real; each follows the
 #: documented prefix so the redaction patterns have something to match.
@@ -59,7 +59,7 @@ class TestCredentialsStayOutOfEvidence:
     is append-only, so it would be permanent."""
 
     def _envelope_with(self, text: str):
-        from lltpm.integrations.envelopes import make_envelope
+        from tpllm.integrations.envelopes import make_envelope
 
         return make_envelope(
             source_system="slack", source_type="chat",
@@ -83,7 +83,7 @@ class TestCredentialsStayOutOfEvidence:
         assert envelope.metadata.get("redaction_applied") is True
 
     def test_a_credential_in_a_title_is_redacted(self):
-        from lltpm.integrations.envelopes import make_envelope
+        from tpllm.integrations.envelopes import make_envelope
 
         secret = FAKE_CREDENTIALS["github"]
         envelope = make_envelope(
@@ -95,20 +95,20 @@ class TestCredentialsStayOutOfEvidence:
         assert secret not in envelope.model_dump_json()
 
     def test_a_credential_never_reaches_the_journal(self):
-        from lltpm.persistence import (
+        from tpllm.persistence import (
             InMemoryEventJournalStore,
             InMemoryIntelligenceArtifactStore,
             InMemoryRuntimeStateStore,
             build_manifest,
         )
-        from lltpm.runtime import (
+        from tpllm.runtime import (
             RuntimeStateStore as RuntimeProjection,
             process_durable_organizational_events,
         )
-        from lltpm.runtime.baselines import baseline_providers
-        from lltpm.runtime.services import LiveIntelligenceServices
-        from lltpm.runtime.sources import JournalBackedDataSource
-        from lltpm.scenarios.models import ScenarioHorizon
+        from tpllm.runtime.baselines import baseline_providers
+        from tpllm.runtime.services import LiveIntelligenceServices
+        from tpllm.runtime.sources import JournalBackedDataSource
+        from tpllm.scenarios.models import ScenarioHorizon
 
         journal = InMemoryEventJournalStore()
         envelopes = [
@@ -145,10 +145,10 @@ class TestCredentialsStayOutOfEvidence:
             )
 
     def test_a_credential_never_reaches_an_export(self):
-        from lltpm.persistence import (
+        from tpllm.persistence import (
             InMemoryEventJournalStore, build_manifest, export_journal,
         )
-        from lltpm.runtime.durability import append_evidence_accepted
+        from tpllm.runtime.durability import append_evidence_accepted
 
         journal = InMemoryEventJournalStore()
         for secret in FAKE_CREDENTIALS.values():
@@ -170,10 +170,10 @@ class TestCredentialsStayOutOfLogsAndErrors:
     def test_the_log_formatter_redacts_a_credential(self, label):
         import logging
 
-        from lltpm.observability import JsonLinesFormatter
+        from tpllm.observability import JsonLinesFormatter
 
         record = logging.LogRecord(
-            name="lltpm.test", level=logging.INFO, pathname=__file__,
+            name="tpllm.test", level=logging.INFO, pathname=__file__,
             lineno=1, msg="read failed", args=(), exc_info=None,
         )
         record.reason = f"Authorization: {FAKE_CREDENTIALS[label]}"
@@ -183,9 +183,9 @@ class TestCredentialsStayOutOfLogsAndErrors:
     @pytest.mark.parametrize(
         "module",
         [
-            "lltpm.integrations.github_reader",
-            "lltpm.integrations.slack_reader",
-            "lltpm.integrations.jira_reader",
+            "tpllm.integrations.github_reader",
+            "tpllm.integrations.slack_reader",
+            "tpllm.integrations.jira_reader",
         ],
     )
     def test_no_reader_can_name_its_token_in_a_log_call(self, module):
@@ -213,8 +213,8 @@ class TestCredentialsStayOutOfLogsAndErrors:
     @pytest.mark.parametrize(
         "module",
         [
-            "lltpm.integrations.slack_reader",
-            "lltpm.integrations.jira_reader",
+            "tpllm.integrations.slack_reader",
+            "tpllm.integrations.jira_reader",
         ],
     )
     def test_a_reader_does_not_expose_its_token(self, module):
@@ -253,11 +253,11 @@ class TestCredentialsStayOutOfLogsAndErrors:
 class TestSignatureVerification:
     def _slack(self):
         return pytest.importorskip(
-            "lltpm.integrations.slack_reader",
+            "tpllm.integrations.slack_reader",
         )
 
     def _jira(self):
-        return pytest.importorskip("lltpm.integrations.jira_reader")
+        return pytest.importorskip("tpllm.integrations.jira_reader")
 
     def test_slack_accepts_a_correct_signature(self):
         slack = self._slack()
@@ -360,7 +360,7 @@ class TestSignatureVerification:
 
     @pytest.mark.parametrize(
         "module",
-        ["lltpm.integrations.slack_reader", "lltpm.integrations.jira_reader"],
+        ["tpllm.integrations.slack_reader", "tpllm.integrations.jira_reader"],
     )
     def test_verification_uses_a_timing_safe_comparison(self, module):
         source = inspect.getsource(__import__(module, fromlist=["x"]))
@@ -400,8 +400,8 @@ class TestVerificationIsNotIdempotency:
     times."""
 
     def test_a_replayed_slack_delivery_is_one_fact(self):
-        from lltpm.integrations.slack_normalizer import normalize_payload
-        from lltpm.integrations.normalizers import (
+        from tpllm.integrations.slack_normalizer import normalize_payload
+        from tpllm.integrations.normalizers import (
             ProjectBindings, SourceBinding,
         )
 
@@ -442,10 +442,10 @@ class TestIdempotencyIsNotAuthorization:
     nobody bound must not be filed under somebody's project."""
 
     def test_an_unbound_slack_workspace_is_refused(self):
-        from lltpm.integrations.normalizers import (
+        from tpllm.integrations.normalizers import (
             ProjectBindings, SourceBinding,
         )
-        from lltpm.integrations.slack_normalizer import normalize_payload
+        from tpllm.integrations.slack_normalizer import normalize_payload
 
         bindings = ProjectBindings(bindings=[SourceBinding(
             source_system="slack", external_scope="T0ABCDEF/C0ABCDEF",
@@ -470,7 +470,7 @@ class TestIdempotencyIsNotAuthorization:
         assert outcome.unbound or outcome.rejected
 
     def test_an_unbound_jira_project_is_refused(self):
-        from lltpm.integrations.jira_normalizer import (
+        from tpllm.integrations.jira_normalizer import (
             jira_project_bindings, normalize_payload,
         )
 
@@ -494,7 +494,7 @@ class TestEveryProviderRefusesHostileInput:
         ids=lambda d: d.source_system,
     )
     def test_an_empty_payload_produces_no_evidence(self, descriptor):
-        from lltpm.integrations.normalizers import ProjectBindings
+        from tpllm.integrations.normalizers import ProjectBindings
 
         outcome = descriptor.normalizer()(
             payload_kind=descriptor.payload_kinds[0], payload={},
@@ -510,7 +510,7 @@ class TestEveryProviderRefusesHostileInput:
     def test_an_oversized_text_field_is_excerpted(self, descriptor):
         """A provider can hand over a megabyte of text. The journal is
         append-only, so an unbounded copy is permanent."""
-        from lltpm.integrations.normalizers import CONTENT_EXCERPT_LIMIT
+        from tpllm.integrations.normalizers import CONTENT_EXCERPT_LIMIT
 
         assert CONTENT_EXCERPT_LIMIT <= 8192, (
             "the excerpt limit is the only thing bounding how much "
@@ -524,8 +524,8 @@ class TestEveryProviderRefusesHostileInput:
     def test_a_malformed_timestamp_is_refused_not_defaulted(
         self, descriptor,
     ):
-        from lltpm.integrations.normalizers import to_naive_utc
-        from lltpm.integrations.normalizers import TimestampMissingError
+        from tpllm.integrations.normalizers import to_naive_utc
+        from tpllm.integrations.normalizers import TimestampMissingError
 
         for hostile in ("", "yesterday", "9999-99-99", None, []):
             with pytest.raises(TimestampMissingError):

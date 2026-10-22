@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.scenarios import (
+from tpllm.scenarios import (
     ScenarioFactorType,
     build_correlated_evidence_factors,
     build_factor,
@@ -239,7 +239,7 @@ class TestFactorsFromState:
         assert stabilizers
 
     def test_no_state_no_factors(self):
-        from lltpm.temporal import ProjectTemporalState
+        from tpllm.temporal import ProjectTemporalState
 
         empty = ProjectTemporalState(
             project_id="atlas", as_of=T0, evidence_cutoff_at=T0,

@@ -1,4 +1,4 @@
-# Contributing to LLTPM
+# Contributing to TPLLM
 
 Thanks for looking. This document is short on ceremony and specific
 about the few things that actually matter in this codebase.
@@ -10,8 +10,8 @@ python -m pip install -e ".[dev]"
 python -m pytest tests/ -q
 
 # See the organizational stack actually run, offline and with no API key
-python -m lltpm runtime ingest examples/evidence.json --db /tmp/demo.db
-python -m lltpm runtime status --db /tmp/demo.db
+python -m tpllm runtime ingest examples/evidence.json --db /tmp/demo.db
+python -m tpllm runtime status --db /tmp/demo.db
 ```
 
 Use `python -m pip` and `python -m pytest` rather than the bare
@@ -24,7 +24,7 @@ minute. Run all of it before opening a PR.
 
 ## The invariants
 
-LLTPM is an opinionated system, and most of its opinions are enforced by
+TPLLM is an opinionated system, and most of its opinions are enforced by
 tests rather than left to review. If one of these fails, the test is
 usually right.
 
@@ -67,7 +67,7 @@ a message, re-file a ticket, or re-finalize a decision.
 
 ## The product guardrail
 
-LLTPM models organizational mechanics: capacity constraints, dependency
+TPLLM models organizational mechanics: capacity constraints, dependency
 state, authority ambiguity, information divergence, decision age,
 evidence freshness. It does not model individual productivity, and it
 never will.
@@ -103,8 +103,8 @@ understand or decide?* Not *what was each person doing?*
 ## Reporting a problem
 
 Open an issue with what you expected, what happened, and the smallest
-input that shows it. If it involves durable state, `lltpm runtime verify`
-and `lltpm runtime export --what decisions` are usually the two most
+input that shows it. If it involves durable state, `tpllm runtime verify`
+and `tpllm runtime export --what decisions` are usually the two most
 useful things to attach — and neither can change anything.
 
 Please do not attach a database containing real organizational data. The

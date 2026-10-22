@@ -3,7 +3,7 @@ meeting transcripts (the spec's activation example)."""
 
 from __future__ import annotations
 
-from lltpm.intelligence import (
+from tpllm.intelligence import (
     DeterministicKPIClaimExtractor,
     KPIClaimType,
 )

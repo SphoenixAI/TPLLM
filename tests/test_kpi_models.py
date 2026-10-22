@@ -6,7 +6,7 @@ from datetime import timedelta
 
 import pytest
 
-from lltpm.intelligence import (
+from tpllm.intelligence import (
     KPIHealthStatus,
     KPIIndicatorRole,
     KPIMeasurementProfile,

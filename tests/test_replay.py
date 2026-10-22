@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.persistence import (
+from tpllm.persistence import (
     InMemoryEventJournalStore,
     JournalEventType,
     ReplayMode,
@@ -337,8 +337,8 @@ class TestUnknownEvents:
         # Written by a future build that journals a transition this one
         # has never heard of. Skipping it would reconstruct a different
         # organization, so reading it must refuse.
-        from lltpm.persistence import SQLitePersistenceConfig
-        from lltpm.persistence.sqlite import initialize_sqlite_persistence
+        from tpllm.persistence import SQLitePersistenceConfig
+        from tpllm.persistence.sqlite import initialize_sqlite_persistence
 
         db = initialize_sqlite_persistence(
             SQLitePersistenceConfig(path=str(tmp_path / "future.db"))
@@ -356,8 +356,8 @@ class TestUnknownEvents:
         db.close()
 
     def test_the_refusal_explains_the_risk(self, tmp_path):
-        from lltpm.persistence import SQLitePersistenceConfig
-        from lltpm.persistence.sqlite import initialize_sqlite_persistence
+        from tpllm.persistence import SQLitePersistenceConfig
+        from tpllm.persistence.sqlite import initialize_sqlite_persistence
 
         db = initialize_sqlite_persistence(
             SQLitePersistenceConfig(path=str(tmp_path / "future.db"))
@@ -384,7 +384,7 @@ class TestManifestReporting:
 
     def test_a_changed_engine_is_reported_not_hidden(self):
         persistence, projection, _ = build_live_organization()
-        from lltpm.runtime import append_artifact_published
+        from tpllm.runtime import append_artifact_published
 
         append_artifact_published(
             journal=persistence.journal,
@@ -594,7 +594,7 @@ class TestPolicyHistory:
         import ast
         import inspect
 
-        import lltpm.runtime.durability as durability
+        import tpllm.runtime.durability as durability
 
         source = inspect.getsource(durability)
         tree = ast.parse(source)

@@ -1,6 +1,6 @@
-# LLTPM — an AI Technical Program Manager
+# TPLLM — an AI Technical Program Manager
 
-LLTPM reads what a program's source systems already know — pull
+TPLLM reads what a program's source systems already know — pull
 requests, tickets, messages, meeting notes — and maintains a current,
 explainable account of where the program stands, what changed, and what
 needs a human decision. It is built to replace status meetings with
@@ -103,11 +103,11 @@ in the reproducibility manifest so their output is never mistaken for
 model-derived output.
 
 ```bash
-git clone https://github.com/SphoenixAI/LLTPM && cd LLTPM
+git clone https://github.com/SphoenixAI/TPLLM && cd TPLLM
 python -m pip install -e .
 
-python -m lltpm runtime ingest examples/evidence.json \
-  --db lltpm.db --organization acme
+python -m tpllm runtime ingest examples/evidence.json \
+  --db tpllm.db --organization acme
 ```
 
 [`examples/evidence.json`](examples/evidence.json) is three observations
@@ -161,7 +161,7 @@ billing team, the same evidence becomes both less true and less useful.
 Then inspect the history it kept:
 
 ```bash
-python -m lltpm runtime journal --db lltpm.db
+python -m tpllm runtime journal --db tpllm.db
 ```
 
 ```
@@ -186,29 +186,29 @@ The rest of the surface:
 
 ```bash
 # Current revision, journal head, storage health
-python -m lltpm runtime status --db lltpm.db --organization acme
+python -m tpllm runtime status --db tpllm.db --organization acme
 
 # Verify the hash chain (read-only; reports corruption, never repairs it)
-python -m lltpm runtime verify --db lltpm.db
+python -m tpllm runtime verify --db tpllm.db
 
 # Retain the head hash out of band, so a wholesale rewrite is detectable
-python -m lltpm runtime anchor --db lltpm.db
+python -m tpllm runtime anchor --db tpllm.db
 
 # Rebuild every projection from the journal (dry run unless --publish)
-python -m lltpm runtime replay --db lltpm.db --organization acme
+python -m tpllm runtime replay --db tpllm.db --organization acme
 
 # Checkpoint, so future replays start here instead of at record 1
-python -m lltpm runtime snapshot --db lltpm.db --organization acme
+python -m tpllm runtime snapshot --db tpllm.db --organization acme
 
 # Which artifact types run a dedicated engine, and which are projections
-python -m lltpm runtime coverage
+python -m tpllm runtime coverage
 
 # Durable history as JSON, carrying its own integrity verdict
-python -m lltpm runtime export --db lltpm.db --organization acme \
+python -m tpllm runtime export --db tpllm.db --organization acme \
   --what decisions
 
 # Watch records land, like tail -f (read-only; Ctrl-C to stop)
-python -m lltpm runtime journal --db lltpm.db --follow
+python -m tpllm runtime journal --db tpllm.db --follow
 ```
 
 `replay` reports what it suppressed:
@@ -231,8 +231,8 @@ which engine ran, what was deduplicated, why a revision was not
 promoted — so redirecting stdout keeps both streams usable.
 
 ```bash
-python -m lltpm runtime --log-level info --log-format json \
-  ingest examples/evidence.json --db lltpm.db 2> run.jsonl
+python -m tpllm runtime --log-level info --log-format json \
+  ingest examples/evidence.json --db tpllm.db 2> run.jsonl
 ```
 
 Log lines carry the ids that join them back to durable history
@@ -252,17 +252,17 @@ asserts it.
 
 ## Reading a real source system
 
-`lltpm integrations` is the path from a provider's API to durable
+`tpllm integrations` is the path from a provider's API to durable
 evidence. It is read-only against the provider by construction: each
 reader can issue nothing but GET, and a test asserts no write verb is
 nameable in those modules.
 
 ```bash
 # What can be read, and how good the evidence for each contract is
-python -m lltpm integrations sources
+python -m tpllm integrations sources
 
 # See what a payload would become — offline, no network, no database
-python -m lltpm integrations normalize \
+python -m tpllm integrations normalize \
   tests/fixtures/github/pull_requests.json \
   --kind pull_request --repository acme/atlas-service --project atlas
 ```
@@ -285,17 +285,17 @@ history and in the process list, which is a worse place for a token than
 anything the code does with it.
 
 ```bash
-read -rs LLTPM_GITHUB_TOKEN && export LLTPM_GITHUB_TOKEN
+read -rs TPLLM_GITHUB_TOKEN && export TPLLM_GITHUB_TOKEN
 
-python -m lltpm integrations ingest --repository acme/atlas \
-  --project atlas --db lltpm.db --organization acme
+python -m tpllm integrations ingest --repository acme/atlas \
+  --project atlas --db tpllm.db --organization acme
 
 # Do the recorded contracts still match the live API?
-python -m lltpm integrations verify --repository acme/atlas
+python -m tpllm integrations verify --repository acme/atlas
 ```
 
-Slack reads `LLTPM_SLACK_TOKEN` (or `SLACK_BOT_TOKEN`) and Jira reads
-`LLTPM_JIRA_API_TOKEN` the same way. A token never enters the journal, a
+Slack reads `TPLLM_SLACK_TOKEN` (or `SLACK_BOT_TOKEN`) and Jira reads
+`TPLLM_JIRA_API_TOKEN` the same way. A token never enters the journal, a
 log line, a fixture, an export or an exception message, and each of
 those five routes is closed and tested separately in
 `tests/test_provider_security.py` — the one that leaks is always the one
@@ -359,7 +359,7 @@ something.
 
 ---
 
-## What LLTPM is not
+## What TPLLM is not
 
 Stated plainly, because each of these is a thing a reader could
 reasonably assume.
@@ -421,7 +421,7 @@ stays acyclic, that the foundations import nothing first-party, and that
 nothing imports the orchestrator.
 
 ```
-src/lltpm/
+src/tpllm/
 │   # ── Foundations: import no first-party package ──
 ├── core/            shared domain primitives
 ├── temporal/        bitemporal truth — reality time vs knowledge time
@@ -498,7 +498,7 @@ behind a protocol, and `persistence` imports no other first-party
 package.
 
 ```bash
-cp lltpm.db lltpm.db.backup   # back up everything
+cp tpllm.db tpllm.db.backup   # back up everything
 ```
 
 A hash chain detects an in-place edit. It cannot detect a history
@@ -517,15 +517,15 @@ This part needs an API key.
 
 ```bash
 read -rs ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY
-python -m lltpm init          # configuration wizard
-python -m lltpm chat          # interactive
-python -m lltpm ask "Set up a program called Atlas V2 to rebuild auth"
-python -m lltpm daily atlas   # the daily cadence brief
-python -m lltpm pulse atlas   # aggregated program pulse
-python -m lltpm risks atlas   # risk signal scan
-python -m lltpm today         # today's focus
-python -m lltpm tools         # every tool the agent can call
-python -m lltpm dashboard     # local web dashboard
+python -m tpllm init          # configuration wizard
+python -m tpllm chat          # interactive
+python -m tpllm ask "Set up a program called Atlas V2 to rebuild auth"
+python -m tpllm daily atlas   # the daily cadence brief
+python -m tpllm pulse atlas   # aggregated program pulse
+python -m tpllm risks atlas   # risk signal scan
+python -m tpllm today         # today's focus
+python -m tpllm tools         # every tool the agent can call
+python -m tpllm dashboard     # local web dashboard
 ```
 
 The **meeting gate** is the surface where the thesis is most visible.
@@ -552,7 +552,7 @@ arrive somewhere.
 Not yet published to a package index; install from source.
 
 ```bash
-git clone https://github.com/SphoenixAI/LLTPM && cd LLTPM
+git clone https://github.com/SphoenixAI/TPLLM && cd TPLLM
 python -m pip install -e .                      # core: stack, CLI, journal
 ```
 

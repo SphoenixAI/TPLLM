@@ -5,16 +5,16 @@ Run with:
 """
 
 from pathlib import Path
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.artifacts.program_brief import ProgramBriefGenerator
-from lltpm.artifacts.raid_log import RAIDLogManager
-from lltpm.artifacts.milestone_plan import MilestonePlanManager
-from lltpm.artifacts.meeting_notes import MeetingNotesManager
-from lltpm.workflows.daily_cadence import DailyCadence
-from lltpm.workflows.meeting_gate import MeetingGate, MeetingProposal
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.artifacts.program_brief import ProgramBriefGenerator
+from tpllm.artifacts.raid_log import RAIDLogManager
+from tpllm.artifacts.milestone_plan import MilestonePlanManager
+from tpllm.artifacts.meeting_notes import MeetingNotesManager
+from tpllm.workflows.daily_cadence import DailyCadence
+from tpllm.workflows.meeting_gate import MeetingGate, MeetingProposal
 
 # ── Set up a program ──────────────────────────────────────────
-store = ArtifactStore(Path(".lltpm-example"))
+store = ArtifactStore(Path(".tpllm-example"))
 
 briefs = ProgramBriefGenerator(store)
 program = briefs.create_program(

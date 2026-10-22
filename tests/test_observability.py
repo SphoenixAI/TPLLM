@@ -13,7 +13,7 @@ application's back.
 material; a log line redacts it, because a formatter that raised would
 take down the operation it was describing. Both behaviours are pinned.
 
-**Logs must not become surveillance.** LLTPM models organizational
+**Logs must not become surveillance.** TPLLM models organizational
 mechanics and never individual activity, and an observability layer is
 the easiest place for that to erode by accident. The field vocabulary is
 a closed list and a source guardrail walks every log call in the package
@@ -30,7 +30,7 @@ import pathlib
 
 import pytest
 
-from lltpm.observability import (
+from tpllm.observability import (
     REDACTED,
     RESERVED_RECORD_ATTRIBUTES,
     SECRET_KEY_FRAGMENTS,
@@ -45,10 +45,10 @@ from lltpm.observability import (
     redact_value,
     resolve_level,
 )
-from lltpm.observability.fields import record_fields
-from lltpm.observability.redaction import MAX_DEPTH, looks_like_secret_value
+from tpllm.observability.fields import record_fields
+from tpllm.observability.redaction import MAX_DEPTH, looks_like_secret_value
 
-_SRC = pathlib.Path(__file__).resolve().parent.parent / "src" / "lltpm"
+_SRC = pathlib.Path(__file__).resolve().parent.parent / "src" / "tpllm"
 
 _LOG_METHODS = frozenset({
     "debug", "info", "warning", "error", "critical", "exception", "log",
@@ -59,7 +59,7 @@ def _record(
     *, level: int = logging.INFO, message: str = "hello", **fields,
 ) -> logging.LogRecord:
     record = logging.LogRecord(
-        name="lltpm.test", level=level, pathname=__file__, lineno=1,
+        name="tpllm.test", level=level, pathname=__file__, lineno=1,
         msg=message, args=(), exc_info=None,
     )
     for name, value in fields.items():
@@ -132,7 +132,7 @@ class TestHumanReadableFormatter:
         rendered = HumanReadableFormatter().format(
             _record(revision_id="revision-3")
         )
-        assert "lltpm.test hello" in rendered
+        assert "tpllm.test hello" in rendered
         assert "revision_id=revision-3" in rendered
 
     def test_no_fields_means_no_empty_brackets(self):
@@ -234,7 +234,7 @@ class TestRedactionAgreesWithTheJournal:
     """
 
     def test_every_name_the_journal_refuses_is_also_redacted(self):
-        from lltpm.persistence.models import _SECRET_KEY_MARKERS
+        from tpllm.persistence.models import _SECRET_KEY_MARKERS
 
         for marker in _SECRET_KEY_MARKERS:
             assert is_secret_field_name(marker), (
@@ -243,7 +243,7 @@ class TestRedactionAgreesWithTheJournal:
             )
 
     def test_every_value_the_journal_refuses_is_also_redacted(self):
-        from lltpm.persistence.models import _SECRET_VALUE_MARKERS
+        from tpllm.persistence.models import _SECRET_VALUE_MARKERS
 
         for marker in _SECRET_VALUE_MARKERS:
             assert looks_like_secret_value(f"{marker}rest-of-the-value")
@@ -252,7 +252,7 @@ class TestRedactionAgreesWithTheJournal:
         """Logs see fields the journal never would — headers, cookies,
         passphrases from a misconfigured integration — so the redaction
         list is a superset rather than a copy."""
-        from lltpm.persistence.models import _SECRET_KEY_MARKERS
+        from tpllm.persistence.models import _SECRET_KEY_MARKERS
 
         assert set(SECRET_KEY_FRAGMENTS) > set(_SECRET_KEY_MARKERS)
 
@@ -307,7 +307,7 @@ class TestFieldVocabulary:
 
 @pytest.fixture
 def restore_logging():
-    logger = logging.getLogger("lltpm")
+    logger = logging.getLogger("tpllm")
     before = (list(logger.handlers), logger.level, logger.propagate)
     yield logger
     logger.handlers, logger.level, logger.propagate = (
@@ -325,7 +325,7 @@ class TestConfiguration:
         configure_logging(level="info", stream=io.StringIO())
         tagged = [
             handler for handler in restore_logging.handlers
-            if getattr(handler, "_lltpm_tag", None)
+            if getattr(handler, "_tpllm_tag", None)
         ]
         assert len(tagged) == 1
 
@@ -335,7 +335,7 @@ class TestConfiguration:
         stream = io.StringIO()
         configure_logging(level="info", stream=stream)
         configure_logging(level="info", stream=stream)
-        logging.getLogger("lltpm.test").info("once")
+        logging.getLogger("tpllm.test").info("once")
         assert stream.getvalue().count("once") == 1
 
     def test_it_leaves_the_root_logger_alone(self, restore_logging):
@@ -350,7 +350,7 @@ class TestConfiguration:
         configure_logging(
             level="info", log_format=LogFormat.JSON, stream=stream,
         )
-        logging.getLogger("lltpm.test").info(
+        logging.getLogger("tpllm.test").info(
             "structured", extra={"revision_id": "revision-9"},
         )
         document = json.loads(stream.getvalue().strip())
@@ -359,7 +359,7 @@ class TestConfiguration:
     def test_the_level_is_respected(self, restore_logging):
         stream = io.StringIO()
         configure_logging(level="warning", stream=stream)
-        logger = logging.getLogger("lltpm.test")
+        logger = logging.getLogger("tpllm.test")
         logger.info("quiet")
         logger.warning("loud")
         assert "quiet" not in stream.getvalue()
@@ -368,7 +368,7 @@ class TestConfiguration:
     def test_off_silences_even_critical(self, restore_logging):
         stream = io.StringIO()
         configure_logging(level="off", stream=stream)
-        logging.getLogger("lltpm.test").critical("not wanted")
+        logging.getLogger("tpllm.test").critical("not wanted")
         assert stream.getvalue() == ""
 
     def test_an_unknown_level_is_refused_by_name(self):
@@ -387,7 +387,7 @@ class TestLibrariesDoNotConfigureLogging:
     """Only an application may install a handler.
 
     Every module in the package emits through ``getLogger(__name__)``
-    and nothing else, so embedding LLTPM leaves its host's logging setup
+    and nothing else, so embedding TPLLM leaves its host's logging setup
     untouched. The CLI is the single exception, by design.
     """
 
@@ -449,7 +449,7 @@ class TestLibrariesDoNotConfigureLogging:
                     modules.append(node.module)
                 elif isinstance(node, ast.Import):
                     modules.extend(a.name for a in node.names)
-                if any(m.startswith("lltpm.observability") for m in modules):
+                if any(m.startswith("tpllm.observability") for m in modules):
                     offenders.append(str(relative))
         assert sorted(set(offenders)) == []
 

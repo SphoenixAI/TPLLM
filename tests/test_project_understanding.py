@@ -13,7 +13,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from lltpm.intelligence import (
+from tpllm.intelligence import (
     ClaimContradiction,
     EvidenceSourceType,
     ProjectEvidence,
@@ -752,12 +752,12 @@ class TestSnapshotLifecycle:
 class TestGuardrails:
     def test_no_application_authority_imports(self):
         import inspect
-        import lltpm.intelligence.project_understanding as mod
+        import tpllm.intelligence.project_understanding as mod
 
         source = inspect.getsource(mod)
         forbidden = [
-            "lltpm.application",
-            "lltpm.structural.governance",
+            "tpllm.application",
+            "tpllm.structural.governance",
             "apply_calibration",
             "register_active_calibration",
             "transition_status",
@@ -771,7 +771,7 @@ class TestGuardrails:
 
     def test_no_worker_surveillance_models(self):
         import inspect
-        import lltpm.intelligence.project_understanding as mod
+        import tpllm.intelligence.project_understanding as mod
 
         source = inspect.getsource(mod).lower()
         forbidden = [

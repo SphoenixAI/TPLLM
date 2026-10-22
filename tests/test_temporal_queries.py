@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from lltpm.temporal import (
+from tpllm.temporal import (
     TemporalEventType,
     what_changed_between,
     what_was_known_at,
@@ -112,11 +112,11 @@ class TestWhatChangedBetween:
 
 
 class TestLayerBoundaries:
-    def test_temporal_imports_no_other_lltpm_package(self):
+    def test_temporal_imports_no_other_tpllm_package(self):
         import ast
         import pathlib
 
-        root = pathlib.Path("src/lltpm/temporal")
+        root = pathlib.Path("src/tpllm/temporal")
         for path in root.rglob("*.py"):
             tree = ast.parse(path.read_text())
             for n in ast.walk(tree):
@@ -126,8 +126,8 @@ class TestLayerBoundaries:
                 elif isinstance(n, ast.Import):
                     modules.extend(a.name for a in n.names)
                 for module in modules:
-                    if module.startswith("lltpm."):
-                        assert module.startswith("lltpm.temporal"), (
+                    if module.startswith("tpllm."):
+                        assert module.startswith("tpllm.temporal"), (
                             f"{path.name} imports {module}; the temporal "
                             f"layer must stay at the bottom of the graph."
                         )

@@ -37,7 +37,7 @@ import pathlib
 
 import pytest
 
-_SRC = pathlib.Path(__file__).resolve().parent.parent / "src" / "lltpm"
+_SRC = pathlib.Path(__file__).resolve().parent.parent / "src" / "tpllm"
 
 #: A field name that declares the subject of a model to be a person.
 #: Deliberately exact rather than substring: ``actor_id`` on an

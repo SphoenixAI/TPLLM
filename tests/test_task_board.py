@@ -1,4 +1,4 @@
-"""Tests for the AI-native Task Board — LLTPM's built-in project tracking."""
+"""Tests for the AI-native Task Board — TPLLM's built-in project tracking."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import tempfile
 from datetime import date, timedelta
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.models.task_board import (
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.models.task_board import (
     BoardTask,
     Sprint,
     TaskBoard,
@@ -15,7 +15,7 @@ from lltpm.models.task_board import (
     TaskSource,
     TaskStatus,
 )
-from lltpm.workflows.task_board_engine import TaskBoardEngine
+from tpllm.workflows.task_board_engine import TaskBoardEngine
 
 
 def _make_store():

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from lltpm.identity import (
+from tpllm.identity import (
     CanonicalEntity,
     CanonicalEntityRegistry,
     CanonicalEntityType,

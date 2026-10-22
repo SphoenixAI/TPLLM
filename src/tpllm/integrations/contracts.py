@@ -1,0 +1,693 @@
+"""Recorded provider contracts.
+
+Testing an integration against a live third-party API gives you a suite
+that needs credentials, needs network, and fails for reasons that have
+nothing to do with your code. Testing it against a hand-written mock
+gives you a suite that passes forever while the real API moves
+underneath it. Fowler's self-initializing fake is the way out: record
+the real responses once, replay them offline, and run a separate
+occasional suite that checks the recordings still match reality.
+
+This module is the two halves of that.
+
+**Recording.** ``scrub_github_payload`` pseudonymizes a real response so
+it can be committed: handles become stable aliases, the repository
+becomes a declared alias, avatars and emails are dropped, and opaque
+node ids are rewritten deterministically. The *shape* is preserved
+exactly, which is the part a contract test is about. Committing real
+contributors' handles into a repository that is being open-sourced would
+be a gratuitous disclosure, and the project's own stance is that it
+models organizational mechanics rather than individuals.
+
+**Verifying.** A contract here is deliberately not "the whole payload
+looks like this". It is the set of fields the normalizers actually read,
+with the types they are allowed to take. That is the consumer-driven
+contract: GitHub adding a field must not fail the build, and GitHub
+renaming ``merged_at`` must. Recording the whole payload shape and
+diffing it would invert both of those.
+
+Field paths use a small notation: ``user.login`` for nesting, and
+``labels[].name`` for a field on each element of a list.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import pathlib
+import re
+from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field
+
+#: Where the shipped contracts live. The recorded payloads stay in the
+#: test tree — they are large and are nobody's runtime concern — but the
+#: contracts derived from them ship with the package, because
+#: ``tpllm integrations verify`` has to work from an installed wheel and
+#: a contract that only exists in a git checkout cannot be checked by
+#: the person running the tool.
+CONTRACT_DATA_DIR = pathlib.Path(__file__).resolve().parent / "contract_data"
+
+#: Placeholder for anything dropped during scrubbing. Visible on
+#: purpose: a reader of a fixture should see that a value was removed
+#: rather than wonder whether the API returns an empty string.
+SCRUBBED = "scrubbed"
+
+
+# ── Field paths ──────────────────────────────────────────────────────
+
+
+def resolve_path(payload: Any, path: str) -> list[Any]:
+    """Every value at ``path``. Empty when the path is absent.
+
+    A list segment fans out, so ``labels[].name`` over three labels
+    returns three values — and an empty list returns none, which is
+    why absence and "present but empty" are distinguished by the
+    caller rather than here.
+    """
+    nodes: list[Any] = [payload]
+    for segment in path.split("."):
+        explode = segment.endswith("[]")
+        key = segment[:-2] if explode else segment
+        collected: list[Any] = []
+        for node in nodes:
+            if not isinstance(node, dict) or key not in node:
+                continue
+            value = node[key]
+            if explode:
+                if isinstance(value, list):
+                    collected.extend(value)
+            else:
+                collected.append(value)
+        nodes = collected
+        if not nodes:
+            return []
+    return nodes
+
+
+def type_name(value: Any) -> str:
+    """A stable type label. ``null`` is its own type, because a field
+    that is sometimes null is a different contract from one that is
+    always a string."""
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "bool"
+    if isinstance(value, int):
+        return "int"
+    if isinstance(value, float):
+        return "float"
+    if isinstance(value, str):
+        return "str"
+    if isinstance(value, list):
+        return "list"
+    if isinstance(value, dict):
+        return "object"
+    return type(value).__name__
+
+
+# ── The contract ─────────────────────────────────────────────────────
+
+
+class FieldContract(BaseModel):
+    """One field a normalizer reads, and what it may contain."""
+    path: str
+    types: list[str] = Field(default_factory=list)
+    always_present: bool = True
+
+    model_config = {"frozen": True}
+
+
+class PayloadContract(BaseModel):
+    """The fields one payload kind must keep providing."""
+    source_system: str
+    payload_kind: str
+    fields: list[FieldContract] = Field(default_factory=list)
+    recorded_from_samples: int = 0
+
+    def field_for(self, path: str) -> FieldContract | None:
+        for field in self.fields:
+            if field.path == path:
+                return field
+        return None
+
+
+class ContractBreach(BaseModel):
+    """One way a live payload stopped honouring what we depend on."""
+    path: str
+    kind: str  # "missing" | "type_changed"
+    expected: list[str] = Field(default_factory=list)
+    actual: str = ""
+
+    @property
+    def explanation(self) -> str:
+        if self.kind == "missing":
+            return (
+                f"'{self.path}' is no longer present; a normalizer reads it"
+            )
+        return (
+            f"'{self.path}' is now {self.actual}, not one of "
+            f"{sorted(self.expected)}"
+        )
+
+
+def extract_contract(
+    *,
+    source_system: str,
+    payload_kind: str,
+    payloads: list[dict[str, Any]],
+    paths: tuple[str, ...],
+) -> PayloadContract:
+    """Derive the contract from recorded samples.
+
+    A field is ``always_present`` only if every sample had it, so one
+    pull request without ``merged_at`` is enough to record that the
+    field is optional — which it genuinely is. Deriving this rather than
+    declaring it keeps the contract honest about what was actually
+    observed.
+    """
+    fields: list[FieldContract] = []
+    for path in paths:
+        observed: set[str] = set()
+        present_in = 0
+        for payload in payloads:
+            values = resolve_path(payload, path)
+            if values:
+                present_in += 1
+                observed.update(type_name(value) for value in values)
+        fields.append(FieldContract(
+            path=path,
+            types=sorted(observed),
+            always_present=bool(payloads) and present_in == len(payloads),
+        ))
+    return PayloadContract(
+        source_system=source_system,
+        payload_kind=payload_kind,
+        fields=fields,
+        recorded_from_samples=len(payloads),
+    )
+
+
+def check_contract(
+    *, payload: dict[str, Any], contract: PayloadContract,
+) -> list[ContractBreach]:
+    """What a live payload no longer provides.
+
+    Only two things count as a breach: a field we read has gone, or it
+    now carries a type we do not handle. A new field is not a breach —
+    that is the whole point of recording what we consume rather than
+    what the provider sends.
+    """
+    breaches: list[ContractBreach] = []
+    for field in contract.fields:
+        values = resolve_path(payload, field.path)
+        if not values:
+            if field.always_present:
+                breaches.append(ContractBreach(
+                    path=field.path, kind="missing",
+                    expected=list(field.types),
+                ))
+            continue
+        for value in values:
+            actual = type_name(value)
+            if field.types and actual not in field.types:
+                breaches.append(ContractBreach(
+                    path=field.path, kind="type_changed",
+                    expected=list(field.types), actual=actual,
+                ))
+                break
+    return breaches
+
+
+# ── The shipped bundle ───────────────────────────────────────────────
+
+
+class ContractBundle(BaseModel):
+    """Every contract for one source system, with its provenance.
+
+    ``provenance`` is carried per payload kind for one reason: a
+    contract derived from a hand-written payload is not evidence about
+    the live API, and a verification report that presented it as
+    verified would be worse than no report. The same distinction
+    ``tpllm runtime coverage`` draws between an engine and a projection.
+    """
+    source_system: str
+    note: str = ""
+    contracts: dict[str, PayloadContract] = Field(default_factory=dict)
+    provenance: dict[str, str] = Field(default_factory=dict)
+    recorded_at: dict[str, str] = Field(default_factory=dict)
+
+    def evidence_for(self, payload_kind: str) -> "ContractEvidence":
+        """What this contract is evidence *about*.
+
+        Three answers, not two. A contract recorded from the live API can
+        be re-checked against it. A contract taken verbatim from the
+        provider's own published example is evidence that the shape is
+        the documented one — which is worth more than nothing and less
+        than a recording, because documentation drifts. Anything derived
+        or hand-written is evidence about neither.
+        """
+        provenance = self.provenance.get(payload_kind, "")
+        if provenance == "recorded":
+            return ContractEvidence.LIVE_VERIFIABLE
+        if provenance == "official_documentation":
+            return ContractEvidence.OFFICIAL
+        return ContractEvidence.NONE
+
+    def is_evidence(self, payload_kind: str) -> bool:
+        """Whether a live check can confirm this contract."""
+        return self.evidence_for(payload_kind) is (
+            ContractEvidence.LIVE_VERIFIABLE
+        )
+
+    @property
+    def verifiable_kinds(self) -> list[str]:
+        """Kinds a live API check can confirm — recordings only."""
+        return sorted(k for k in self.contracts if self.is_evidence(k))
+
+    @property
+    def official_kinds(self) -> list[str]:
+        """Kinds backed by the provider's own published example."""
+        return sorted(
+            k for k in self.contracts
+            if self.evidence_for(k) is ContractEvidence.OFFICIAL
+        )
+
+    @property
+    def unverifiable_kinds(self) -> list[str]:
+        """Kinds backed by nothing: derived or hand-written.
+
+        A strict third of the partition. An earlier version defined this
+        as "not recorded", which put every `official_documentation`
+        contract in both this list and `official_kinds` — so a report
+        printing both counted Slack's six kinds twice and implied twelve.
+        """
+        return sorted(
+            k for k in self.contracts
+            if self.evidence_for(k) is ContractEvidence.NONE
+        )
+
+    @property
+    def not_live_verifiable_kinds(self) -> list[str]:
+        """Everything a live API check cannot confirm.
+
+        The union of official and unverifiable, which is what a report
+        warning "nothing here verifies this" actually needs. Kept
+        separate from `unverifiable_kinds` because the two answer
+        different questions: this one is about what `verify` can prove,
+        the other about what the contract rests on.
+        """
+        return sorted(
+            k for k in self.contracts if not self.is_evidence(k)
+        )
+
+
+def contract_bundle_path(source_system: str) -> pathlib.Path:
+    return CONTRACT_DATA_DIR / f"{source_system}.json"
+
+
+def load_contract_bundle(source_system: str) -> ContractBundle | None:
+    """The shipped contracts, or ``None`` when none were recorded."""
+    path = contract_bundle_path(source_system)
+    if not path.exists():
+        return None
+    return ContractBundle.model_validate_json(path.read_text())
+
+
+def available_contract_bundles() -> list[str]:
+    if not CONTRACT_DATA_DIR.exists():
+        return []
+    return sorted(path.stem for path in CONTRACT_DATA_DIR.glob("*.json"))
+
+
+class ContractEvidence(str, Enum):
+    """What a contract is evidence about, which is not the same as
+    whether it exists."""
+    LIVE_VERIFIABLE = "live_verifiable"
+    OFFICIAL = "official_documentation"
+    NONE = "none"
+
+
+#: How strong a fixture's provenance is, lowest being strongest. Where
+#: two fixtures cover one payload kind, the contract takes the strongest
+#: available so it is never weaker than the evidence on hand.
+#:
+#: ``official_documentation`` is a payload copied from the provider's own
+#: published example, unmodified. It sits below a recording because
+#: documentation drifts from implementations, and above ``derived``
+#: because the provider published it. Calling such a fixture "recorded"
+#: would claim a live check that never happened, which is the one thing
+#: this vocabulary exists to prevent.
+PROVENANCE_RANK = {
+    "recorded": 0,
+    "official_documentation": 1,
+    "derived": 2,
+    "hand_written": 3,
+}
+
+#: The only values a fixture index may declare.
+PROVENANCE_VALUES = frozenset(PROVENANCE_RANK)
+
+
+class ContractSource(BaseModel):
+    """Payloads for one kind, and what they are."""
+    payload_kind: str
+    payloads: list[dict[str, Any]] = Field(default_factory=list)
+    provenance: str = "recorded"
+    recorded_at: str = ""
+
+
+def build_contract_bundle(
+    *,
+    source_system: str,
+    sources: list[ContractSource],
+    paths_by_kind: dict[str, tuple[str, ...]],
+    note: str = "",
+) -> ContractBundle:
+    """Derive a bundle from recorded payloads.
+
+    Several sources may cover one payload kind — a recording plus
+    variants derived from it. The strongest provenance wins, and the
+    contract is extracted from every sample of that kind so an optional
+    field stays optional.
+    """
+    strongest: dict[str, str] = {}
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    recorded_at: dict[str, str] = {}
+
+    for source in sources:
+        kind = source.payload_kind
+        if kind not in paths_by_kind:
+            continue
+        grouped.setdefault(kind, []).extend(source.payloads)
+        rank = PROVENANCE_RANK.get(source.provenance, len(PROVENANCE_RANK))
+        current = PROVENANCE_RANK.get(
+            strongest.get(kind, ""), len(PROVENANCE_RANK) + 1,
+        )
+        if rank < current:
+            strongest[kind] = source.provenance
+            recorded_at[kind] = source.recorded_at
+
+    return ContractBundle(
+        source_system=source_system,
+        note=note,
+        contracts={
+            kind: extract_contract(
+                source_system=source_system, payload_kind=kind,
+                payloads=payloads, paths=paths_by_kind[kind],
+            )
+            for kind, payloads in sorted(grouped.items())
+        },
+        provenance=dict(sorted(strongest.items())),
+        recorded_at=dict(sorted(recorded_at.items())),
+    )
+
+
+def serialize_contract_bundle(bundle: ContractBundle) -> str:
+    """Canonical JSON, so a regenerated bundle diffs field by field."""
+    return json.dumps(
+        bundle.model_dump(mode="json"), indent=1, sort_keys=True,
+    ) + "\n"
+
+
+# ── What the GitHub normalizers actually read ────────────────────────
+#
+# Kept here rather than inferred, so the dependency is a declaration a
+# reviewer can check against the normalizer and a future change has to
+# update deliberately.
+
+GITHUB_PULL_REQUEST_FIELDS: tuple[str, ...] = (
+    "node_id",
+    "number",
+    "state",
+    "draft",
+    "title",
+    "body",
+    "created_at",
+    "updated_at",
+    "closed_at",
+    "merged_at",
+    "html_url",
+    "user.login",
+    "base.ref",
+    "labels[].name",
+)
+
+GITHUB_ISSUE_FIELDS: tuple[str, ...] = (
+    "node_id",
+    "number",
+    "state",
+    "title",
+    "body",
+    "created_at",
+    "updated_at",
+    "closed_at",
+    "html_url",
+    "user.login",
+    "labels[].name",
+)
+
+GITHUB_EVENT_FIELDS: tuple[str, ...] = (
+    "id",
+    "type",
+    "created_at",
+    "actor.login",
+    "repo.name",
+    "payload",
+)
+
+GITHUB_REVIEW_FIELDS: tuple[str, ...] = (
+    "node_id",
+    "state",
+    "body",
+    "submitted_at",
+    "html_url",
+    "user.login",
+)
+
+GITHUB_CONTRACT_PATHS: dict[str, tuple[str, ...]] = {
+    "pull_request": GITHUB_PULL_REQUEST_FIELDS,
+    "issue": GITHUB_ISSUE_FIELDS,
+    "event": GITHUB_EVENT_FIELDS,
+    "review": GITHUB_REVIEW_FIELDS,
+}
+
+
+# ── Scrubbing ────────────────────────────────────────────────────────
+
+#: Keys dropped outright. None of them is read by a normalizer, and all
+#: of them identify a person or let someone enumerate one.
+_DROPPED_KEYS = frozenset({
+    "avatar_url",
+    "email",
+    "gravatar_id",
+    "followers_url",
+    "following_url",
+    "gists_url",
+    "organizations_url",
+    "received_events_url",
+    "starred_url",
+    "subscriptions_url",
+})
+
+#: Keys whose value is an opaque provider id that identifies a real
+#: object. Rewritten deterministically rather than dropped, because the
+#: normalizers key on ``node_id`` and a fixture without one would
+#: exercise the rejection path instead of the real one.
+_PSEUDONYMIZED_ID_KEYS = frozenset({"node_id"})
+
+#: A dict carrying this key is a user-like object, so its numeric id is
+#: a real account id and is rewritten too.
+_USER_MARKER_KEY = "login"
+
+#: Private links that identify a working session rather than a public
+#: resource, matched anywhere in free text.
+#:
+#: Everything else here is removed by *name* — the recorder states the
+#: real handle or repository it is replacing, and `unscrubbed_paths`
+#: verifies that exact value is gone. That rule is deliberate and it is
+#: also why this category slipped past: a pull request body written by a
+#: tool carries a link to the session that wrote it, and the recorder
+#: has no way to know that string exists. Three committed fixtures
+#: disclosed one. A credential scanner cannot catch it either, because a
+#: session URL is not a credential.
+#:
+#: So this one category is pattern-based, with the trade-off stated:
+#: a pattern can only remove a shape somebody anticipated, and the
+#: fixtures are reviewed before they are committed for that reason.
+_PRIVATE_SESSION_URLS = (
+    re.compile(r"https?://(?:www\.)?claude\.ai/\S*session[_/][A-Za-z0-9_-]+"),
+    re.compile(r"https?://chatgpt\.com/(?:c|share)/[A-Za-z0-9-]+"),
+    re.compile(r"https?://\S*\.?cursor\.(?:sh|com)/\S*session\S*"),
+)
+
+#: What a redacted session link becomes. Keeps the body's shape — the
+#: normalizers excerpt body text, so removing the line entirely would
+#: change the length a contract test measures.
+SESSION_URL_PLACEHOLDER = "[session link removed]"
+
+
+def redact_private_session_urls(text: str) -> str:
+    """Replace links that identify a working session with a placeholder."""
+    for pattern in _PRIVATE_SESSION_URLS:
+        text = pattern.sub(SESSION_URL_PLACEHOLDER, text)
+    return text
+
+
+def _alias_for(value: str, *, prefix: str) -> str:
+    digest = hashlib.sha256(value.encode()).hexdigest()
+    return f"{prefix}-{digest[:12]}"
+
+
+def _numeric_alias(value: int) -> int:
+    digest = hashlib.sha256(str(value).encode()).hexdigest()
+    return int(digest[:8], 16)
+
+
+def collect_github_logins(payload: Any) -> set[str]:
+    """Every handle a payload names, anywhere in it.
+
+    Collected in a first pass because handles do not only appear under
+    ``login``: GitHub embeds them in half a dozen URL fields on the same
+    object, and a scrubber that only rewrote the field it recognized
+    would leave the name in ``html_url`` — which is how a pseudonymized
+    fixture quietly stops being pseudonymous.
+    """
+    found: set[str] = set()
+
+    def walk(node: Any) -> None:
+        if isinstance(node, dict):
+            login = node.get(_USER_MARKER_KEY)
+            if isinstance(login, str) and login.strip():
+                found.add(login.strip())
+            for value in node.values():
+                walk(value)
+        elif isinstance(node, list):
+            for value in node:
+                walk(value)
+
+    walk(payload)
+    return found
+
+
+def scrub_github_payload(
+    payload: Any,
+    *,
+    repository_alias: str,
+    real_repository: str = "",
+) -> Any:
+    """A committable copy of a real response.
+
+    Shape-faithful and value-pseudonymous: every key a normalizer reads
+    is still there with the same type, while handles, account ids,
+    avatars and the repository name no longer name anyone. Aliases are
+    derived by hash, so re-recording the same response produces the same
+    fixture and a diff shows a real API change rather than churn.
+
+    Two passes, because one is not enough: the first collects every
+    handle the payload mentions, the second rewrites them everywhere
+    they appear — including inside the URL fields that carry a handle in
+    their path.
+    """
+    owner_alias = repository_alias.split("/")[0]
+    real_owner = real_repository.split("/")[0] if real_repository else ""
+    logins = collect_github_logins(payload)
+    replacements = {
+        login: (
+            owner_alias if login == real_owner
+            else _alias_for(login, prefix="contributor")
+        )
+        for login in logins
+    }
+    if real_repository:
+        replacements[real_repository] = repository_alias
+
+    def rewrite(text: str) -> str:
+        # Longest first, so "owner/repo" is replaced before "owner".
+        for needle in sorted(replacements, key=len, reverse=True):
+            if needle in text:
+                text = text.replace(needle, replacements[needle])
+        return redact_private_session_urls(text)
+
+    def walk(node: Any, *, parent_key: str = "", in_user: bool = False) -> Any:
+        if isinstance(node, dict):
+            user_like = _USER_MARKER_KEY in node
+            scrubbed: dict[str, Any] = {}
+            for key, value in node.items():
+                if key in _DROPPED_KEYS:
+                    continue
+                if key in _PSEUDONYMIZED_ID_KEYS and isinstance(value, str):
+                    scrubbed[key] = _alias_for(value, prefix="NODE")
+                    continue
+                if key == "id" and user_like and isinstance(value, int):
+                    scrubbed[key] = _numeric_alias(value)
+                    continue
+                if key == "name" and parent_key == "repo" and isinstance(
+                    value, str
+                ):
+                    # The Events API puts "owner/name" in repo.name while
+                    # the REST resource puts the bare name there. Keeping
+                    # the distinction matters: a fixture whose shape
+                    # differs from the live response is not a recording
+                    # of it.
+                    scrubbed[key] = (
+                        repository_alias if "/" in value
+                        else repository_alias.split("/")[-1]
+                    )
+                    continue
+                if key == "full_name" and isinstance(value, str):
+                    scrubbed[key] = repository_alias
+                    continue
+                scrubbed[key] = walk(
+                    value, parent_key=key, in_user=user_like,
+                )
+            return scrubbed
+        if isinstance(node, list):
+            return [
+                walk(item, parent_key=parent_key, in_user=in_user)
+                for item in node
+            ]
+        if isinstance(node, str):
+            return rewrite(node)
+        return node
+
+    return walk(payload)
+
+
+def unscrubbed_paths(payload: Any, *, forbidden: set[str]) -> list[str]:
+    """Paths in ``payload`` that still disclose something.
+
+    Checked against the real values the recorder set out to remove,
+    rather than against a guess about what identifying data looks like.
+    A recorder that cannot name what it is removing cannot verify that
+    it removed it.
+    """
+    offenders: list[str] = []
+    needles = {value for value in forbidden if value}
+
+    def walk(node: Any, path: str) -> None:
+        if isinstance(node, dict):
+            for key, value in node.items():
+                here = f"{path}.{key}" if path else key
+                if key in _DROPPED_KEYS:
+                    offenders.append(here)
+                walk(value, here)
+        elif isinstance(node, list):
+            for index, value in enumerate(node):
+                walk(value, f"{path}[{index}]")
+        elif isinstance(node, str):
+            # Checked before the named needles, because this is the one
+            # category the recorder cannot name: it never knew the
+            # string was there.
+            for pattern in _PRIVATE_SESSION_URLS:
+                if pattern.search(node):
+                    offenders.append(f"{path} (private session link)")
+                    return
+            for needle in needles:
+                if needle in node:
+                    offenders.append(f"{path} (contains '{needle}')")
+                    break
+
+    walk(payload, "")
+    return offenders

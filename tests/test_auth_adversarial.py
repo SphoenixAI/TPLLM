@@ -32,9 +32,9 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.models.security import JWTConfig, Permission, Role
-from lltpm.workflows.security_manager import SecurityManager
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.models.security import JWTConfig, Permission, Role
+from tpllm.workflows.security_manager import SecurityManager
 
 #: 32+ bytes, per the project convention, so no insecure-key warning
 #: muddies the output.
@@ -272,7 +272,7 @@ class TestRoleBoundaries:
 
 class TestApiKeyBridge:
     def test_an_unknown_api_key_yields_no_token(self, manager):
-        assert manager.authenticate_api_key_to_jwt("lltpm_nonexistent") is None
+        assert manager.authenticate_api_key_to_jwt("tpllm_nonexistent") is None
 
     def test_a_revoked_api_key_stops_bridging(self, manager):
         record, raw = manager.create_api_key(name="ci", role=Role.ENGINEER)
@@ -301,7 +301,7 @@ class TestApiKeyBridge:
         comparison. Checked against the source, since a timing property
         cannot be asserted from behaviour in a unit test."""
         source = pathlib.Path(
-            "src/lltpm/workflows/security_manager.py"
+            "src/tpllm/workflows/security_manager.py"
         ).read_text()
         validate = source[source.index("def validate_api_key"):]
         validate = validate[:validate.index("\n    def ")]
@@ -330,7 +330,7 @@ class TestTheAuthenticatedSurfaceIsEnumerated:
         import ast
         import inspect
 
-        import lltpm.dashboard as dashboard
+        import tpllm.dashboard as dashboard
 
         tree = ast.parse(inspect.getsource(dashboard))
         found: list[tuple[str, str, bool]] = []
@@ -368,7 +368,7 @@ class TestTheAuthenticatedSurfaceIsEnumerated:
         )
 
     def test_the_open_set_matches_what_the_module_declares(self):
-        from lltpm.dashboard import UNAUTHENTICATED_READ_ROUTES
+        from tpllm.dashboard import UNAUTHENTICATED_READ_ROUTES
 
         open_now = sorted({
             path for _verb, path, enforced in self._routes()
@@ -404,8 +404,8 @@ class TestTheAuthenticatedSurfaceIsEnumerated:
         pytest.importorskip("fastapi")
         import logging
 
-        from lltpm.config import LLTPMConfig
-        from lltpm.dashboard import create_app
+        from tpllm.config import TPLLMConfig
+        from tpllm.dashboard import create_app
 
         records: list[logging.LogRecord] = []
 
@@ -413,11 +413,11 @@ class TestTheAuthenticatedSurfaceIsEnumerated:
             def emit(self, record):
                 records.append(record)
 
-        logger = logging.getLogger("lltpm.dashboard")
+        logger = logging.getLogger("tpllm.dashboard")
         handler = Capture()
         logger.addHandler(handler)
         try:
-            create_app(LLTPMConfig())
+            create_app(TPLLMConfig())
         finally:
             logger.removeHandler(handler)
 

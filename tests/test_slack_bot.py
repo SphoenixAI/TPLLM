@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import time
 
-from lltpm.config import IntegrationConfig
-from lltpm.integrations.slack_bot import SlackBot, SlackAction, SlackConversation
+from tpllm.config import IntegrationConfig
+from tpllm.integrations.slack_bot import SlackBot, SlackAction, SlackConversation
 
 
 def _make_config():
@@ -420,7 +420,7 @@ def test_build_help_blocks():
     blocks = SlackBot.build_help_blocks()
     assert len(blocks) >= 3
     assert blocks[0]["type"] == "header"
-    assert "LLTPM" in blocks[0]["text"]["text"]
+    assert "TPLLM" in blocks[0]["text"]["text"]
 
 
 def test_build_status_blocks():

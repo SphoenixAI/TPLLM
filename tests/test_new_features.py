@@ -19,8 +19,8 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.models.task_board import (
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.models.task_board import (
     BoardTask,
     Sprint,
     TaskBoard,
@@ -28,7 +28,7 @@ from lltpm.models.task_board import (
     TaskSource,
     TaskStatus,
 )
-from lltpm.workflows.task_board_engine import TaskBoardEngine
+from tpllm.workflows.task_board_engine import TaskBoardEngine
 
 
 def _make_store():
@@ -44,12 +44,12 @@ class TestWebhookTaskBoardPipeline:
     def test_zoom_meeting_ended_auto_extracts_tasks(self):
         """When a meeting.ended event arrives and notes exist, tasks are extracted."""
         store = _make_store()
-        from lltpm.tools.webhook_tools import get_webhook_tools
+        from tpllm.tools.webhook_tools import get_webhook_tools
 
         tools = {t["name"]: t["executor"] for t in get_webhook_tools(store)}
 
         # First ingest some Zoom notes so there's data to extract
-        from lltpm.tools.zoom_tools import get_zoom_tools
+        from tpllm.tools.zoom_tools import get_zoom_tools
         zoom_tools = {t["name"]: t["executor"] for t in get_zoom_tools(store)}
         zoom_tools["ingest_zoom_notes"](
             program_id="proj-wh",
@@ -79,8 +79,8 @@ class TestWebhookTaskBoardPipeline:
     def test_zoom_recording_completed_auto_extracts(self):
         """recording.completed also triggers task extraction."""
         store = _make_store()
-        from lltpm.tools.webhook_tools import get_webhook_tools
-        from lltpm.tools.zoom_tools import get_zoom_tools
+        from tpllm.tools.webhook_tools import get_webhook_tools
+        from tpllm.tools.zoom_tools import get_zoom_tools
 
         zoom_tools = {t["name"]: t["executor"] for t in get_zoom_tools(store)}
         zoom_tools["ingest_zoom_notes"](
@@ -103,7 +103,7 @@ class TestWebhookTaskBoardPipeline:
     def test_zoom_meeting_started_no_extraction(self):
         """meeting.started should NOT trigger task extraction."""
         store = _make_store()
-        from lltpm.tools.webhook_tools import get_webhook_tools
+        from tpllm.tools.webhook_tools import get_webhook_tools
 
         tools = {t["name"]: t["executor"] for t in get_webhook_tools(store)}
         result = json.loads(tools["ingest_zoom_event"](
@@ -116,7 +116,7 @@ class TestWebhookTaskBoardPipeline:
     def test_zoom_ended_no_notes_no_extraction(self):
         """meeting.ended with no ingested notes should not extract tasks."""
         store = _make_store()
-        from lltpm.tools.webhook_tools import get_webhook_tools
+        from tpllm.tools.webhook_tools import get_webhook_tools
 
         tools = {t["name"]: t["executor"] for t in get_webhook_tools(store)}
         result = json.loads(tools["ingest_zoom_event"](
@@ -194,7 +194,7 @@ class TestBoardAlerts:
     def test_alert_tool_returns_formatted_text(self):
         """get_board_alerts tool returns markdown-formatted alerts."""
         store = _make_store()
-        from lltpm.tools.task_board_tools import get_task_board_tools
+        from tpllm.tools.task_board_tools import get_task_board_tools
 
         tools = {t["name"]: t["executor"] for t in get_task_board_tools(store)}
 
@@ -211,7 +211,7 @@ class TestBoardAlerts:
 
     def test_alert_tool_healthy_returns_json(self):
         store = _make_store()
-        from lltpm.tools.task_board_tools import get_task_board_tools
+        from tpllm.tools.task_board_tools import get_task_board_tools
 
         tools = {t["name"]: t["executor"] for t in get_task_board_tools(store)}
         result = json.loads(tools["get_board_alerts"](program_id="proj-ok"))
@@ -226,7 +226,7 @@ class TestTaskBoardDocumentGeneration:
 
     def test_render_task_board_html(self):
         store = _make_store()
-        from lltpm.workflows.document_generator import DocumentGenerator
+        from tpllm.workflows.document_generator import DocumentGenerator
 
         gen = DocumentGenerator(store)
         engine = TaskBoardEngine(store)
@@ -242,7 +242,7 @@ class TestTaskBoardDocumentGeneration:
 
     def test_render_task_board_empty(self):
         store = _make_store()
-        from lltpm.workflows.document_generator import DocumentGenerator
+        from tpllm.workflows.document_generator import DocumentGenerator
 
         gen = DocumentGenerator(store)
         result = gen.render_task_board("proj-empty")
@@ -250,7 +250,7 @@ class TestTaskBoardDocumentGeneration:
 
     def test_render_task_board_with_sprint(self):
         store = _make_store()
-        from lltpm.workflows.document_generator import DocumentGenerator
+        from tpllm.workflows.document_generator import DocumentGenerator
 
         gen = DocumentGenerator(store)
         engine = TaskBoardEngine(store)
@@ -268,7 +268,7 @@ class TestTaskBoardDocumentGeneration:
 
     def test_full_report_includes_task_board(self):
         store = _make_store()
-        from lltpm.workflows.document_generator import DocumentGenerator
+        from tpllm.workflows.document_generator import DocumentGenerator
 
         gen = DocumentGenerator(store)
         engine = TaskBoardEngine(store)
@@ -279,7 +279,7 @@ class TestTaskBoardDocumentGeneration:
 
     def test_task_board_in_renderable_list(self):
         store = _make_store()
-        from lltpm.workflows.document_generator import DocumentGenerator
+        from tpllm.workflows.document_generator import DocumentGenerator
 
         gen = DocumentGenerator(store)
         # Need a task board artifact to exist
@@ -291,11 +291,11 @@ class TestTaskBoardDocumentGeneration:
         assert "task_board" in doc_artifacts
 
     def test_dashboard_document_endpoint_task_board(self, tmp_path):
-        from lltpm.config import LLTPMConfig
-        from lltpm.dashboard import create_app
+        from tpllm.config import TPLLMConfig
+        from tpllm.dashboard import create_app
         from fastapi.testclient import TestClient
 
-        cfg = LLTPMConfig(data_dir=tmp_path / "data")
+        cfg = TPLLMConfig(data_dir=tmp_path / "data")
         cfg.ensure_data_dir()
         app = create_app(cfg)
         tc = TestClient(app)
@@ -422,7 +422,7 @@ class TestSprintAutoPlanning:
 
     def test_auto_plan_tool(self):
         store = _make_store()
-        from lltpm.tools.task_board_tools import get_task_board_tools
+        from tpllm.tools.task_board_tools import get_task_board_tools
 
         tools = {t["name"]: t["executor"] for t in get_task_board_tools(store)}
 
@@ -451,7 +451,7 @@ class TestCrossProgramTaskBoardIntel:
 
     def test_snapshot_includes_board_blocked(self):
         store = _make_store()
-        from lltpm.workflows.cross_program_intel import CrossProgramIntel
+        from tpllm.workflows.cross_program_intel import CrossProgramIntel
 
         engine = TaskBoardEngine(store)
         t1 = engine.create_task("prog-xp", title="Blocking")
@@ -464,7 +464,7 @@ class TestCrossProgramTaskBoardIntel:
 
     def test_snapshot_overdue_turns_health_yellow(self):
         store = _make_store()
-        from lltpm.workflows.cross_program_intel import CrossProgramIntel
+        from tpllm.workflows.cross_program_intel import CrossProgramIntel
 
         engine = TaskBoardEngine(store)
         engine.create_task(
@@ -478,7 +478,7 @@ class TestCrossProgramTaskBoardIntel:
 
     def test_many_overdue_turns_red(self):
         store = _make_store()
-        from lltpm.workflows.cross_program_intel import CrossProgramIntel
+        from tpllm.workflows.cross_program_intel import CrossProgramIntel
 
         engine = TaskBoardEngine(store)
         for i in range(5):
@@ -493,7 +493,7 @@ class TestCrossProgramTaskBoardIntel:
 
     def test_resource_conflicts_include_board_tasks(self):
         store = _make_store()
-        from lltpm.workflows.cross_program_intel import CrossProgramIntel
+        from tpllm.workflows.cross_program_intel import CrossProgramIntel
 
         engine = TaskBoardEngine(store)
         # Same person across two programs
@@ -517,13 +517,13 @@ class TestLinearTools:
 
     def test_linear_tools_structure(self):
         """All 5 tools have name, description, input_schema, executor."""
-        from lltpm.config import LLTPMConfig
-        cfg = LLTPMConfig()
+        from tpllm.config import TPLLMConfig
+        cfg = TPLLMConfig()
         # Need to enable linear
         cfg.linear.enabled = True
         cfg.linear.api_key = "test-key"
 
-        from lltpm.tools.linear_tools import get_linear_tools
+        from tpllm.tools.linear_tools import get_linear_tools
         tools = get_linear_tools(cfg)
 
         assert len(tools) == 5
@@ -545,10 +545,10 @@ class TestLinearTools:
 
     def test_linear_tools_registered_when_enabled(self):
         """Linear tools appear in registry when config.linear.enabled."""
-        from lltpm.config import LLTPMConfig
-        from lltpm.tools.registry import build_tool_registry
+        from tpllm.config import TPLLMConfig
+        from tpllm.tools.registry import build_tool_registry
 
-        cfg = LLTPMConfig()
+        cfg = TPLLMConfig()
         cfg.linear.enabled = True
         cfg.linear.api_key = "test-key"
         store = _make_store()
@@ -563,10 +563,10 @@ class TestLinearTools:
 
     def test_linear_tools_not_registered_when_disabled(self):
         """Linear tools absent when config.linear.enabled is False."""
-        from lltpm.config import LLTPMConfig
-        from lltpm.tools.registry import build_tool_registry
+        from tpllm.config import TPLLMConfig
+        from tpllm.tools.registry import build_tool_registry
 
-        cfg = LLTPMConfig()
+        cfg = TPLLMConfig()
         cfg.linear.enabled = False
         store = _make_store()
 
@@ -575,7 +575,7 @@ class TestLinearTools:
         assert "linear_search_issues" not in names
 
     def test_linear_integration_parse_issue(self):
-        from lltpm.integrations.linear_integration import LinearIntegration, LinearIssue
+        from tpllm.integrations.linear_integration import LinearIntegration, LinearIssue
 
         class FakeConfig:
             enabled = True
@@ -601,8 +601,8 @@ class TestLinearTools:
         assert issue.labels == ["bug", "auth"]
 
     def test_linear_search_requires_enabled(self):
-        from lltpm.integrations.linear_integration import LinearIntegration
-        from lltpm.integrations.base import IntegrationError
+        from tpllm.integrations.linear_integration import LinearIntegration
+        from tpllm.integrations.base import IntegrationError
 
         class FakeConfig:
             enabled = False
@@ -621,11 +621,11 @@ class TestDashboardHTMLFrontend:
 
     @pytest.fixture()
     def client(self, tmp_path):
-        from lltpm.config import LLTPMConfig
-        from lltpm.dashboard import create_app
+        from tpllm.config import TPLLMConfig
+        from tpllm.dashboard import create_app
         from fastapi.testclient import TestClient
 
-        cfg = LLTPMConfig(data_dir=tmp_path / "data")
+        cfg = TPLLMConfig(data_dir=tmp_path / "data")
         cfg.ensure_data_dir()
         app = create_app(cfg)
         return TestClient(app)
@@ -639,7 +639,7 @@ class TestDashboardHTMLFrontend:
         resp = client.get("/")
         html = resp.text
         assert "<!DOCTYPE html>" in html
-        assert "LLTPM" in html
+        assert "TPLLM" in html
         assert "<script>" in html or "<script " in html
 
     def test_root_has_program_selector(self, client):
@@ -653,8 +653,8 @@ class TestDashboardHTMLFrontend:
 
     def test_alerts_endpoint_exists(self, client, tmp_path):
         # Create a task to ensure board exists
-        from lltpm.config import LLTPMConfig
-        cfg = LLTPMConfig(data_dir=tmp_path / "data")
+        from tpllm.config import TPLLMConfig
+        cfg = TPLLMConfig(data_dir=tmp_path / "data")
         store = ArtifactStore(cfg.data_dir)
         engine = TaskBoardEngine(store)
         engine.create_task("test-alerts", title="Test")
@@ -670,10 +670,10 @@ class TestAutoplanAndAlertToolWiring:
     """Ensure auto_plan_sprint and get_board_alerts tools exist in registry."""
 
     def test_auto_plan_sprint_tool_registered(self):
-        from lltpm.config import LLTPMConfig
-        from lltpm.tools.registry import build_tool_registry
+        from tpllm.config import TPLLMConfig
+        from tpllm.tools.registry import build_tool_registry
 
-        cfg = LLTPMConfig()
+        cfg = TPLLMConfig()
         store = _make_store()
         registry = build_tool_registry(cfg, store)
         names = {d["name"] for d in registry.definitions}

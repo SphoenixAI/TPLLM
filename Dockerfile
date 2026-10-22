@@ -1,4 +1,4 @@
-# LLTPM — AI Technical Program Manager
+# TPLLM — AI Technical Program Manager
 # Multi-stage Docker build for production deployment
 
 # ── Build stage ───────────────────────────────────────────
@@ -19,11 +19,11 @@ RUN pip wheel . --no-deps -w /wheels
 # ── Runtime stage ─────────────────────────────────────────
 FROM python:3.11-slim AS runtime
 
-LABEL maintainer="LLTPM Team"
+LABEL maintainer="TPLLM Team"
 LABEL description="AI-powered Technical Program Manager agent"
 
 # Security: non-root user
-RUN groupadd -r lltpm && useradd -r -g lltpm -m lltpm
+RUN groupadd -r tpllm && useradd -r -g tpllm -m tpllm
 
 WORKDIR /app
 
@@ -45,17 +45,17 @@ RUN pip install --no-cache-dir \
 
 # Data volume for persistence
 VOLUME /data
-ENV LLTPM_DATA_DIR=/data
+ENV TPLLM_DATA_DIR=/data
 
 # Switch to non-root
-USER lltpm
+USER tpllm
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "from lltpm.config import LLTPMConfig; print('ok')" || exit 1
+    CMD python -c "from tpllm.config import TPLLMConfig; print('ok')" || exit 1
 
 # Default: start dashboard on port 8080
 EXPOSE 8080
 ENV PORT=8080
 
-CMD ["python", "-m", "uvicorn", "lltpm.dashboard:create_app", "--factory", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["python", "-m", "uvicorn", "tpllm.dashboard:create_app", "--factory", "--host", "0.0.0.0", "--port", "8080"]

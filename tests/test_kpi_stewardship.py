@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from lltpm.coordination import ActorRelationType, OrganizationalActorRef
-from lltpm.intelligence import (
+from tpllm.coordination import ActorRelationType, OrganizationalActorRef
+from tpllm.intelligence import (
     KPIHealthStatus,
     KPIMilestoneLink,
     KPIResponsePlan,
@@ -105,7 +105,7 @@ class TestStewardship:
         assert "Acknowledge" in assessment.next_required_action
 
     def test_no_person_score_fields(self):
-        from lltpm.intelligence.kpi_stewardship import (
+        from tpllm.intelligence.kpi_stewardship import (
             KPIStewardshipAssessment,
         )
         field_names = set(KPIStewardshipAssessment.model_fields)
@@ -114,7 +114,7 @@ class TestStewardship:
 
     def test_no_worker_performance_vocabulary(self):
         import inspect
-        import lltpm.intelligence.kpi_stewardship as mod
+        import tpllm.intelligence.kpi_stewardship as mod
 
         source = inspect.getsource(mod).lower()
         for pattern in ("productivity", "responsiveness", "employee_rank",

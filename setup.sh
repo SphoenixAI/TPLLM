@@ -4,12 +4,12 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$REPO_DIR"
 
-ENV_NAME="lltpm"
+ENV_NAME="tpllm"
 PYTHON_VERSION="3.11"
 MINICONDA_DIR="$HOME/miniconda3"
 
 echo "=========================================="
-echo "  LLTPM — AI Technical Program Manager"
+echo "  TPLLM — AI Technical Program Manager"
 echo "=========================================="
 echo ""
 
@@ -145,7 +145,7 @@ echo "  Python $ACTIVE_PY ✓"
 
 # ── 2. Install package + dev deps ────────────────────────
 echo ""
-echo "[2/5] Installing LLTPM and dependencies..."
+echo "[2/5] Installing TPLLM and dependencies..."
 pip install -e ".[dev,dashboard]" --quiet 2>&1 | tail -3
 echo "  Package installed ✓"
 
@@ -179,9 +179,9 @@ fi
 echo ""
 echo "[5/5] Smoke test — JWT auth flow..."
 python3 -c "
-from lltpm.workflows.security_manager import SecurityManager
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.models.security import Role
+from tpllm.workflows.security_manager import SecurityManager
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.models.security import Role
 from pathlib import Path
 import tempfile
 
@@ -226,16 +226,16 @@ fi
 echo ""
 echo "Quick start commands:"
 echo ""
-echo "  python -m lltpm init        # Setup wizard (configure integrations)"
-echo "  python -m lltpm welcome     # Onboarding overview"
-echo "  python -m lltpm status      # System status"
-echo "  python -m lltpm tools       # List all available tools"
-echo "  python -m lltpm chat        # Interactive agent chat"
-echo "  python -m lltpm dashboard   # Launch web dashboard"
+echo "  python -m tpllm init        # Setup wizard (configure integrations)"
+echo "  python -m tpllm welcome     # Onboarding overview"
+echo "  python -m tpllm status      # System status"
+echo "  python -m tpllm tools       # List all available tools"
+echo "  python -m tpllm chat        # Interactive agent chat"
+echo "  python -m tpllm dashboard   # Launch web dashboard"
 echo ""
 echo "Dashboard API (separate terminal):"
 echo ""
-echo "  uvicorn lltpm.dashboard:app --reload --port 8080"
+echo "  uvicorn tpllm.dashboard:app --reload --port 8080"
 echo "  # Then open http://localhost:8080/docs"
 echo ""
 echo "Run tests anytime:"

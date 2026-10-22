@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.portfolio import (
+from tpllm.portfolio import (
     TRANSMISSION_BY_NODE_TYPE,
     CrossProjectImpact,
     build_portfolio_graph,
@@ -206,7 +206,7 @@ class TestTransmissionIsStructural:
         import ast
         import inspect
 
-        import lltpm.portfolio.propagation as propagation
+        import tpllm.portfolio.propagation as propagation
 
         tree = ast.parse(inspect.getsource(propagation))
         for node in ast.walk(tree):

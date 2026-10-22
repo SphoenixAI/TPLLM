@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""Audit LLTPM's dependency closure for known vulnerabilities, per extra.
+"""Audit TPLLM's dependency closure for known vulnerabilities, per extra.
 
 `pip-audit` with no arguments audits whatever happens to be installed in
 the current environment. In a development container that is the wrong
 question: it reported 89 vulnerabilities across 8 packages here, and not
-one of them was an LLTPM dependency — they were the container's own
+one of them was an TPLLM dependency — they were the container's own
 `pip`, `setuptools`, `wheel`, and transitive packages of extras that had
-been installed for other reasons. Publishing that number as "LLTPM's
+been installed for other reasons. Publishing that number as "TPLLM's
 vulnerabilities" would be false in both directions: it overstates what
 the project ships and says nothing about the extras nobody installed.
 
 So this resolves the closure for each extra *separately*, without
 installing anything, and audits each one. A finding is then attributable:
-"installing `lltpm[integrations]` pulls a vulnerable `oauthlib`" is
+"installing `tpllm[integrations]` pulls a vulnerable `oauthlib`" is
 actionable, and "the container's `pip` is old" is not a release concern.
 
 Base is audited as a release blocker. An extra is reported with the
@@ -82,7 +82,7 @@ def resolve_closure(target: str) -> list[str]:
         # The project itself is the subject of the audit, not one of its
         # dependencies. Leaving it in makes the closure unresolvable
         # against PyPI, because this version is not published there.
-        if name.lower().replace("_", "-") == "lltpm":
+        if name.lower().replace("_", "-") == "tpllm":
             continue
         pinned.append(f"{name}=={version}")
     return sorted(pinned)

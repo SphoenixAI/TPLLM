@@ -28,15 +28,23 @@ Folded into a version by the release-candidate pass.
   Precise internally, meaningless to a reader of a repository whose
   history has hashes. Each was replaced with the name of the thing the
   number stood for, and a test keeps them from returning.
-- **The product name was misspelled `TPLLM` in 25 places**, including
-  the agent's own `display_name` on decision records — so durable
-  history recorded a product that does not exist.
+- **Renamed to TPLLM throughout** — Technical Program Manager, LLM.
+  `LLTPM` was a transposition that had become the dominant spelling:
+  the package, the CLI command, all eleven environment variables, the
+  default database name and the repository itself, with TPLLM surviving
+  only in newer docstrings. Renamed wholesale rather than half-way,
+  because nothing is published and there is no user to keep
+  compatible — a reader installing `lltpm` to run a thing called TPLLM
+  would have been a permanent paper cut. 2,473 occurrences across 456
+  files; `src/lltpm/` is now `src/tpllm/`, `tpllm` is the command, and
+  the version key stamped into journal metadata changed with it, so a
+  database created before this is not readable by this build.
 - **`docs/assistant-development-guide.md` became
   [`docs/engineering-handbook.md`](docs/engineering-handbook.md)**, a
   contributor document rather than a set of instructions to an
   assistant, with a short `docs/assistant-development-guide.md` pointing at it.
 - **`.gitignore` did not cover the files the documentation tells you to
-  create.** `lltpm.db`, `run.jsonl`, `sbom.json` and `.env` were all
+  create.** `tpllm.db`, `run.jsonl`, `sbom.json` and `.env` were all
   committable. The journal is an organization's durable record, so
   following the quickstart could have meant publishing it. Tested with
   `git check-ignore`, including that `.env.example` still ships.
@@ -70,7 +78,7 @@ Folded into a version by the release-candidate pass.
   Rather than let those pass as recordings, provenance is ranked:
   `recorded` > `official_documentation` > `derived` > `hand_written`,
   and `verify` reports anything unrecorded as unverifiable.
-- **`lltpm runtime ingest` now says what the intelligence concluded**,
+- **`tpllm runtime ingest` now says what the intelligence concluded**,
   per project: what moved, which evidence moved it, which scenarios
   changed and whether a decision is required. The orchestrator always
   computed this and the command discarded it, so the useful half of the
@@ -185,7 +193,7 @@ The release that the open-source audit was done against.
 
 ### Added
 
-- **`lltpm integrations`** — the path from a provider's API to durable
+- **`tpllm integrations`** — the path from a provider's API to durable
   evidence: `sources`, `normalize`, `ingest`, `verify`, `record`.
   Read-only against the provider by construction; a test asserts the
   only HTTP verb the reader can name is GET.
@@ -205,9 +213,9 @@ The release that the open-source audit was done against.
   formatters, format-time credential redaction, a closed structured-field
   vocabulary. Libraries emit through the standard library and configure
   nothing.
-- **`lltpm runtime journal --follow`** — tail the journal as records
+- **`tpllm runtime journal --follow`** — tail the journal as records
   land; read-only, no broker, no daemon.
-- **`lltpm runtime anchor`** and `verify --anchor`. Hash chaining makes
+- **`tpllm runtime anchor`** and `verify --anchor`. Hash chaining makes
   an in-place edit detectable; it cannot detect a history rewritten
   wholesale, because every link in a rewritten chain recomputes.
   Verification now says which of the two it checked.
@@ -221,7 +229,7 @@ The release that the open-source audit was done against.
   Pearl's noisy-OR, Evans' anti-corruption layer, Fowler's
   self-initializing fake and W3C PROV-O, with the open limitations
   listed rather than discovered later.
-- `python -m lltpm integrations`/`runtime` share `--log-level` and
+- `python -m tpllm integrations`/`runtime` share `--log-level` and
   `--log-format`.
 
 ### Fixed
@@ -238,7 +246,7 @@ The release that the open-source audit was done against.
 - **A latent timezone crash at the ingest boundary.** The runtime's clock
   is naive UTC and every provider emits an offset; mixing them raised
   `TypeError` inside temporal ordering, far from the cause.
-- `lltpm runtime ingest` printed "published revision None" whenever a
+- `tpllm runtime ingest` printed "published revision None" whenever a
   pass completed without publishing.
 - `evidence_records_appended` counted envelopes handed in rather than
   records that became durable, so a redelivered webhook was reported as
@@ -268,13 +276,13 @@ The release that the open-source audit was done against.
 - Append-only hash-chained event journal, SQLite reference backend,
   snapshots, and replay that reconstructs intelligence from history
   without touching any external system.
-- `lltpm runtime` — the organizational stack becomes reachable from the
+- `tpllm runtime` — the organizational stack becomes reachable from the
   command line, offline, with no API key.
 - Canonical identity resolution on the ingest path: an explicit alias
   resolves, a name resemblance does not, and an ambiguous match is left
   for a person to settle.
 - The real engines wired behind the live orchestrator, with
-  `lltpm runtime coverage` reporting honestly which artifact types run a
+  `tpllm runtime coverage` reporting honestly which artifact types run a
   dedicated engine and which are thinner derived projections.
  
 - MIT licence, CI across Python 3.11–3.13, and history export.

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     OrganizationalDecisionStatus,
     get_latest_conclusive_decision,
     reopen_decision,

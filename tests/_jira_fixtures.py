@@ -81,7 +81,7 @@ def provenance(name: str) -> str:
 
 def bindings():
     """Bindings that bind the fixture site and project to one project."""
-    from lltpm.integrations.jira_normalizer import jira_project_bindings
+    from tpllm.integrations.jira_normalizer import jira_project_bindings
 
     return jira_project_bindings(
         mapping={(SITE, PROJECT_KEY): [PROJECT]},
@@ -139,7 +139,7 @@ def contract_sources() -> list:
     accompanied by a regenerated contract fails the build rather than
     leaving the installed contract describing payloads nobody has.
     """
-    from lltpm.integrations.contracts import ContractSource
+    from tpllm.integrations.contracts import ContractSource
 
     entries = index()["fixtures"]
     return [
@@ -163,6 +163,6 @@ BUNDLE_NOTE = (
     "for the endpoint, with synthetic values, and none of it was recorded "
     "from a live site. That makes this contract evidence that the shape "
     "is the documented one and not evidence that the live API still "
-    "matches it, so `lltpm integrations verify` reports it as "
+    "matches it, so `tpllm integrations verify` reports it as "
     "unverifiable rather than passing."
 )

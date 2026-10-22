@@ -4,8 +4,8 @@ import tempfile
 from datetime import date
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.workflows.document_generator import DocumentGenerator
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.workflows.document_generator import DocumentGenerator
 
 
 def _make_store():
@@ -14,7 +14,7 @@ def _make_store():
 
 def _seed_program(store):
     """Seed a program with artifacts for rendering tests."""
-    from lltpm.models.program import Program, Stakeholder, SuccessMetric
+    from tpllm.models.program import Program, Stakeholder, SuccessMetric
     program = Program(
         id="test-prog",
         name="Auth Migration",
@@ -29,7 +29,7 @@ def _seed_program(store):
     )
     store.save("test-prog", "program", program)
 
-    from lltpm.models.update import StatusUpdate, UpdateSeverity
+    from tpllm.models.update import StatusUpdate, UpdateSeverity
     update = StatusUpdate(
         program_id="test-prog",
         program_name="Auth Migration",
@@ -39,7 +39,7 @@ def _seed_program(store):
         asks=["Need security review by March 1"],
         upcoming=["Beta launch March 15"],
     )
-    from lltpm.artifacts.status_update import StatusUpdateGenerator
+    from tpllm.artifacts.status_update import StatusUpdateGenerator
     gen = StatusUpdateGenerator(store)
     gen.create(
         program_id="test-prog",
@@ -51,7 +51,7 @@ def _seed_program(store):
         upcoming=["Beta launch"],
     )
 
-    from lltpm.models.risk import RAIDLog, Risk, Severity, Probability, RAIDItemStatus
+    from tpllm.models.risk import RAIDLog, Risk, Severity, Probability, RAIDItemStatus
     raid = RAIDLog(
         risks=[Risk(
             id="R-001", title="Rate limits", description="API rate limits may block launch",
@@ -61,7 +61,7 @@ def _seed_program(store):
     )
     store.save("test-prog", "raid_log", raid)
 
-    from lltpm.models.decision import DecisionLog, Decision, DecisionOption, DecisionStatus
+    from tpllm.models.decision import DecisionLog, Decision, DecisionOption, DecisionStatus
     log = DecisionLog(decisions=[Decision(
         id="DEC-001", title="Auth provider", status=DecisionStatus.DECIDED,
         options=[
@@ -72,7 +72,7 @@ def _seed_program(store):
     )])
     store.save("test-prog", "decision_log", log)
 
-    from lltpm.models.milestone import MilestonePlan, Milestone, MilestoneStatus
+    from tpllm.models.milestone import MilestonePlan, Milestone, MilestoneStatus
     plan = MilestonePlan(milestones=[Milestone(
         id="MS-001", name="Beta", target_date=date(2026, 3, 15),
         owner="Alice", status=MilestoneStatus.IN_PROGRESS,
@@ -90,7 +90,7 @@ def test_render_program_brief_html():
     assert "Auth Migration" in html
     assert "<html" in html
     assert "alice@co.com" in html
-    assert "LLTPM" in html
+    assert "TPLLM" in html
 
 
 def test_render_program_brief_markdown():

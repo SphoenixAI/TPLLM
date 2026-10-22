@@ -4,16 +4,16 @@ import tempfile
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.artifacts.raid_log import RAIDLogManager
-from lltpm.artifacts.milestone_plan import MilestonePlanManager
-from lltpm.artifacts.meeting_notes import MeetingNotesManager
-from lltpm.workflows.dependency_tracker import DependencyTracker
-from lltpm.workflows.risk_engine import RiskEngine
-from lltpm.workflows.update_aggregator import UpdateAggregator
-from lltpm.workflows.daily_cadence import DailyCadence
-from lltpm.workflows.weekly_planner import WeeklyPlanner
-from lltpm.workflows.bug_triage import BugTriageEngine
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.artifacts.raid_log import RAIDLogManager
+from tpllm.artifacts.milestone_plan import MilestonePlanManager
+from tpllm.artifacts.meeting_notes import MeetingNotesManager
+from tpllm.workflows.dependency_tracker import DependencyTracker
+from tpllm.workflows.risk_engine import RiskEngine
+from tpllm.workflows.update_aggregator import UpdateAggregator
+from tpllm.workflows.daily_cadence import DailyCadence
+from tpllm.workflows.weekly_planner import WeeklyPlanner
+from tpllm.workflows.bug_triage import BugTriageEngine
 
 
 def _make_store():

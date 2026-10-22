@@ -14,7 +14,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from lltpm.structural import (
+from tpllm.structural import (
     CalibrationProposal,
     CalibrationProposalType,
     CalibrationTestCase,
@@ -24,14 +24,14 @@ from lltpm.structural import (
     InterventionType,
     ProposalStatus,
 )
-from lltpm.structural.feedback import HumanDecisionType, record_human_decision
-from lltpm.structural.outcomes import DecisionOutcomeLog
-from lltpm.structural.stress_test import (
+from tpllm.structural.feedback import HumanDecisionType, record_human_decision
+from tpllm.structural.outcomes import DecisionOutcomeLog
+from tpllm.structural.stress_test import (
     StressTestRecommendation,
     StressTestStatus,
     StressTestedEvidenceBundle,
 )
-from lltpm.structural.governance import (
+from tpllm.structural.governance import (
     ApprovalExpiryMode,
     ApprovalValidity,
     BlastRadiusBand,
@@ -901,7 +901,7 @@ class TestByEitherExpiry:
 class TestNoRuntimeMutation:
     def test_governance_never_calls_forbidden_patterns(self):
         import inspect
-        import lltpm.structural.governance as gov
+        import tpllm.structural.governance as gov
 
         source = inspect.getsource(gov)
         forbidden = [

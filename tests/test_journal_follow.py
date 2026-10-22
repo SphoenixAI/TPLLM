@@ -15,7 +15,7 @@ from datetime import datetime
 
 import pytest
 
-from lltpm.persistence import (
+from tpllm.persistence import (
     InMemoryEventJournalStore,
     JournalEventType,
     SQLitePersistenceConfig,
@@ -23,8 +23,8 @@ from lltpm.persistence import (
     follow_journal,
     organization_stream,
 )
-from lltpm.persistence.follow import DEFAULT_BATCH_SIZE
-from lltpm.persistence.sqlite import initialize_sqlite_persistence
+from tpllm.persistence.follow import DEFAULT_BATCH_SIZE
+from tpllm.persistence.sqlite import initialize_sqlite_persistence
 
 NOW = datetime(2026, 10, 19, 9, 0)
 
@@ -272,13 +272,13 @@ class TestFollowingIsReadOnly:
 class TestAgainstARealDatabase:
     """A follower on its own connection must see another writer's commits.
 
-    This is what makes `lltpm runtime journal --follow` useful while a
-    separate `lltpm runtime ingest` is running.
+    This is what makes `tpllm runtime journal --follow` useful while a
+    separate `tpllm runtime ingest` is running.
     """
 
     @pytest.fixture
     def database(self, tmp_path):
-        return str(tmp_path / "lltpm.db")
+        return str(tmp_path / "tpllm.db")
 
     def test_a_second_connection_sees_appends_as_they_commit(self, database):
         writer = initialize_sqlite_persistence(

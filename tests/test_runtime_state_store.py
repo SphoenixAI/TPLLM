@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.persistence import (
+from tpllm.persistence import (
     InMemoryIntelligenceArtifactStore,
     InMemoryRuntimeStateStore,
     PortfolioRuntimeStateRecord,
@@ -19,7 +19,7 @@ from lltpm.persistence import (
     RuntimeRevisionRecord,
     SQLitePersistenceConfig,
 )
-from lltpm.persistence.sqlite import initialize_sqlite_persistence
+from tpllm.persistence.sqlite import initialize_sqlite_persistence
 from tests._persistence_fixtures import (
     ORGANIZATION,
     PROJECT_A,
@@ -59,7 +59,7 @@ def store(request, tmp_path):
         yield InMemoryRuntimeStateStore()
     else:
         db = initialize_sqlite_persistence(
-            SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+            SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
         )
         yield db.state
         db.close()
@@ -283,7 +283,7 @@ class TestArtifactStore:
             "recommendation", "rec-1", "revision-1",
         )
         assert august.payload == {"option": "opt-b"}, (
-            "what LLTPM recommended in August has one true answer, and a "
+            "what TPLLM recommended in August has one true answer, and a "
             "better engine later does not change it"
         )
 

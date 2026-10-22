@@ -35,14 +35,14 @@ from datetime import datetime
 
 import pytest
 
-from lltpm.integrations.normalizers import (
+from tpllm.integrations.normalizers import (
     CONTENT_EXCERPT_LIMIT,
     RECOGNIZED_EVENT_CLASSES,
     NormalizationOutcome,
     ProjectBindings,
     TimestampMissingError,
 )
-from lltpm.integrations.slack_normalizer import (
+from tpllm.integrations.slack_normalizer import (
     AVAILABILITY_EVENT_CLASS,
     CHANNEL_SCOPE_EVENT_CLASS,
     MESSAGE_EVENT_CLASS,
@@ -641,7 +641,7 @@ class TestDeletions:
         organizational reading lives in the availability metadata, which
         the durability seam acts on; a class that triggered a recompute
         would let a deletion revise a decision."""
-        from lltpm.integrations.runtime import (
+        from tpllm.integrations.runtime import (
             RefreshScope, determine_refresh_scope,
         )
 
@@ -653,7 +653,7 @@ class TestDeletions:
         """``integrations`` is a domain and no domain may import
         ``persistence``, so the value is mirrored rather than imported.
         A test can import both, which is what keeps the mirror honest."""
-        from lltpm.persistence.models import SourceAvailability
+        from tpllm.persistence.models import SourceAvailability
 
         assert SOURCE_AVAILABILITY_DELETED == SourceAvailability.DELETED.value
 
@@ -722,7 +722,7 @@ class TestChannelScope:
         """The right reach for a declared scope change: it should inform
         what we think the project is, and should not by itself move a
         KPI or a launch gate."""
-        from lltpm.integrations.runtime import (
+        from tpllm.integrations.runtime import (
             RefreshScope, determine_refresh_scope,
         )
 
@@ -995,7 +995,7 @@ class TestDeclines:
         assert "never invented" in outcome.uninterpreted[0].reason
 
     def test_every_decline_says_why(self, bindings):
-        from lltpm.integrations.slack_normalizer import (
+        from tpllm.integrations.slack_normalizer import (
             _DECLINED_CHANNEL_TYPES,
             _DECLINED_EVENT_TYPES,
             _DECLINED_SUBTYPES,
@@ -1204,8 +1204,8 @@ class TestEmittedEventClasses:
 
     @pytest.mark.parametrize("event_class", sorted(set(EMITTED)))
     def test_every_emitted_class_is_actually_mapped(self, event_class):
-        from lltpm.integrations.runtime import _EVENT_SCOPE_MAP
-        from lltpm.runtime.sources import EVENT_CLASS_TO_TEMPORAL_TYPE
+        from tpllm.integrations.runtime import _EVENT_SCOPE_MAP
+        from tpllm.runtime.sources import EVENT_CLASS_TO_TEMPORAL_TYPE
 
         assert (
             event_class in EVENT_CLASS_TO_TEMPORAL_TYPE
@@ -1289,7 +1289,7 @@ class TestNormalizePayload:
         CLI rather than here."""
         import inspect
 
-        from lltpm.integrations.normalizers import (
+        from tpllm.integrations.normalizers import (
             normalize_payload as github_normalize_payload,
         )
 

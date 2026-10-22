@@ -28,7 +28,7 @@ env
 htmlcov/
 
 # Data (mounted as volume)
-.lltpm/
+.tpllm/
 
 # Docs
 *.md

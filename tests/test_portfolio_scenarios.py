@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.portfolio import (
+from tpllm.portfolio import (
     PortfolioAllocationDecision,
     ProjectScenarioStatus,
     apply_factor_outcomes,

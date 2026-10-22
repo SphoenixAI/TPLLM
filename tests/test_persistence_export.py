@@ -12,7 +12,7 @@ import json
 
 import pytest
 
-from lltpm.persistence import (
+from tpllm.persistence import (
     DECISION_EVENTS,
     POLICY_EVENTS,
     RECOMMENDATION_EVENTS,
@@ -24,7 +24,7 @@ from lltpm.persistence import (
     export_journal,
     source_availability,
 )
-from lltpm.runtime import append_evidence_accepted
+from tpllm.runtime import append_evidence_accepted
 from tests._persistence_fixtures import (
     ORGANIZATION,
     PROJECT_A,
@@ -273,8 +273,8 @@ class TestEvidenceProvenance:
         )
 
     def test_the_latest_availability_statement_wins(self):
-        from lltpm.persistence import SourceAvailability
-        from lltpm.runtime import append_source_availability_changed
+        from tpllm.persistence import SourceAvailability
+        from tpllm.runtime import append_source_availability_changed
 
         persistence, _, _ = build_live_organization()
         append_source_availability_changed(
@@ -370,7 +370,7 @@ class TestExportIsReadOnly:
         import ast
         import inspect
 
-        import lltpm.persistence.export as export_module
+        import tpllm.persistence.export as export_module
 
         tree = ast.parse(inspect.getsource(export_module))
         for node in ast.walk(tree):
@@ -411,8 +411,8 @@ class TestExportIsReadOnly:
 class TestNoCredentialsCanReachAnExport:
     def test_a_credential_cannot_be_journalled_so_cannot_be_exported(self):
         """The guarantee is upstream: nothing secret is in there to leak."""
-        from lltpm.persistence import build_journal_record
-        from lltpm.persistence import organization_stream
+        from tpllm.persistence import build_journal_record
+        from tpllm.persistence import organization_stream
 
         with pytest.raises(ValueError, match="looks like a secret"):
             build_journal_record(

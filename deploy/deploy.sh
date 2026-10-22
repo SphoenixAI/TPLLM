@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# LLTPM Deployment Script
+# TPLLM Deployment Script
 # Usage: ./deploy/deploy.sh [target]
 #   target: docker | cloudrun | local
 
@@ -9,20 +9,20 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 TARGET="${1:-docker}"
 
-echo "LLTPM Deployment — target: $TARGET"
+echo "TPLLM Deployment — target: $TARGET"
 
 case "$TARGET" in
   docker)
     echo "Building Docker image..."
-    docker build -t lltpm:latest "$PROJECT_DIR"
+    docker build -t tpllm:latest "$PROJECT_DIR"
     echo ""
-    echo "Starting LLTPM..."
-    docker compose -f "$PROJECT_DIR/docker-compose.yml" up -d lltpm
+    echo "Starting TPLLM..."
+    docker compose -f "$PROJECT_DIR/docker-compose.yml" up -d tpllm
     echo ""
-    echo "LLTPM is running at http://localhost:8080"
+    echo "TPLLM is running at http://localhost:8080"
     echo "API docs at http://localhost:8080/docs"
     echo ""
-    echo "To view logs: docker compose logs -f lltpm"
+    echo "To view logs: docker compose logs -f tpllm"
     echo "To stop: docker compose down"
     ;;
 
@@ -41,7 +41,7 @@ case "$TARGET" in
       exit 1
     fi
 
-    IMAGE="gcr.io/$PROJECT_ID/lltpm:latest"
+    IMAGE="gcr.io/$PROJECT_ID/tpllm:latest"
 
     echo "Building and pushing image..."
     docker build -t "$IMAGE" "$PROJECT_DIR"
@@ -53,14 +53,14 @@ case "$TARGET" in
 
     echo ""
     echo "Deployment complete. Get URL with:"
-    echo "  gcloud run services describe lltpm --region=us-central1 --format='value(status.url)'"
+    echo "  gcloud run services describe tpllm --region=us-central1 --format='value(status.url)'"
     ;;
 
   local)
     echo "Starting local development server..."
     cd "$PROJECT_DIR"
     pip install -e ".[dashboard,dev]" 2>/dev/null || true
-    python -m uvicorn lltpm.dashboard:create_app --factory --reload --host 0.0.0.0 --port 8080
+    python -m uvicorn tpllm.dashboard:create_app --factory --reload --host 0.0.0.0 --port 8080
     ;;
 
   *)

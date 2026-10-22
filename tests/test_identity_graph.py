@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from lltpm.identity import (
+from tpllm.identity import (
     CanonicalEntityType,
     EntityResolutionStatus,
     IdentityGraphEdgeType,

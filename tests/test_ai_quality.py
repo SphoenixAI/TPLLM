@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from lltpm.intelligence import (
+from tpllm.intelligence import (
     AIQualityRiskType,
     ArchitectureComponent,
     ArchitectureRelation,
@@ -405,7 +405,7 @@ class TestReport:
 
     def test_report_evaluates_ai_not_workers(self):
         import inspect
-        import lltpm.intelligence.ai_quality as mod
+        import tpllm.intelligence.ai_quality as mod
 
         source = inspect.getsource(mod).lower()
         for pattern in (

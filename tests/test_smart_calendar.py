@@ -3,14 +3,14 @@
 import tempfile
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.models.calendar import (
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.models.calendar import (
     AttendeeInfo,
     AttendeeRole,
     MeetingPriority,
     SmartScheduleRequest,
 )
-from lltpm.workflows.smart_calendar import SmartCalendarEngine
+from tpllm.workflows.smart_calendar import SmartCalendarEngine
 
 
 def _make_store():

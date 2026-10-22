@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     DECISION_ORIGIN_HUMAN_MODIFIED_AGENT,
     DECISION_ORIGIN_HUMAN_VALIDATED_AGENT,
     ActionRequestType,
@@ -23,7 +23,7 @@ from lltpm.coordination import (
     render_panel_sections,
     select_agent_recommendation,
 )
-from lltpm.core import ActorReference
+from tpllm.core import ActorReference
 from tests._coordination_fixtures import AS_OF, actor, request
 from tests._recommendation_fixtures import (
     POLICY,
@@ -302,14 +302,14 @@ class TestDecisionPanel:
 class TestGuardrails:
     def test_no_application_or_calibration_authority(self):
         import inspect
-        import lltpm.coordination.recommendations as rec
-        import lltpm.coordination.decision_evaluation as ev
-        import lltpm.coordination.recommendation_validation as val
+        import tpllm.coordination.recommendations as rec
+        import tpllm.coordination.decision_evaluation as ev
+        import tpllm.coordination.recommendation_validation as val
 
         for mod in (rec, ev, val):
             source = inspect.getsource(mod)
             for pattern in (
-                "lltpm.application", "apply_calibration", "issue_approval",
+                "tpllm.application", "apply_calibration", "issue_approval",
                 "is_application_eligible", "transition_status",
                 "register_active_calibration",
             ):
@@ -321,9 +321,9 @@ class TestGuardrails:
 
     def test_no_employee_scoring(self):
         import inspect
-        import lltpm.coordination.recommendations as rec
-        import lltpm.coordination.decision_evaluation as ev
-        import lltpm.coordination.recommendation_validation as val
+        import tpllm.coordination.recommendations as rec
+        import tpllm.coordination.decision_evaluation as ev
+        import tpllm.coordination.recommendation_validation as val
 
         for mod in (rec, ev, val):
             source = inspect.getsource(mod).lower()

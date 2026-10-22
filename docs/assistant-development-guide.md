@@ -12,7 +12,7 @@ than left to review, and the handbook says which test is which.
 
 Also worth reading first:
 
-- [`README.md`](README.md) — what LLTPM is, and a five-minute offline
+- [`README.md`](README.md) — what TPLLM is, and a five-minute offline
   quickstart that runs a real organizational scenario.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — how to set up, what to run
   before opening a pull request.

@@ -7,13 +7,13 @@ from datetime import timedelta
 
 import pytest
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     DecisionPosition,
     PositionType,
     WorkstreamType,
     build_workstream_state,
 )
-from lltpm.memory import (
+from tpllm.memory import (
     CoordinationEventType,
     CoordinationTrace,
     CoordinationTraceEvent,
@@ -233,10 +233,10 @@ class TestContextBriefs:
 class TestGuardrails:
     def test_no_automatic_messages_sent(self):
         import inspect
-        import lltpm.memory.coordination_traces as traces
-        import lltpm.memory.pattern_matching as matching
-        import lltpm.memory.resolution_patterns as patterns
-        import lltpm.memory.context_briefs as briefs
+        import tpllm.memory.coordination_traces as traces
+        import tpllm.memory.pattern_matching as matching
+        import tpllm.memory.resolution_patterns as patterns
+        import tpllm.memory.context_briefs as briefs
 
         for mod in (traces, matching, patterns, briefs):
             source = inspect.getsource(mod)
@@ -249,13 +249,13 @@ class TestGuardrails:
 
     def test_no_application_authority_imports(self):
         import inspect
-        import lltpm.memory.coordination_traces as traces
-        import lltpm.memory.pattern_matching as matching
-        import lltpm.memory.resolution_patterns as patterns
-        import lltpm.memory.context_briefs as briefs
+        import tpllm.memory.coordination_traces as traces
+        import tpllm.memory.pattern_matching as matching
+        import tpllm.memory.resolution_patterns as patterns
+        import tpllm.memory.context_briefs as briefs
 
         for mod in (traces, matching, patterns, briefs):
             source = inspect.getsource(mod)
-            for pattern in ("lltpm.application", "apply_calibration",
+            for pattern in ("tpllm.application", "apply_calibration",
                             "register_active_calibration"):
                 assert pattern not in source

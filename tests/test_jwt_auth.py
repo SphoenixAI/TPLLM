@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.models.security import (
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.models.security import (
     AuditAction,
     JWTClaims,
     JWTConfig,
@@ -16,7 +16,7 @@ from lltpm.models.security import (
     Role,
     TokenPair,
 )
-from lltpm.workflows.security_manager import SecurityManager
+from tpllm.workflows.security_manager import SecurityManager
 
 
 def _make_manager(**jwt_kwargs):
@@ -33,8 +33,8 @@ def test_jwt_config_defaults():
     assert cfg.algorithm == "HS256"
     assert cfg.access_token_ttl_minutes == 30
     assert cfg.refresh_token_ttl_days == 7
-    assert cfg.issuer == "lltpm"
-    assert cfg.audience == "lltpm-api"
+    assert cfg.issuer == "tpllm"
+    assert cfg.audience == "tpllm-api"
     assert len(cfg.secret_key) > 20  # should be a long random key
 
 
@@ -62,8 +62,8 @@ def test_jwt_claims_to_payload():
     assert payload["sub"] == "user-123"
     assert payload["role"] == "engineer"
     assert payload["scopes"] == ["prog-1"]
-    assert payload["iss"] == "lltpm"
-    assert payload["aud"] == "lltpm-api"
+    assert payload["iss"] == "tpllm"
+    assert payload["aud"] == "tpllm-api"
     assert payload["token_type"] == "access"
     assert isinstance(payload["iat"], int)
     assert isinstance(payload["exp"], int)
@@ -207,8 +207,8 @@ def test_validate_jwt_expired():
         "sub": "alice",
         "role": "admin",
         "scopes": [],
-        "iss": "lltpm",
-        "aud": "lltpm-api",
+        "iss": "tpllm",
+        "aud": "tpllm-api",
         "iat": int((datetime.utcnow() - timedelta(hours=2)).timestamp()),
         "exp": int((datetime.utcnow() - timedelta(hours=1)).timestamp()),
         "jti": "expired-jti",
@@ -227,7 +227,7 @@ def test_validate_jwt_wrong_issuer():
         "role": "admin",
         "scopes": [],
         "iss": "wrong-issuer",
-        "aud": "lltpm-api",
+        "aud": "tpllm-api",
         "iat": int(datetime.utcnow().timestamp()),
         "exp": int((datetime.utcnow() + timedelta(hours=1)).timestamp()),
         "jti": "test-jti",
@@ -328,7 +328,7 @@ def test_authenticate_api_key_to_jwt():
 
 def test_authenticate_invalid_api_key():
     mgr = _make_manager(secret_key="test-secret-key-long-enough-for-hs256")
-    pair = mgr.authenticate_api_key_to_jwt("lltpm_invalid_key")
+    pair = mgr.authenticate_api_key_to_jwt("tpllm_invalid_key")
     assert pair is None
 
     # Should log failed login

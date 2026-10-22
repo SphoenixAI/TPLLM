@@ -14,7 +14,7 @@ from datetime import datetime
 
 import pytest
 
-from lltpm.application import (
+from tpllm.application import (
     ActiveCalibrationRecord,
     ApplicationDecision,
     ApplicationLedger,
@@ -40,7 +40,7 @@ from lltpm.application import (
     record_application_outcome,
     revert_application,
 )
-from lltpm.structural.governance import (
+from tpllm.structural.governance import (
     ApprovalExpiryMode,
     CalibrationApprovalRecord,
     GovernanceStatus,
@@ -48,8 +48,8 @@ from lltpm.structural.governance import (
     fingerprint_evidence_bundle,
     is_application_eligible,
 )
-from lltpm.structural.outcomes import DecisionOutcomeLog, DecisionOutcomeType
-from lltpm.structural.stress_test import (
+from tpllm.structural.outcomes import DecisionOutcomeLog, DecisionOutcomeType
+from tpllm.structural.stress_test import (
     StressTestRecommendation,
     StressTestedEvidenceBundle,
 )
@@ -546,9 +546,9 @@ class TestAudit:
 class TestNoLiveRankerMutation:
     def test_no_ranker_mutation_literals(self):
         import inspect
-        import lltpm.application.control as ctrl
-        import lltpm.application.monitor as mon
-        import lltpm.application.ledger as led
+        import tpllm.application.control as ctrl
+        import tpllm.application.monitor as mon
+        import tpllm.application.ledger as led
 
         forbidden = [
             "tradeoff_score =",
@@ -571,9 +571,9 @@ class TestNoLiveRankerMutation:
 class TestNoGovernanceAuthorityGrant:
     def test_no_authority_grant_literals(self):
         import inspect
-        import lltpm.application.control as ctrl
-        import lltpm.application.monitor as mon
-        import lltpm.application.ledger as led
+        import tpllm.application.control as ctrl
+        import tpllm.application.monitor as mon
+        import tpllm.application.ledger as led
 
         forbidden = [
             "transition_status(",

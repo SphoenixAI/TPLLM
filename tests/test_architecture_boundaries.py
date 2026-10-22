@@ -39,7 +39,7 @@ FIRST_PARTY_PACKAGES = [
     "observability",
 ]
 
-_SRC = pathlib.Path(__file__).resolve().parent.parent / "src" / "lltpm"
+_SRC = pathlib.Path(__file__).resolve().parent.parent / "src" / "tpllm"
 
 
 def build_first_party_import_graph(
@@ -65,7 +65,7 @@ def build_first_party_import_graph(
                 elif isinstance(node, ast.Import):
                     modules.extend(a.name for a in node.names)
                 for module in modules:
-                    if not module.startswith("lltpm."):
+                    if not module.startswith("tpllm."):
                         continue
                     target = module.split(".")[1]
                     if target in graph and target != package:

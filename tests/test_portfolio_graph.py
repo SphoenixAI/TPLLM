@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.portfolio import (
+from tpllm.portfolio import (
     PortfolioEdgeType,
     PortfolioNodeType,
     build_portfolio_graph,

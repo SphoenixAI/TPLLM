@@ -4,12 +4,12 @@ import tempfile
 from datetime import date, timedelta
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.artifacts.raid_log import RAIDLogManager
-from lltpm.artifacts.meeting_notes import MeetingNotesManager
-from lltpm.workflows.delegation_engine import DelegationEngine
-from lltpm.workflows.meeting_intelligence import MeetingIntelligenceEngine
-from lltpm.models.delegation import DelegationStatus, DelegationCategory, DelegationPriority
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.artifacts.raid_log import RAIDLogManager
+from tpllm.artifacts.meeting_notes import MeetingNotesManager
+from tpllm.workflows.delegation_engine import DelegationEngine
+from tpllm.workflows.meeting_intelligence import MeetingIntelligenceEngine
+from tpllm.models.delegation import DelegationStatus, DelegationCategory, DelegationPriority
 
 
 def _make_store():

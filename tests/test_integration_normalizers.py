@@ -29,7 +29,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from lltpm.integrations.normalizers import (
+from tpllm.integrations.normalizers import (
     CONTENT_EXCERPT_LIMIT,
     GITHUB,
     RECOGNIZED_EVENT_CLASSES,
@@ -728,8 +728,8 @@ class TestEveryEmittedClassIsRecognized:
 
     def test_the_recognized_set_matches_the_runtime(self):
         """If the runtime learns a new class, this set should know."""
-        from lltpm.integrations.runtime import _EVENT_SCOPE_MAP
-        from lltpm.runtime.sources import EVENT_CLASS_TO_TEMPORAL_TYPE
+        from tpllm.integrations.runtime import _EVENT_SCOPE_MAP
+        from tpllm.runtime.sources import EVENT_CLASS_TO_TEMPORAL_TYPE
 
         known = set(_EVENT_SCOPE_MAP) | set(EVENT_CLASS_TO_TEMPORAL_TYPE)
         unknown = RECOGNIZED_EVENT_CLASSES - known
@@ -759,7 +759,7 @@ class TestBatchOutcome:
         )
 
     def test_merging_preserves_every_category(self):
-        from lltpm.integrations.normalizers import SkippedPayload
+        from tpllm.integrations.normalizers import SkippedPayload
 
         left = NormalizationOutcome(unbound=[
             SkippedPayload(source_system=GITHUB, reason="a"),
@@ -772,7 +772,7 @@ class TestBatchOutcome:
         assert merged.skipped_count == 2
 
     def test_only_unbound_and_rejected_need_a_person(self):
-        from lltpm.integrations.normalizers import SkippedPayload
+        from tpllm.integrations.normalizers import SkippedPayload
 
         quiet = NormalizationOutcome(uninterpreted=[
             SkippedPayload(source_system=GITHUB, reason="a push"),
@@ -792,20 +792,20 @@ class TestRealPayloadsReachTheJournal:
     envelope, so no real integration data could reach any engine."""
 
     def _ingest(self, envelopes, *, db, now):
-        from lltpm.persistence import (
+        from tpllm.persistence import (
             InMemoryEventJournalStore,
             InMemoryIntelligenceArtifactStore,
             InMemoryRuntimeStateStore,
             build_manifest,
         )
-        from lltpm.runtime import (
+        from tpllm.runtime import (
             RuntimeStateStore as RuntimeProjection,
             process_durable_organizational_events,
         )
-        from lltpm.runtime.baselines import baseline_providers
-        from lltpm.runtime.services import LiveIntelligenceServices
-        from lltpm.runtime.sources import JournalBackedDataSource
-        from lltpm.scenarios.models import ScenarioHorizon
+        from tpllm.runtime.baselines import baseline_providers
+        from tpllm.runtime.services import LiveIntelligenceServices
+        from tpllm.runtime.sources import JournalBackedDataSource
+        from tpllm.scenarios.models import ScenarioHorizon
 
         journal = db["journal"]
         services = LiveIntelligenceServices(
@@ -833,7 +833,7 @@ class TestRealPayloadsReachTheJournal:
 
     @pytest.fixture
     def db(self):
-        from lltpm.persistence import (
+        from tpllm.persistence import (
             InMemoryEventJournalStore,
             InMemoryIntelligenceArtifactStore,
             InMemoryRuntimeStateStore,
@@ -864,7 +864,7 @@ class TestRealPayloadsReachTheJournal:
         assert len(db["journal"]) >= len(envelopes)
 
     def test_the_journal_hash_chain_stays_valid(self, db, envelopes):
-        from lltpm.persistence import verify_journal
+        from tpllm.persistence import verify_journal
 
         self._ingest(envelopes, db=db, now=RECEIVED)
         assert verify_journal(journal=db["journal"]).valid
@@ -971,7 +971,7 @@ class TestEnvelopeIdentityIsUnique:
     def test_distinct_facts_from_one_resource_get_distinct_ids(self):
         """One pull request yields a review request and later a merge.
         Two facts, two ids."""
-        from lltpm.integrations.envelopes import make_envelope
+        from tpllm.integrations.envelopes import make_envelope
 
         shared = dict(
             source_system="github", source_type="pull_request",
@@ -992,7 +992,7 @@ class TestEnvelopeIdentityIsUnique:
 
     def test_the_durable_record_inherits_the_unique_id(self, bindings):
         """Where it actually mattered."""
-        from lltpm.runtime.durability import envelope_to_durable_record
+        from tpllm.runtime.durability import envelope_to_durable_record
 
         records = [
             envelope_to_durable_record(e) for e in self._envelopes(bindings)

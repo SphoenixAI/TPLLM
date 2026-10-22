@@ -7,7 +7,7 @@ eligible for human review. Nothing is auto-applied.
 
 from __future__ import annotations
 
-from lltpm.structural import (
+from tpllm.structural import (
     CalibrationProposal,
     CalibrationProposalType,
     CalibrationTestCase,
@@ -21,18 +21,18 @@ from lltpm.structural import (
     create_calibration_proposal_from_hypothesis,
     map_hypothesis_type_to_proposal_type,
 )
-from lltpm.structural.calibration import (
+from tpllm.structural.calibration import (
     CalibrationHypothesis,
     CalibrationHypothesisStatus,
     CalibrationHypothesisType,
 )
-from lltpm.structural.calibration_cases import (
+from tpllm.structural.calibration_cases import (
     generate_calibration_test_cases,
     run_calibration_test_case,
 )
-from lltpm.structural.feedback import HumanDecisionType, record_human_decision
-from lltpm.structural.outcomes import DecisionOutcomeLog
-from lltpm.structural.regression import (
+from tpllm.structural.feedback import HumanDecisionType, record_human_decision
+from tpllm.structural.outcomes import DecisionOutcomeLog
+from tpllm.structural.regression import (
     build_historical_validation_impact,
     build_regression_tested_proposal,
     bundle_calibration_evidence,
@@ -358,7 +358,7 @@ class TestCalibrationTestCaseGeneration:
             status=ProposalStatus.REGRESSION_DETECTED,
         )
 
-        from lltpm.structural.proposals import RegressionCaseResult
+        from tpllm.structural.proposals import RegressionCaseResult
         case_results = [
             RegressionCaseResult(
                 id="r1",

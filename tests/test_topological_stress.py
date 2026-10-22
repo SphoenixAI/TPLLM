@@ -11,7 +11,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from lltpm.structural import (
+from tpllm.structural import (
     CalibrationProposal,
     CalibrationProposalType,
     CalibrationTestCase,
@@ -21,9 +21,9 @@ from lltpm.structural import (
     InterventionType,
     ProposalStatus,
 )
-from lltpm.structural.feedback import HumanDecisionType, record_human_decision
-from lltpm.structural.outcomes import DecisionOutcomeLog
-from lltpm.structural.stress_test import (
+from tpllm.structural.feedback import HumanDecisionType, record_human_decision
+from tpllm.structural.outcomes import DecisionOutcomeLog
+from tpllm.structural.stress_test import (
     FuzzMutationType,
     FuzzResilienceReport,
     LateralTransferReport,

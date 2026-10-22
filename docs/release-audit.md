@@ -27,7 +27,7 @@ Audited at version `0.41.0`.
 | `integrations/contract_data/github.json` ships | yes |
 | `LICENSE` in the wheel's `dist-info` | yes |
 
-The wheel is 289 entries and contains only `src/lltpm`. The only
+The wheel is 289 entries and contains only `src/tpllm`. The only
 `test`-matching path is `structural/stress_test.py`, which is a source
 module about structural stress tests, not a test file.
 
@@ -42,7 +42,7 @@ than disabled everywhere to accommodate the one place it cannot be.
 from a real repository and scrubbed before being committed: handles,
 account ids and repository names pseudonymized, avatars and emails
 dropped, opaque ids rewritten deterministically.
-`lltpm integrations record` refuses to write a fixture that still
+`tpllm integrations record` refuses to write a fixture that still
 discloses something, and `tests/test_integration_contracts.py` asserts
 every login in every committed fixture matches the alias pattern.
 
@@ -77,7 +77,7 @@ read its metadata.
 ## 3. Every optional extra is installable
 
 **Checked** against PyPI at audit time. An extra naming a package that
-does not exist turns `pip install lltpm[voice]` into a resolution error
+does not exist turns `pip install tpllm[voice]` into a resolution error
 for a user who did nothing wrong.
 
 `chatterbox-tts`, `kokoro`, `piper-tts`, `soundfile`, `weasyprint`,
@@ -134,8 +134,8 @@ package ships `py.typed`.
 
 **Version consistency.** Three places refer to the version and two are
 derived from the first: `pyproject.toml` is authoritative,
-`lltpm.__version__` reads installed metadata, and
-`persistence.versioning.DECLARED_LLTPM_VERSION` is the fallback stamped
+`tpllm.__version__` reads installed metadata, and
+`persistence.versioning.DECLARED_TPLLM_VERSION` is the fallback stamped
 into a reproducibility manifest when the package is not installed. The
 fallback had drifted to `0.31.0`; a mismatch means durable history
 records a version that was never released, so a test now asserts all
@@ -181,7 +181,7 @@ Stated so it is not mistaken for having been done.
 python -m pytest tests/test_release_readiness.py -q   # the asserted part
 python -m pytest tests/ -q                            # everything
 python -m build --wheel                               # inspect by hand
-python -m pyflakes src/lltpm/                          # known debt; see
+python -m pyflakes src/tpllm/                          # known debt; see
                                                        # research-alignment §11
 ```
 

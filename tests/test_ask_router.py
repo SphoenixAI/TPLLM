@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import timedelta
 from types import SimpleNamespace
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     ActionRequestType,
     ActorRelationType,
     CapacityConstraintType,
@@ -16,7 +16,7 @@ from lltpm.coordination import (
     build_action_routing_plan,
     identify_routing_candidates,
 )
-from lltpm.intelligence import (
+from tpllm.intelligence import (
     UnderstandingClaim,
     UnderstandingClaimStatus,
     UnderstandingClaimType,

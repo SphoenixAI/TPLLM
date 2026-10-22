@@ -33,7 +33,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from lltpm.integrations.slack_normalizer import (
+from tpllm.integrations.slack_normalizer import (
     SOURCE_AVAILABILITY_DELETED,
     normalize_slack_message_changed,
     normalize_slack_message_deleted,
@@ -55,7 +55,7 @@ EDITED_AT = datetime(2026, 2, 25, 9, 20, 0, 300)
 
 @pytest.fixture
 def db():
-    from lltpm.persistence import (
+    from tpllm.persistence import (
         InMemoryEventJournalStore,
         InMemoryIntelligenceArtifactStore,
         InMemoryRuntimeStateStore,
@@ -69,15 +69,15 @@ def db():
 
 
 def _ingest(envelopes, *, db, now):
-    from lltpm.persistence import build_manifest
-    from lltpm.runtime import (
+    from tpllm.persistence import build_manifest
+    from tpllm.runtime import (
         RuntimeStateStore as RuntimeProjection,
         process_durable_organizational_events,
     )
-    from lltpm.runtime.baselines import baseline_providers
-    from lltpm.runtime.services import LiveIntelligenceServices
-    from lltpm.runtime.sources import JournalBackedDataSource
-    from lltpm.scenarios.models import ScenarioHorizon
+    from tpllm.runtime.baselines import baseline_providers
+    from tpllm.runtime.services import LiveIntelligenceServices
+    from tpllm.runtime.sources import JournalBackedDataSource
+    from tpllm.scenarios.models import ScenarioHorizon
 
     journal = db["journal"]
     services = LiveIntelligenceServices(
@@ -149,7 +149,7 @@ class TestSlackDataReachesDurableHistory:
         assert len(db["journal"]) >= len(envelopes)
 
     def test_the_journal_hash_chain_stays_valid(self, db, envelopes):
-        from lltpm.persistence import verify_journal
+        from tpllm.persistence import verify_journal
 
         _ingest(envelopes, db=db, now=RECEIVED)
         assert verify_journal(journal=db["journal"]).valid
@@ -178,7 +178,7 @@ class TestSlackDataReachesDurableHistory:
         actually land."""
         import json
 
-        from lltpm.integrations.envelopes import redact_secret_text
+        from tpllm.integrations.envelopes import redact_secret_text
 
         payload = copy.deepcopy(fx.thread_root())
         payload["text"] = (
@@ -379,7 +379,7 @@ class TestReIngestingAppendsNothing:
     def test_the_chain_is_still_valid_after_a_duplicate_batch(
         self, db, envelopes,
     ):
-        from lltpm.persistence import verify_journal
+        from tpllm.persistence import verify_journal
 
         _ingest(envelopes, db=db, now=RECEIVED)
         _ingest(_normalize(received_at=LATER).envelopes, db=db, now=LATER)
@@ -543,7 +543,7 @@ class TestEditsAndDeletionsDoNotRewriteHistory:
         assert record.payload["evidence"]["normalized_content"] is None
 
     def test_the_chain_survives_an_edit_and_a_deletion(self, db, versions):
-        from lltpm.persistence import verify_journal
+        from tpllm.persistence import verify_journal
 
         _ingest(versions, db=db, now=RECEIVED)
         deletion = normalize_slack_message_deleted(
@@ -562,8 +562,8 @@ class TestReplayTouchesNothingExternal:
         """Replay must not need Slack to still be reachable, which is
         the whole reason evidence is journalled in normalized form
         rather than as a pointer."""
-        from lltpm.persistence.models import DurableEvidenceRecord
-        from lltpm.runtime.durability import durable_record_to_envelope
+        from tpllm.persistence.models import DurableEvidenceRecord
+        from tpllm.runtime.durability import durable_record_to_envelope
 
         envelopes = _normalize().envelopes
         _ingest(envelopes, db=db, now=RECEIVED)

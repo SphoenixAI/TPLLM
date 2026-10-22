@@ -7,7 +7,7 @@ from datetime import date, timedelta
 
 import pytest
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     CommitmentType,
     OrganizationalAutonomyBudget,
     OrganizationalAutonomyState,
@@ -94,7 +94,7 @@ class TestPolicyDefaults:
 
     def test_autonomy_is_never_inferred_from_headcount(self):
         import inspect
-        import lltpm.coordination.authority_policy as mod
+        import tpllm.coordination.authority_policy as mod
 
         source = inspect.getsource(mod).lower()
         for pattern in ("employee_count", "headcount ==", "team_size",

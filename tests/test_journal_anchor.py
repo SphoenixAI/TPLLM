@@ -20,7 +20,7 @@ from datetime import datetime
 
 import pytest
 
-from lltpm.persistence import (
+from tpllm.persistence import (
     InMemoryEventJournalStore,
     JournalAnchor,
     JournalEventType,
@@ -29,7 +29,7 @@ from lltpm.persistence import (
     organization_stream,
     verify_journal,
 )
-from lltpm.persistence.integrity import (
+from tpllm.persistence.integrity import (
     calculate_journal_record_hash,
     verify_journal_hash_chain,
 )
@@ -222,9 +222,9 @@ class TestBuildingAnAnchor:
 
     def test_it_records_the_version_that_wrote_it(self, journal):
         built = build_journal_anchor(
-            journal=journal, created_at=NOW, lltpm_version="9.9.9",
+            journal=journal, created_at=NOW, tpllm_version="9.9.9",
         )
-        assert built.lltpm_version == "9.9.9"
+        assert built.tpllm_version == "9.9.9"
 
 
 class TestTheReportCarriesTheHead:
@@ -246,7 +246,7 @@ class TestTheReportCarriesTheHead:
 
 class TestTheExportCarriesItsAnchor:
     def test_an_export_states_the_head_hash(self, journal):
-        from lltpm.persistence import build_manifest, export_journal
+        from tpllm.persistence import build_manifest, export_journal
 
         bundle = export_journal(
             journal=journal, organization_id="acme", exported_at=NOW,

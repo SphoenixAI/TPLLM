@@ -107,7 +107,7 @@ class TestNoDomainKnowsAboutSqlite:
 
         root = (
             pathlib.Path(__file__).resolve().parent.parent
-            / "src" / "lltpm" / package
+            / "src" / "tpllm" / package
         )
         if not root.exists():
             return
@@ -124,7 +124,7 @@ class TestNoDomainKnowsAboutSqlite:
                         f"{path} imports sqlite3 — only the persistence "
                         f"reference implementation may know the backend."
                     )
-                    assert module != "lltpm.persistence.sqlite", (
+                    assert module != "tpllm.persistence.sqlite", (
                         f"{path} imports the SQLite implementation directly; "
                         f"depend on the protocols instead."
                     )
@@ -136,7 +136,7 @@ class TestNoDomainKnowsAboutSqlite:
 
         root = (
             pathlib.Path(__file__).resolve().parent.parent
-            / "src" / "lltpm" / "persistence"
+            / "src" / "tpllm" / "persistence"
         )
         importers = set()
         for path in root.rglob("*.py"):
@@ -154,35 +154,35 @@ class TestNoDomainKnowsAboutSqlite:
 
 class TestPersistenceInternalLayering:
     def test_models_import_no_other_persistence_module(self):
-        import lltpm.persistence.models as models
+        import tpllm.persistence.models as models
 
         source = executable_source(models)
         for module in ("protocols", "journal", "replay", "sqlite"):
-            assert f"lltpm.persistence.{module}" not in source
+            assert f"tpllm.persistence.{module}" not in source
 
     def test_integrity_depends_only_on_models(self):
-        import lltpm.persistence.integrity as integrity
+        import tpllm.persistence.integrity as integrity
 
         source = executable_source(integrity)
         for module in ("journal", "replay", "sqlite", "state_store"):
-            assert f"lltpm.persistence.{module}" not in source
+            assert f"tpllm.persistence.{module}" not in source
 
     def test_the_sqlite_backend_depends_on_models_and_protocols(self):
-        import lltpm.persistence.sqlite as sqlite_module
+        import tpllm.persistence.sqlite as sqlite_module
 
         source = executable_source(sqlite_module)
-        assert "lltpm.persistence.models" in source
-        assert "lltpm.persistence.protocols" in source
+        assert "tpllm.persistence.models" in source
+        assert "tpllm.persistence.protocols" in source
 
     def test_every_persistence_module_imports(self):
         for name in PERSISTENCE_MODULES:
-            assert importlib.import_module(f"lltpm.persistence.{name}")
+            assert importlib.import_module(f"tpllm.persistence.{name}")
 
 
 class TestNoPickle:
     @pytest.mark.parametrize("name", PERSISTENCE_MODULES)
     def test_durable_state_is_never_pickled(self, name):
-        module = importlib.import_module(f"lltpm.persistence.{name}")
+        module = importlib.import_module(f"tpllm.persistence.{name}")
         source = executable_source(module)
         for forbidden in ("pickle", "marshal", "shelve", "dill"):
             assert forbidden not in source, (
@@ -192,7 +192,7 @@ class TestNoPickle:
             )
 
     def test_the_runtime_seam_does_not_pickle_either(self):
-        import lltpm.runtime.durability as durability
+        import tpllm.runtime.durability as durability
 
         assert "pickle" not in executable_source(durability)
 
@@ -210,7 +210,7 @@ class TestNoSurveillanceHistory:
 
     @pytest.mark.parametrize("name", PERSISTENCE_MODULES)
     def test_no_durable_model_records_activity(self, name):
-        module = importlib.import_module(f"lltpm.persistence.{name}")
+        module = importlib.import_module(f"tpllm.persistence.{name}")
         source = executable_source(module)
         for term in self.FORBIDDEN:
             assert term not in source, (
@@ -220,14 +220,14 @@ class TestNoSurveillanceHistory:
             )
 
     def test_the_runtime_durability_seam_is_clean(self):
-        import lltpm.runtime.durability as durability
+        import tpllm.runtime.durability as durability
 
         source = executable_source(durability)
         for term in self.FORBIDDEN:
             assert term not in source
 
     def test_journal_event_types_describe_organizational_transitions(self):
-        from lltpm.persistence import JournalEventType
+        from tpllm.persistence import JournalEventType
 
         for event_type in JournalEventType:
             for term in ("employee", "activity", "hours", "timesheet",
@@ -238,7 +238,7 @@ class TestNoSurveillanceHistory:
                 )
 
     def test_durable_evidence_has_no_activity_fields(self):
-        from lltpm.persistence import DurableEvidenceRecord
+        from tpllm.persistence import DurableEvidenceRecord
 
         for field in DurableEvidenceRecord.model_fields:
             for term in ("employee", "activity", "hours", "duration",
@@ -246,7 +246,7 @@ class TestNoSurveillanceHistory:
                 assert term not in field
 
     def test_runtime_state_records_have_no_activity_fields(self):
-        from lltpm.persistence import (
+        from tpllm.persistence import (
             PortfolioRuntimeStateRecord,
             ProjectRuntimeStateRecord,
         )
@@ -260,7 +260,7 @@ class TestNoSurveillanceHistory:
                 assert term not in field
 
     def test_the_sqlite_schema_holds_no_activity_tables(self):
-        from lltpm.persistence.sqlite import SCHEMA_STATEMENTS
+        from tpllm.persistence.sqlite import SCHEMA_STATEMENTS
 
         schema = " ".join(SCHEMA_STATEMENTS).lower()
         for term in (
@@ -275,7 +275,7 @@ class TestNoSurveillanceHistory:
 
 class TestInspectability:
     def test_persisted_payloads_are_json_compatible(self):
-        from lltpm.persistence import canonical_json_bytes
+        from tpllm.persistence import canonical_json_bytes
 
         import json
 
@@ -289,7 +289,7 @@ class TestInspectability:
     def test_a_journal_record_round_trips_through_json(self):
         import json
 
-        from lltpm.persistence import JournalRecord, canonical_json_bytes
+        from tpllm.persistence import JournalRecord, canonical_json_bytes
         from tests._persistence_fixtures import record
 
         built = record()
@@ -302,7 +302,7 @@ class TestInspectability:
     def test_a_snapshot_round_trips_through_json(self):
         import json
 
-        from lltpm.persistence import (
+        from tpllm.persistence import (
             RuntimeSnapshot,
             canonical_json_bytes,
             verify_snapshot_integrity,
@@ -312,7 +312,7 @@ class TestInspectability:
             at,
             manifest,
         )
-        from lltpm.persistence import build_runtime_snapshot
+        from tpllm.persistence import build_runtime_snapshot
 
         snapshot = build_runtime_snapshot(
             snapshot_id="snap-1", organization_id=ORGANIZATION,
@@ -330,7 +330,7 @@ class TestInspectability:
 class TestOpenSourceDefault:
     def test_no_cloud_dependency_is_imported(self):
         for name in PERSISTENCE_MODULES:
-            module = importlib.import_module(f"lltpm.persistence.{name}")
+            module = importlib.import_module(f"tpllm.persistence.{name}")
             source = executable_source(module)
             for cloud in (
                 "boto3", "kafka", "redis", "psycopg", "sqlalchemy",
@@ -342,13 +342,13 @@ class TestOpenSourceDefault:
                 )
 
     def test_the_default_config_is_a_local_file(self):
-        from lltpm.persistence import SQLitePersistenceConfig
+        from tpllm.persistence import SQLitePersistenceConfig
 
-        assert SQLitePersistenceConfig().path == "./lltpm.db"
+        assert SQLitePersistenceConfig().path == "./tpllm.db"
 
     def test_no_daemon_or_scheduler_is_required(self):
         for name in PERSISTENCE_MODULES:
-            module = importlib.import_module(f"lltpm.persistence.{name}")
+            module = importlib.import_module(f"tpllm.persistence.{name}")
             source = executable_source(module)
             for term in ("celery", "apscheduler", "asyncio.create_task"):
                 assert term not in source

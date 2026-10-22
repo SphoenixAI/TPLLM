@@ -32,8 +32,8 @@ import urllib.error
 
 import pytest
 
-from lltpm.integrations.github_reader import SourceUnavailableError
-from lltpm.integrations.slack_reader import (
+from tpllm.integrations.github_reader import SourceUnavailableError
+from tpllm.integrations.slack_reader import (
     DEFAULT_PAGE_LIMIT,
     DEFAULT_REPLAY_WINDOW_SECONDS,
     IDENTIFYING_QUERY_PARAMETERS,
@@ -59,7 +59,7 @@ from lltpm.integrations.slack_reader import (
 )
 from tests import _slack_fixtures as fx
 
-_SOURCE = pathlib.Path("src/lltpm/integrations/slack_reader.py")
+_SOURCE = pathlib.Path("src/tpllm/integrations/slack_reader.py")
 
 #: 32+ bytes, per the project's convention for keys in tests.
 SIGNING_SECRET = "slack-signing-secret-for-tests-0123456789"
@@ -127,14 +127,14 @@ class TestTheTokenStaysPrivate:
         monkeypatch.setenv(TOKEN_ENVIRONMENT_VARIABLES[0], "xoxb-abc")
         assert UrllibSlackReader().authenticated is True
 
-    def test_the_lltpm_specific_variable_wins(self, monkeypatch):
-        """So a deployment can scope LLTPM's token separately from
+    def test_the_tpllm_specific_variable_wins(self, monkeypatch):
+        """So a deployment can scope TPLLM's token separately from
         whatever else on the host reads SLACK_BOT_TOKEN."""
         assert TOKEN_ENVIRONMENT_VARIABLES == (
-            "LLTPM_SLACK_TOKEN", "SLACK_BOT_TOKEN",
+            "TPLLM_SLACK_TOKEN", "SLACK_BOT_TOKEN",
         )
         monkeypatch.setenv("SLACK_BOT_TOKEN", "shared")
-        monkeypatch.setenv("LLTPM_SLACK_TOKEN", "scoped")
+        monkeypatch.setenv("TPLLM_SLACK_TOKEN", "scoped")
         assert UrllibSlackReader().authenticated
 
     def test_a_blank_environment_token_is_not_a_token(self, monkeypatch):
@@ -181,7 +181,7 @@ class TestTheTokenStaysPrivate:
     def test_log_fields_come_from_the_agreed_vocabulary(self):
         """The field vocabulary is a closed list, asserted globally; this
         checks the new module before that suite has to."""
-        from lltpm.observability.fields import STRUCTURED_FIELD_NAMES
+        from tpllm.observability.fields import STRUCTURED_FIELD_NAMES
 
         tree = ast.parse(_SOURCE.read_text())
         used: set[str] = set()
@@ -286,7 +286,7 @@ class TestSlackSignalsFailureInsideA200:
         assert issubclass(SlackApiError, SourceUnavailableError)
 
     def test_the_live_reader_checks_ok_too(self, monkeypatch):
-        import lltpm.integrations.slack_reader as module
+        import tpllm.integrations.slack_reader as module
 
         monkeypatch.setattr(
             module.urllib.request, "urlopen",
@@ -325,7 +325,7 @@ class TestRateLimiting:
     def test_a_429_waits_what_slack_asked_and_then_succeeds(
         self, waits, monkeypatch,
     ):
-        import lltpm.integrations.slack_reader as module
+        import tpllm.integrations.slack_reader as module
 
         reader, urlopen = self._reader(waits, [
             _http_error(429, retry_after="3"),
@@ -343,7 +343,7 @@ class TestRateLimiting:
     ):
         """Slack documents the header. This is what happens when it is
         absent, rather than retrying instantly in a tight loop."""
-        import lltpm.integrations.slack_reader as module
+        import tpllm.integrations.slack_reader as module
 
         policy = SlackRateLimitPolicy(default_retry_after_seconds=2.5)
         reader, urlopen = self._reader(waits, [
@@ -360,7 +360,7 @@ class TestRateLimiting:
         """An HTTP-date Retry-After is legal in the RFC and is not a
         format this reader has ever observed. Guessing a wait from it
         would be worse than the declared default."""
-        import lltpm.integrations.slack_reader as module
+        import tpllm.integrations.slack_reader as module
 
         reader, urlopen = self._reader(waits, [
             _http_error(429, retry_after="Wed, 21 Oct 2026 07:28:00 GMT"),
@@ -376,7 +376,7 @@ class TestRateLimiting:
         """The three things a naive retry loop does wrong, and the one
         that matters most: a caller handed a partial answer labelled
         success would act on it."""
-        import lltpm.integrations.slack_reader as module
+        import tpllm.integrations.slack_reader as module
 
         policy = SlackRateLimitPolicy(max_attempts=3)
         reader, urlopen = self._reader(
@@ -394,7 +394,7 @@ class TestRateLimiting:
     def test_the_retry_budget_is_bounded_so_it_cannot_spin(
         self, waits, monkeypatch,
     ):
-        import lltpm.integrations.slack_reader as module
+        import tpllm.integrations.slack_reader as module
 
         policy = SlackRateLimitPolicy(max_attempts=2)
         reader, urlopen = self._reader(
@@ -411,7 +411,7 @@ class TestRateLimiting:
     def test_one_attempt_means_never_retry(self, waits, monkeypatch):
         """A legitimate choice for an interactive command, which should
         fail rather than appear to hang."""
-        import lltpm.integrations.slack_reader as module
+        import tpllm.integrations.slack_reader as module
 
         policy = SlackRateLimitPolicy(max_attempts=1)
         reader, urlopen = self._reader(
@@ -428,7 +428,7 @@ class TestRateLimiting:
         """Slack has been known to ask for minutes on a throttled
         method. Clamping and waiting would make the command appear to
         hang; failing says what happened."""
-        import lltpm.integrations.slack_reader as module
+        import tpllm.integrations.slack_reader as module
 
         policy = SlackRateLimitPolicy(max_wait_seconds=10.0)
         reader, urlopen = self._reader(
@@ -442,7 +442,7 @@ class TestRateLimiting:
     def test_a_non_rate_limit_error_is_not_retried(
         self, waits, monkeypatch,
     ):
-        import lltpm.integrations.slack_reader as module
+        import tpllm.integrations.slack_reader as module
 
         reader, urlopen = self._reader(waits, [_http_error(500)])
         monkeypatch.setattr(module.urllib.request, "urlopen", urlopen)
@@ -453,7 +453,7 @@ class TestRateLimiting:
     def test_an_unreachable_host_is_an_outage_not_a_refusal(
         self, waits, monkeypatch,
     ):
-        import lltpm.integrations.slack_reader as module
+        import tpllm.integrations.slack_reader as module
 
         reader, urlopen = self._reader(
             waits, [urllib.error.URLError("no route")],
@@ -463,7 +463,7 @@ class TestRateLimiting:
             reader.get("conversations.history")
 
     def test_a_non_json_body_is_reported_as_such(self, waits, monkeypatch):
-        import lltpm.integrations.slack_reader as module
+        import tpllm.integrations.slack_reader as module
 
         reader, urlopen = self._reader(waits, [_response(b"<html>")])
         monkeypatch.setattr(module.urllib.request, "urlopen", urlopen)

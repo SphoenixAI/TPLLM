@@ -1,7 +1,7 @@
 """The CLI surface and offline baselines.
 
 Before this there was no command a user could type that reached the
-orchestrator or the journal. These tests drive the real `lltpm runtime`
+orchestrator or the journal. These tests drive the real `tpllm runtime`
 commands through click's runner against a real SQLite file.
 
 They also pin the two things that make the surface honest: baseline
@@ -22,14 +22,14 @@ import pytest
 from click.testing import CliRunner
 from rich.console import Console
 
-from lltpm.runtime.baselines import (
+from tpllm.runtime.baselines import (
     BASELINE_RECOMMENDATION_METHOD,
     BASELINE_SCENARIO_METHOD,
     KeywordClaimExtractor,
     StructuralScenarioGenerator,
     baseline_providers,
 )
-from lltpm.runtime_cli import runtime_cli
+from tpllm.runtime_cli import runtime_cli
 
 EVIDENCE = [
     {
@@ -66,7 +66,7 @@ EVIDENCE = [
 def workspace(tmp_path):
     evidence = tmp_path / "evidence.json"
     evidence.write_text(json.dumps(EVIDENCE))
-    return tmp_path, str(tmp_path / "lltpm.db"), str(evidence)
+    return tmp_path, str(tmp_path / "tpllm.db"), str(evidence)
 
 
 @pytest.fixture
@@ -427,7 +427,7 @@ class TestBaselineProvidersAreLabelled:
     def test_a_baseline_manifest_is_not_equivalent_to_a_model_one(self):
         """The compatibility check must refuse to call baseline
         output and model output the same thing."""
-        from lltpm.persistence import build_manifest, manifests_compatible
+        from tpllm.persistence import build_manifest, manifests_compatible
 
         baseline = build_manifest(
             policy_fingerprint="p",
@@ -447,7 +447,7 @@ class TestKeywordClaimExtractor:
     def _evidence(self, content: str, evidence_id: str = "pev-1"):
         from datetime import datetime
 
-        from lltpm.intelligence import (
+        from tpllm.intelligence import (
             EvidenceReference,
             EvidenceSourceType,
             ProjectEvidence,
@@ -542,7 +542,7 @@ class TestStructuralScenarioGenerator:
     def _state(self, **overrides):
         from datetime import datetime
 
-        from lltpm.temporal import ProjectTemporalState
+        from tpllm.temporal import ProjectTemporalState
 
         defaults = dict(
             project_id="billing",
@@ -628,7 +628,7 @@ class TestExportCommand:
         return db
 
     def test_stdout_is_clean_json(self, runner, seeded):
-        """`lltpm runtime export > file.json` must produce valid JSON."""
+        """`tpllm runtime export > file.json` must produce valid JSON."""
         result = runner.invoke(
             runtime_cli,
             ["export", "--db", seeded, "--organization", "acme"],
@@ -765,7 +765,7 @@ class TestLoggingOptions:
         """The command's own report is the interface; logs are opt-in."""
         _, db, evidence = workspace
         result = _ingest(runner, db, evidence)
-        assert "lltpm.runtime" not in result.output
+        assert "tpllm.runtime" not in result.output
 
     def test_an_info_level_run_says_what_the_process_did(
         self, runner, workspace,
@@ -1014,7 +1014,7 @@ class TestAnchorCommand:
         assert result.exit_code == 0
         output = _all_output(result)
         assert "wholesale rewrite would not be detected" in output
-        assert "run `lltpm runtime anchor`" in output
+        assert "run `tpllm runtime anchor`" in output
 
     def test_status_shows_the_head_hash(self, runner, seeded):
         result = runner.invoke(
@@ -1092,11 +1092,11 @@ class TestExplanation:
         as a style tag — the same escaping discipline as the dashboard's
         HTML, applied to the terminal.
         """
-        from lltpm.runtime.models import (
+        from tpllm.runtime.models import (
             LiveOrchestrationResult,
             ProjectIntelligenceUpdate,
         )
-        from lltpm.runtime_cli import _explain
+        from tpllm.runtime_cli import _explain
 
         hostile = "[red]URGENT[/red] blocked on /tmp/x"
         result = LiveOrchestrationResult(
@@ -1116,11 +1116,11 @@ class TestExplanation:
         assert "[bold]billing[/bold]" in output()
 
     def test_nothing_is_printed_when_there_is_nothing_to_say(self):
-        from lltpm.runtime.models import (
+        from tpllm.runtime.models import (
             LiveOrchestrationResult,
             ProjectIntelligenceUpdate,
         )
-        from lltpm.runtime_cli import _explain
+        from tpllm.runtime_cli import _explain
 
         result = LiveOrchestrationResult(
             project_updates=[
@@ -1145,7 +1145,7 @@ def _captured():
     """
     import io
 
-    from lltpm import runtime_cli
+    from tpllm import runtime_cli
 
     buffer = io.StringIO()
     original = runtime_cli.console

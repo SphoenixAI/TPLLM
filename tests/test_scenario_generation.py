@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from lltpm.scenarios import (
+from tpllm.scenarios import (
     ScenarioEventType,
     ScenarioProbabilityMethod,
     assess_lattice_integrity,

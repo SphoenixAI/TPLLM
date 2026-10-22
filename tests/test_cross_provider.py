@@ -30,12 +30,12 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from lltpm.integrations.normalizers import NormalizationOutcome
-from lltpm.integrations.providers import PROVIDERS, describe_providers
+from tpllm.integrations.normalizers import NormalizationOutcome
+from tpllm.integrations.providers import PROVIDERS, describe_providers
 
 FIXTURES = pathlib.Path(__file__).resolve().parent / "fixtures"
 
-#: One LLTPM project, described by three systems.
+#: One TPLLM project, described by three systems.
 PROJECT = "atlas"
 GITHUB_SCOPE = "acme/atlas-service"
 SLACK_SCOPE = "T0ABCDEF/C0ABCDEF"
@@ -59,7 +59,7 @@ def _bindings():
 
     The point of the exercise: three source systems, one workstream.
     """
-    from lltpm.integrations.normalizers import ProjectBindings, SourceBinding
+    from tpllm.integrations.normalizers import ProjectBindings, SourceBinding
 
     return ProjectBindings(bindings=[
         SourceBinding(
@@ -86,7 +86,7 @@ def _normalize(provider: str, kind: str, payloads: list[dict], *, at=NOW):
 
 @pytest.fixture
 def db():
-    from lltpm.persistence import (
+    from tpllm.persistence import (
         InMemoryEventJournalStore,
         InMemoryIntelligenceArtifactStore,
         InMemoryRuntimeStateStore,
@@ -100,15 +100,15 @@ def db():
 
 
 def _ingest(envelopes, *, db, now=NOW, organization="acme"):
-    from lltpm.persistence import build_manifest
-    from lltpm.runtime import (
+    from tpllm.persistence import build_manifest
+    from tpllm.runtime import (
         RuntimeStateStore as RuntimeProjection,
         process_durable_organizational_events,
     )
-    from lltpm.runtime.baselines import baseline_providers
-    from lltpm.runtime.services import LiveIntelligenceServices
-    from lltpm.runtime.sources import JournalBackedDataSource
-    from lltpm.scenarios.models import ScenarioHorizon
+    from tpllm.runtime.baselines import baseline_providers
+    from tpllm.runtime.services import LiveIntelligenceServices
+    from tpllm.runtime.sources import JournalBackedDataSource
+    from tpllm.scenarios.models import ScenarioHorizon
 
     services = LiveIntelligenceServices(
         data_source=JournalBackedDataSource(
@@ -190,7 +190,7 @@ class TestOneWorkstreamThreeSystems:
         assert systems == {"github", "slack", "jira"}
 
     def test_the_hash_chain_holds_across_providers(self, db):
-        from lltpm.persistence import verify_journal
+        from tpllm.persistence import verify_journal
 
         _ingest(_all_three(), db=db)
         assert verify_journal(journal=db["journal"]).valid
@@ -255,7 +255,7 @@ class TestTicketClosureIsNotCompletion:
     def test_a_done_issue_asserts_nothing_about_launch_readiness(self):
         """The guardrail that matters. A ticket moving to Done is
         somebody dragging a card; it is not a validated launch."""
-        from lltpm.integrations.runtime import (
+        from tpllm.integrations.runtime import (
             RefreshScope, determine_refresh_scope,
         )
 
@@ -298,7 +298,7 @@ class TestSlackDecisionVersusStaleTicket:
         """Slack is evidence. "v3 approved" in a channel is evidence
         about a decision, not the decision — otherwise any sentence
         becomes organizational truth."""
-        from lltpm.integrations.runtime import (
+        from tpllm.integrations.runtime import (
             RefreshScope, determine_refresh_scope,
         )
 
@@ -316,7 +316,7 @@ class TestSlackDecisionVersusStaleTicket:
         slack = _normalize("slack", "message", _load("slack", "messages")).envelopes
         jira = _normalize("jira", "issue", _load("jira", "issues")).envelopes
 
-        from lltpm.persistence import InMemoryEventJournalStore
+        from tpllm.persistence import InMemoryEventJournalStore
 
         keys = []
         for order in ((slack, jira), (jira, slack)):
@@ -438,11 +438,11 @@ class TestCrossProviderIdentity:
         """Three unrelated-looking handles for one person is exactly the
         case where guessing is worse than reporting. The engine must not
         link them without curated evidence."""
-        from lltpm.identity.registry import (
+        from tpllm.identity.registry import (
             CanonicalEntityRegistry,
             extract_external_identities_from_envelope,
         )
-        from lltpm.runtime.identity_resolution import (
+        from tpllm.runtime.identity_resolution import (
             resolve_envelope_identities,
         )
 
@@ -469,7 +469,7 @@ class TestCrossProviderIdentity:
     def test_handles_from_different_providers_do_not_collide(self):
         """Two providers using the same id string must still be two
         external identities, because the id space is per provider."""
-        from lltpm.identity.registry import (
+        from tpllm.identity.registry import (
             extract_external_identities_from_envelope,
         )
 
@@ -591,7 +591,7 @@ class TestTheProviderRegistryIsHonest:
         """Slack and Jira are unreachable from the environment this was
         built in. Claiming otherwise is the failure the provenance tiers
         exist to prevent."""
-        from lltpm.integrations.contracts import load_contract_bundle
+        from tpllm.integrations.contracts import load_contract_bundle
 
         recorded = {
             name for name in ("github", "slack", "jira")
@@ -601,7 +601,7 @@ class TestTheProviderRegistryIsHonest:
         assert recorded == {"github"}
 
     def test_slack_and_jira_contracts_are_official_not_hand_written(self):
-        from lltpm.integrations.contracts import load_contract_bundle
+        from tpllm.integrations.contracts import load_contract_bundle
 
         for name in ("slack", "jira"):
             bundle = load_contract_bundle(name)

@@ -4,8 +4,8 @@ import tempfile
 from datetime import date
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.workflows.meeting_intelligence import MeetingIntelligenceEngine
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.workflows.meeting_intelligence import MeetingIntelligenceEngine
 
 
 def _make_store():

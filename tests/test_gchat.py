@@ -1,7 +1,7 @@
 """Tests for Google Chat integration."""
 
-from lltpm.config import IntegrationConfig
-from lltpm.integrations.gchat_integration import GoogleChatIntegration, ChatCard
+from tpllm.config import IntegrationConfig
+from tpllm.integrations.gchat_integration import GoogleChatIntegration, ChatCard
 
 
 def test_gchat_webhook_mode_detection():
@@ -35,14 +35,14 @@ def test_gchat_card_payload():
 
     card = ChatCard(
         title="Daily Brief",
-        subtitle="LLTPM Update",
+        subtitle="TPLLM Update",
         sections=[
             {"header": "Health", "widgets": [{"textParagraph": {"text": "GREEN"}}]},
         ],
     )
     payload = gchat._build_card_payload(card)
     assert payload["header"]["title"] == "Daily Brief"
-    assert payload["header"]["subtitle"] == "LLTPM Update"
+    assert payload["header"]["subtitle"] == "TPLLM Update"
     assert len(payload["sections"]) == 1
 
 

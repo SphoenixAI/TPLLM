@@ -21,7 +21,7 @@ import pathlib
 
 import pytest
 
-from lltpm.integrations.jira_reader import (
+from tpllm.integrations.jira_reader import (
     BASIC_EMAIL_ENVIRONMENT_VARIABLE,
     BASIC_TOKEN_ENVIRONMENT_VARIABLE,
     BEARER_TOKEN_ENVIRONMENT_VARIABLES,
@@ -48,7 +48,7 @@ from lltpm.integrations.jira_reader import (
 )
 from tests import _jira_fixtures as fx
 
-_SOURCE = pathlib.Path("src/lltpm/integrations/jira_reader.py")
+_SOURCE = pathlib.Path("src/tpllm/integrations/jira_reader.py")
 
 ALL_CREDENTIAL_VARIABLES = (
     *BEARER_TOKEN_ENVIRONMENT_VARIABLES,
@@ -776,7 +776,7 @@ class TestWebhookVerification:
 
 class TestTheWebhookLifecycleIsWrittenDown:
     """The failure mode is silent. A dynamic webhook that expires stops
-    delivering with no error anywhere, and LLTPM would then report a
+    delivering with no error anywhere, and TPLLM would then report a
     quiet organization instead of a broken integration — the worst class
     of bug this project can ship."""
 

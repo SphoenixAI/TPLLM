@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     ActorRelationType,
     DecisionPosition,
     PositionType,
@@ -15,7 +15,7 @@ from lltpm.coordination import (
     build_workstream_state,
     detect_material_changes,
 )
-from lltpm.intelligence import EvidenceReference, EvidenceSourceType, ProjectEvidence
+from tpllm.intelligence import EvidenceReference, EvidenceSourceType, ProjectEvidence
 from tests._coordination_fixtures import (
     AS_OF,
     PROJECT,

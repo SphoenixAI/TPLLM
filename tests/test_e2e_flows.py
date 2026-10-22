@@ -10,17 +10,17 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.config import LLTPMConfig, IntegrationConfig
-from lltpm.tools.registry import build_tool_registry
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.config import TPLLMConfig, IntegrationConfig
+from tpllm.tools.registry import build_tool_registry
 
 
 def _make_store() -> ArtifactStore:
     return ArtifactStore(Path(tempfile.mkdtemp()))
 
 
-def _make_config() -> LLTPMConfig:
-    return LLTPMConfig(data_dir=Path(tempfile.mkdtemp()))
+def _make_config() -> TPLLMConfig:
+    return TPLLMConfig(data_dir=Path(tempfile.mkdtemp()))
 
 
 # ── Flow 1: Program Creation → Milestone → Risk → Status Report ──────

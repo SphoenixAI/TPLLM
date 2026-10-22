@@ -1,6 +1,6 @@
 """Tests for Agent Orchestrator (Multi-Agent SDK)."""
 
-from lltpm.workflows.agent_orchestrator import AgentOrchestrator, AgentRole
+from tpllm.workflows.agent_orchestrator import AgentOrchestrator, AgentRole
 
 
 def test_route_memory_task():
@@ -81,7 +81,7 @@ def test_deployment_config():
     orch = AgentOrchestrator()
     config = orch.get_deployment_config()
 
-    assert config["name"] == "LLTPM Multi-Agent System"
+    assert config["name"] == "TPLLM Multi-Agent System"
     assert len(config["agents"]) == 6
     assert "routing_rules" in config
     assert "integration_endpoints" in config

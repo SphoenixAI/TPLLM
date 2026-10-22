@@ -7,7 +7,7 @@ from datetime import timedelta
 
 import pytest
 
-from lltpm.portfolio import (
+from tpllm.portfolio import (
     CapacityResourceType,
     OrganizationalCapacityWindow,
     aggregate_demand,

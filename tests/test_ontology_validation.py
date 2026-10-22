@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from lltpm.ontology.core import (
+from tpllm.ontology.core import (
     ClaimType,
     Contradiction,
     ContradictionSeverity,
@@ -28,7 +28,7 @@ from lltpm.ontology.core import (
     SourceRef,
     SourceSystem,
 )
-from lltpm.ontology.entities import (
+from tpllm.ontology.entities import (
     AgentRecommendation,
     Decision,
     DecisionStatus,
@@ -44,7 +44,7 @@ from lltpm.ontology.entities import (
     WorkItem,
     WorkItemStatus,
 )
-from lltpm.ontology.measurement import (
+from tpllm.ontology.measurement import (
     HealthScore,
     HealthStatus,
     InsightSeverity,
@@ -56,8 +56,8 @@ from lltpm.ontology.measurement import (
     TrendDirection,
     get_builtin_definitions,
 )
-from lltpm.ontology.precedence import PrecedenceField, resolve_conflict
-from lltpm.ontology.validation import (
+from tpllm.ontology.precedence import PrecedenceField, resolve_conflict
+from tpllm.ontology.validation import (
     DEFAULT_POLICY,
     MergedRecommendationPair,
     ValidationOutcome,

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.scenarios import (
+from tpllm.scenarios import (
     ScenarioDirection,
     ScenarioEventType,
     ScenarioQuestion,
@@ -209,7 +209,7 @@ class TestCoverage:
         assert "All six reasoning directions" in coverage.explanation
 
     def test_happy_path_only_cannot_claim_coverage(self):
-        from lltpm.scenarios import (
+        from tpllm.scenarios import (
             ScenarioEventCandidate, generate_scenario_lattice,
         )
         from tests._scenario_fixtures import factors, temporal_state
@@ -300,7 +300,7 @@ class TestQuestionEngine:
         assert answer.omitted_probability_mass > 0
 
     def test_answer_exposes_no_chain_of_thought(self):
-        from lltpm.scenarios import ScenarioAnswer
+        from tpllm.scenarios import ScenarioAnswer
 
         fields = set(ScenarioAnswer.model_fields)
         for forbidden in ("chain_of_thought", "reasoning_trace", "thoughts",

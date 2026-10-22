@@ -3,13 +3,13 @@
 import tempfile
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.models.notifications import (
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.models.notifications import (
     NotificationCategory,
     NotificationChannel,
     NotificationPriority,
 )
-from lltpm.workflows.notification_router import NotificationRouter
+from tpllm.workflows.notification_router import NotificationRouter
 
 
 def _make_store():

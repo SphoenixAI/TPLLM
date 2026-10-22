@@ -18,8 +18,8 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from lltpm.ontology.core import SourceRef, SourceSystem
-from lltpm.ontology.measurement import (
+from tpllm.ontology.core import SourceRef, SourceSystem
+from tpllm.ontology.measurement import (
     BUILTIN_KPI_DEFINITIONS,
     CalculationType,
     HealthScore,

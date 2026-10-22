@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.runtime import (
+from tpllm.runtime import (
     IntelligenceArtifactType as A,
     RecomputeFailure,
     RecomputeScope,
@@ -23,7 +23,7 @@ from lltpm.runtime import (
     complete_revision,
     mismatched_revision_artifacts,
 )
-from lltpm.runtime.models import ProjectIntelligenceRuntimeState
+from tpllm.runtime.models import ProjectIntelligenceRuntimeState
 from tests._runtime_fixtures import PROJECT_A, PROJECT_C, T0, at, store
 
 REQUIRED = [A.KPI_STATE, A.LAUNCH_READINESS, A.SCENARIO_LATTICE]

@@ -143,7 +143,7 @@ Three design points make the result worth believing:
   known synthetic credentials and refuses to report on a history its
   detectors cannot catch them in.
 - **It tiers findings.** With the plugins loaded, entropy fired on 565
-  lines including `# LLTPM` and `from __future__ import annotations`.
+  lines including `# TPLLM` and `from __future__ import annotations`.
   Entropy at line granularity cannot distinguish a long identifier from
   a key, so those are reported for review and never block; only
   provider-shaped and keyword findings can.
@@ -165,10 +165,10 @@ python scripts/generate_sbom.py -o sbom.json
 **Result: base and all seven extras clean.**
 
 `pip-audit` with no arguments reported 89 vulnerabilities across 8
-packages in this container, and **not one was an LLTPM dependency** —
+packages in this container, and **not one was an TPLLM dependency** —
 they were the container's own `pip`, `setuptools` and `wheel` plus
 transitive packages of extras installed for other reasons. Publishing
-that as "LLTPM's vulnerabilities" would be false in both directions:
+that as "TPLLM's vulnerabilities" would be false in both directions:
 overstating what the project ships and saying nothing about extras
 nobody installed. The script resolves each extra's closure separately,
 without installing it, so a finding is attributable to the extra that
@@ -181,7 +181,7 @@ SBOM has none, the environment mode left it empty because cyclonedx-py
 7.5 does not read `License-Expression`, so licences are enriched from
 the installed distributions directly.
 
-Both scripts initially included `lltpm` itself in its own closure, which
+Both scripts initially included `tpllm` itself in its own closure, which
 is not on PyPI. The project is the subject of an audit, not one of its
 own dependencies.
 

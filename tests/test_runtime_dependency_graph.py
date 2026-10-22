@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.runtime import (
+from tpllm.runtime import (
     INTELLIGENCE_DEPENDENCIES,
     DependencyCycleError,
     IntelligenceArtifactType as A,

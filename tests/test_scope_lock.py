@@ -3,9 +3,9 @@
 import tempfile
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.workflows.scope_lock import ScopeLock
-from lltpm.models.scope import ScopeChangeStatus, ImpactLevel
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.workflows.scope_lock import ScopeLock
+from tpllm.models.scope import ScopeChangeStatus, ImpactLevel
 
 
 def _make_store():

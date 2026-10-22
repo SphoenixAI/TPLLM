@@ -6,13 +6,13 @@ from datetime import timedelta
 
 import pytest
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     DecisionTimingAction,
     ScenarioDecisionPolicy,
     build_decision_research_needs,
     evaluate_decision_timing,
 )
-from lltpm.scenarios import InformationValueEstimate
+from tpllm.scenarios import InformationValueEstimate
 from tests._scenario_decision_fixtures import T0, policy
 
 

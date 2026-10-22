@@ -6,7 +6,7 @@ from datetime import timedelta
 
 import pytest
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     ActorRelationType,
     CapacityConstraintType,
     CommitmentType,

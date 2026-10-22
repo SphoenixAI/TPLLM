@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from lltpm.scenarios import (
+from tpllm.scenarios import (
     ScenarioEventCandidate,
     ScenarioEventType,
     ScenarioFactorType,
@@ -17,7 +17,7 @@ from lltpm.scenarios import (
     build_factor,
     generate_scenario_lattice,
 )
-from lltpm.temporal import ProjectTemporalState
+from tpllm.temporal import ProjectTemporalState
 
 PROJECT = "atlas"
 T0 = datetime(2026, 9, 10, 9, 0, 0)

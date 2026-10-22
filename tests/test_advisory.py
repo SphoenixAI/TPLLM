@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from lltpm.advisory import (
+from tpllm.advisory import (
     AdvisoryEvaluation,
     AdvisoryOverlay,
     AdvisoryThreshold,
@@ -38,7 +38,7 @@ from lltpm.advisory import (
     resolve_vindication,
     update_calibration_log,
 )
-from lltpm.structural.governance import (
+from tpllm.structural.governance import (
     ApprovalExpiryMode,
     CalibrationApprovalRecord,
     GovernanceStatus,
@@ -46,8 +46,8 @@ from lltpm.structural.governance import (
     fingerprint_evidence_bundle,
     is_application_eligible,
 )
-from lltpm.structural.outcomes import DecisionOutcomeLog, DecisionOutcomeType
-from lltpm.structural.stress_test import (
+from tpllm.structural.outcomes import DecisionOutcomeLog, DecisionOutcomeType
+from tpllm.structural.stress_test import (
     ProposalScopeSignature,
     StressTestRecommendation,
     StressTestedEvidenceBundle,
@@ -664,9 +664,9 @@ class TestRereviewEvidence:
 class TestNoLiveRankerMutation:
     def test_advisory_source_has_no_mutation_literals(self):
         import inspect
-        import lltpm.advisory.surfacing as surf
-        import lltpm.advisory.vindication as vind
-        import lltpm.advisory.calibration_log as clog
+        import tpllm.advisory.surfacing as surf
+        import tpllm.advisory.vindication as vind
+        import tpllm.advisory.calibration_log as clog
 
         forbidden = [
             "tradeoff_score =",
@@ -691,9 +691,9 @@ class TestNoLiveRankerMutation:
 class TestNoGovernanceStateMutation:
     def test_advisory_never_calls_authority_mutators(self):
         import inspect
-        import lltpm.advisory.surfacing as surf
-        import lltpm.advisory.vindication as vind
-        import lltpm.advisory.calibration_log as clog
+        import tpllm.advisory.surfacing as surf
+        import tpllm.advisory.vindication as vind
+        import tpllm.advisory.calibration_log as clog
 
         forbidden = [
             "transition_status(",

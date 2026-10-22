@@ -5,13 +5,13 @@ from __future__ import annotations
 import json
 from unittest.mock import patch
 
-from lltpm.config import IntegrationConfig
-from lltpm.integrations.notion_integration import (
+from tpllm.config import IntegrationConfig
+from tpllm.integrations.notion_integration import (
     NotionIntegration,
     NotionPage,
     NotionDatabase,
 )
-from lltpm.integrations.base import IntegrationError
+from tpllm.integrations.base import IntegrationError
 
 import pytest
 

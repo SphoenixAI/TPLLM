@@ -61,7 +61,7 @@ def resolve_closure(target: str) -> list[str]:
         # The project itself is the subject of the audit, not one of its
         # dependencies. Leaving it in makes the closure unresolvable
         # against PyPI, because this version is not published there.
-        if name.lower().replace("_", "-") == "lltpm":
+        if name.lower().replace("_", "-") == "tpllm":
             continue
         pinned.append(f"{name}=={version}")
     return sorted(pinned)
@@ -222,14 +222,14 @@ def main() -> int:
             project.get("description", "")
         ),
         "properties": [
-            {"name": "lltpm:closure", "value": target},
+            {"name": "tpllm:closure", "value": target},
             {
-                "name": "lltpm:extras",
+                "name": "tpllm:extras",
                 "value": ",".join(sorted(args.extras)) or "none",
             },
-            {"name": "lltpm:packages", "value": str(len(pinned))},
+            {"name": "tpllm:packages", "value": str(len(pinned))},
             {
-                "name": "lltpm:licence-metadata",
+                "name": "tpllm:licence-metadata",
                 "value": "absent (--fast)" if args.fast else "present",
             },
         ],

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from lltpm.structural.feedback import (
+from tpllm.structural.feedback import (
     HumanDecisionRecord,
     HumanDecisionType,
     OverrideReason,
@@ -19,7 +19,7 @@ from lltpm.structural.feedback import (
     post_recommendation_hook,
     record_human_decision,
 )
-from lltpm.structural.outcomes import (
+from tpllm.structural.outcomes import (
     DecisionDiscrepancy,
     DecisionOutcomeLog,
     DecisionOutcomeType,
@@ -28,7 +28,7 @@ from lltpm.structural.outcomes import (
     derive_decision_discrepancy,
     record_decision_outcome,
 )
-from lltpm.structural.calibration import (
+from tpllm.structural.calibration import (
     CalibrationHypothesis,
     CalibrationHypothesisStatus,
     CalibrationHypothesisType,
@@ -393,9 +393,9 @@ class TestFeedbackKPIs:
 class TestSafetyGuardrails:
     def test_validate_insight_is_never_imported_by_feedback(self):
         """Feedback modules must not import or call validate_insight."""
-        import lltpm.structural.feedback as fb_mod
-        import lltpm.structural.outcomes as out_mod
-        import lltpm.structural.calibration as cal_mod
+        import tpllm.structural.feedback as fb_mod
+        import tpllm.structural.outcomes as out_mod
+        import tpllm.structural.calibration as cal_mod
 
         for mod in [fb_mod, out_mod, cal_mod]:
             source = open(mod.__file__).read()
@@ -409,9 +409,9 @@ class TestSafetyGuardrails:
 
     def test_no_graph_mutation_in_feedback_modules(self):
         """Feedback modules must not import networkx or mutate graphs."""
-        import lltpm.structural.feedback as fb_mod
-        import lltpm.structural.outcomes as out_mod
-        import lltpm.structural.calibration as cal_mod
+        import tpllm.structural.feedback as fb_mod
+        import tpllm.structural.outcomes as out_mod
+        import tpllm.structural.calibration as cal_mod
 
         for mod in [fb_mod, out_mod, cal_mod]:
             source = open(mod.__file__).read()

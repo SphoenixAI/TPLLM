@@ -6,7 +6,7 @@ from datetime import datetime
 
 import pytest
 
-from lltpm.identity import (
+from tpllm.identity import (
     CanonicalEntityType,
     EntityResolutionEvidence,
     EntityResolutionStatus,
@@ -188,7 +188,7 @@ class TestScoringBehavior:
         assert first == second
 
     def test_empty_candidate_set_unresolved(self):
-        from lltpm.identity import CanonicalEntityRegistry
+        from tpllm.identity import CanonicalEntityRegistry
 
         result = _resolve(identity(), CanonicalEntityRegistry())
         assert result.status == EntityResolutionStatus.UNRESOLVED

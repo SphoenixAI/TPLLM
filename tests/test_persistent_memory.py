@@ -3,8 +3,8 @@
 import tempfile
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.workflows.persistent_memory import PersistentMemoryEngine
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.workflows.persistent_memory import PersistentMemoryEngine
 
 
 def _make_store():

@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.runtime import (
+from tpllm.runtime import (
     ArtifactRecomputeError,
     IntelligenceArtifactType as A,
     NoActionReason,
@@ -630,7 +630,7 @@ class TestServerlessShape:
         )
 
     def test_state_round_trips_through_serialization(self):
-        from lltpm.runtime import RuntimeStateStore
+        from tpllm.runtime import RuntimeStateStore
 
         _, state = _run([capacity_incident_envelope()])
         restored = RuntimeStateStore.model_validate(state.model_dump())
@@ -648,16 +648,16 @@ class TestNoEmployeeSurveillance:
         import ast
         import inspect
 
-        import lltpm.runtime.causality as causality
-        import lltpm.runtime.dependency_graph as dependency_graph
-        import lltpm.runtime.ingest as ingest
-        import lltpm.runtime.materiality as materiality
-        import lltpm.runtime.models as models
-        import lltpm.runtime.orchestrator as orchestrator
-        import lltpm.runtime.recompute as recompute
-        import lltpm.runtime.revisions as revisions
-        import lltpm.runtime.surfaces as surfaces
-        import lltpm.runtime.validity as validity
+        import tpllm.runtime.causality as causality
+        import tpllm.runtime.dependency_graph as dependency_graph
+        import tpllm.runtime.ingest as ingest
+        import tpllm.runtime.materiality as materiality
+        import tpllm.runtime.models as models
+        import tpllm.runtime.orchestrator as orchestrator
+        import tpllm.runtime.recompute as recompute
+        import tpllm.runtime.revisions as revisions
+        import tpllm.runtime.surfaces as surfaces
+        import tpllm.runtime.validity as validity
 
         def executable(module):
             tree = ast.parse(inspect.getsource(module))
@@ -698,17 +698,17 @@ class TestNoEmployeeSurveillance:
                 )
 
     def test_metrics_measure_the_system_not_the_staff(self):
-        from lltpm.runtime import RuntimeMetrics
+        from tpllm.runtime import RuntimeMetrics
 
         for field in RuntimeMetrics.model_fields:
             for term in ("employee", "person", "user", "worker", "hours"):
                 assert term not in field, (
-                    f"runtime metric '{field}' must measure LLTPM, not "
+                    f"runtime metric '{field}' must measure TPLLM, not "
                     f"people"
                 )
 
     def test_the_runtime_state_holds_organizational_objects_only(self):
-        from lltpm.runtime import (
+        from tpllm.runtime import (
             PortfolioIntelligenceRuntimeState,
             ProjectIntelligenceRuntimeState,
         )

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from lltpm.evaluation import (
+from tpllm.evaluation import (
     BaselineStrategy,
     ProbabilityForecastObservation,
     brier_decomposition,
@@ -247,7 +247,7 @@ class TestOrganizationalValue:
         assert "not individual output" in metrics.explanation
 
     def test_no_employee_metrics_exist(self):
-        from lltpm.evaluation import OrganizationalValueMetrics
+        from tpllm.evaluation import OrganizationalValueMetrics
 
         fields = set(OrganizationalValueMetrics.model_fields)
         for forbidden in ("employee", "productivity", "responsiveness",

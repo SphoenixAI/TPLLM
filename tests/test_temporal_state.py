@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.temporal import (
+from tpllm.temporal import (
     ProjectTemporalState,
     TemporalEvent,
     TemporalEventType,

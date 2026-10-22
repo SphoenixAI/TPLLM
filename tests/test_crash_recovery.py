@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.persistence import (
+from tpllm.persistence import (
     JournalEventType,
     RevisionPromotionError,
     RuntimeRevisionRecord,
@@ -22,8 +22,8 @@ from lltpm.persistence import (
     inspect_persistence_health,
     recover_runtime_state,
 )
-from lltpm.persistence.sqlite import initialize_sqlite_persistence
-from lltpm.runtime import (
+from tpllm.persistence.sqlite import initialize_sqlite_persistence
+from tpllm.runtime import (
     ArtifactRecomputeError,
     IntelligenceArtifactType as A,
     RuntimeStateStore as RuntimeProjection,
@@ -229,7 +229,7 @@ class TestCanonicalCrash:
     def test_recovery_sends_no_notification(self):
         persistence, _ = self._crashed_state()
         outbound = FakeOutboundPort()
-        from lltpm.persistence import ReplayMode, ReplayRequest, replay_journal
+        from tpllm.persistence import ReplayMode, ReplayRequest, replay_journal
 
         replay_journal(
             request=ReplayRequest(
@@ -273,7 +273,7 @@ class TestCanonicalCrash:
 
 class TestRestartWithFilePersistence:
     def test_state_survives_a_full_process_restart(self, tmp_path):
-        config = SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+        config = SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
 
         first = initialize_sqlite_persistence(config)
         projection = RuntimeProjection(organization_id=ORGANIZATION)
@@ -304,7 +304,7 @@ class TestRestartWithFilePersistence:
         second.close()
 
     def test_a_replayed_event_is_not_processed_twice(self, tmp_path):
-        config = SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+        config = SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
         first = initialize_sqlite_persistence(config)
         projection = RuntimeProjection(organization_id=ORGANIZATION)
         process_durable_organizational_events(
@@ -336,7 +336,7 @@ class TestRestartWithFilePersistence:
         second.close()
 
     def test_recovery_after_a_restart_rebuilds_state(self, tmp_path):
-        config = SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+        config = SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
         first = initialize_sqlite_persistence(config)
         projection = RuntimeProjection(organization_id=ORGANIZATION)
         _, projection = process_durable_organizational_events(

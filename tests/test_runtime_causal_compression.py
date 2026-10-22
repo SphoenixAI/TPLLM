@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.runtime import (
+from tpllm.runtime import (
     CausalIntelligenceChange,
     IntelligenceArtifactType as A,
     IntelligenceMaterialityAssessment,
@@ -212,7 +212,7 @@ class TestCompression:
         import ast
         import inspect
 
-        from lltpm.runtime.causality import (
+        from tpllm.runtime.causality import (
             _Groups,
             bundle_causally_related_changes,
         )

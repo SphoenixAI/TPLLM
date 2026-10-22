@@ -14,7 +14,7 @@ import threading
 
 import pytest
 
-from lltpm.persistence import (
+from tpllm.persistence import (
     DATABASE_SCHEMA_VERSION,
     JournalConcurrencyError,
     JournalEventType,
@@ -24,7 +24,7 @@ from lltpm.persistence import (
     project_stream,
     verify_journal,
 )
-from lltpm.persistence.sqlite import (
+from tpllm.persistence.sqlite import (
     SQLitePersistence,
     initialize_sqlite_persistence,
 )
@@ -42,7 +42,7 @@ def memory_db():
 
 @pytest.fixture
 def file_db(tmp_path):
-    config = SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+    config = SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
     db = initialize_sqlite_persistence(config)
     yield db, config
     db.close()
@@ -57,7 +57,7 @@ class TestBootstrap:
         assert db.database_schema_version() == DATABASE_SCHEMA_VERSION
 
     def test_initialization_is_idempotent(self, tmp_path):
-        config = SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+        config = SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
         first = initialize_sqlite_persistence(config)
         first.journal.append(record=record(source_key="a"))
         first.close()
@@ -95,7 +95,7 @@ class TestBootstrap:
         } <= names
 
     def test_a_newer_schema_is_refused(self, tmp_path):
-        config = SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+        config = SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
         db = initialize_sqlite_persistence(config)
         db.connection.execute(
             "UPDATE persistence_metadata SET value = ? WHERE key = ?",
@@ -107,12 +107,12 @@ class TestBootstrap:
 
     def test_the_config_recognizes_memory(self):
         assert SQLitePersistenceConfig(path=":memory:").is_memory is True
-        assert SQLitePersistenceConfig(path="./lltpm.db").is_memory is False
+        assert SQLitePersistenceConfig(path="./tpllm.db").is_memory is False
 
 
 class TestDurability:
     def test_records_survive_closing_and_reopening(self, tmp_path):
-        config = SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+        config = SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
         first = initialize_sqlite_persistence(config)
         for i in range(3):
             first.journal.append(record=record(source_key=f"k{i}"))
@@ -125,7 +125,7 @@ class TestDurability:
         reopened.close()
 
     def test_the_hash_chain_survives_a_reopen(self, tmp_path):
-        config = SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+        config = SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
         first = initialize_sqlite_persistence(config)
         for i in range(4):
             first.journal.append(record=record(source_key=f"k{i}"))
@@ -136,7 +136,7 @@ class TestDurability:
         reopened.close()
 
     def test_payloads_round_trip_exactly(self, tmp_path):
-        config = SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+        config = SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
         payload = {"decision_id": "dec-1", "options": ["a", "b"], "n": 3}
         first = initialize_sqlite_persistence(config)
         first.journal.append(record=record(source_key="a", payload=payload))
@@ -149,7 +149,7 @@ class TestDurability:
         reopened.close()
 
     def test_persisted_payloads_are_readable_json_not_pickle(self, tmp_path):
-        config = SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+        config = SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
         db = initialize_sqlite_persistence(config)
         db.journal.append(
             record=record(source_key="a", payload={"decision_id": "dec-1"})
@@ -166,7 +166,7 @@ class TestDurability:
         )
 
     def test_one_file_holds_everything(self, tmp_path):
-        config = SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+        config = SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
         db = initialize_sqlite_persistence(config)
         db.journal.append(record=record(source_key="a"))
         db.artifacts.put(
@@ -174,7 +174,7 @@ class TestDurability:
             revision_id="revision-1", payload={"p": 1}, fingerprint="fp",
         )
         db.close()
-        assert (tmp_path / "lltpm.db").exists()
+        assert (tmp_path / "tpllm.db").exists()
 
 
 class TestJournalContract:
@@ -233,7 +233,7 @@ class TestJournalContract:
         ) == 1
 
     def test_concurrent_writers_produce_one_winner(self, tmp_path):
-        config = SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+        config = SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
         db = initialize_sqlite_persistence(config)
         db.journal.append(
             record=record(source_key="seed"), expected_stream_sequence=0,
@@ -261,7 +261,7 @@ class TestJournalContract:
         db.close()
 
     def test_concurrent_duplicates_produce_one_record(self, tmp_path):
-        config = SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+        config = SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
         db = initialize_sqlite_persistence(config)
         errors: list[Exception] = []
 
@@ -332,7 +332,7 @@ class TestIndexedLookups:
 
 class TestCorruptionDetection:
     def test_a_manual_update_breaks_verification(self, tmp_path):
-        config = SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+        config = SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
         db = initialize_sqlite_persistence(config)
         for i in range(3):
             db.journal.append(record=record(source_key=f"k{i}"))
@@ -366,7 +366,7 @@ class TestCorruptionDetection:
 
 class TestContextManager:
     def test_the_database_can_be_used_as_a_context_manager(self, tmp_path):
-        config = SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+        config = SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
         with initialize_sqlite_persistence(config) as db:
             db.journal.append(record=record(source_key="a"))
             assert len(db.journal) == 1
@@ -376,7 +376,7 @@ class TestContextManager:
 
     def test_a_bare_construction_also_works(self, tmp_path):
         db = SQLitePersistence(
-            SQLitePersistenceConfig(path=str(tmp_path / "lltpm.db"))
+            SQLitePersistenceConfig(path=str(tmp_path / "tpllm.db"))
         )
         assert db.journal is not None
         db.close()

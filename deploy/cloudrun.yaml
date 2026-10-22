@@ -1,9 +1,9 @@
-# Google Cloud Run service definition for LLTPM
+# Google Cloud Run service definition for TPLLM
 # Deploy with: gcloud run services replace deploy/cloudrun.yaml
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: lltpm
+  name: tpllm
   annotations:
     run.googleapis.com/description: "AI Technical Program Manager"
     run.googleapis.com/launch-stage: BETA
@@ -18,9 +18,9 @@ spec:
     spec:
       containerConcurrency: 10
       timeoutSeconds: 300
-      serviceAccountName: lltpm-sa@PROJECT_ID.iam.gserviceaccount.com
+      serviceAccountName: tpllm-sa@PROJECT_ID.iam.gserviceaccount.com
       containers:
-        - image: gcr.io/PROJECT_ID/lltpm:latest
+        - image: gcr.io/PROJECT_ID/tpllm:latest
           ports:
             - containerPort: 8080
           resources:
@@ -28,9 +28,9 @@ spec:
               cpu: "2"
               memory: 1Gi
           env:
-            - name: LLTPM_DATA_DIR
+            - name: TPLLM_DATA_DIR
               value: /data
-            - name: LLTPM_MODEL
+            - name: TPLLM_MODEL
               value: claude-opus-4-6
             - name: ANTHROPIC_API_KEY
               valueFrom:

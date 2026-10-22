@@ -58,7 +58,7 @@ Worth being explicit about, since none of these are bugs:
   it.
 - The reference SQLite deployment stores data unencrypted on local disk.
   Disk encryption is the operator's responsibility.
-- `lltpm runtime export` produces the organizational record in plain
+- `tpllm runtime export` produces the organizational record in plain
   JSON. Treat an export as sensitive even though it contains no
   credentials.
 - Baseline providers (`runtime/baselines.py`) are keyword and structural

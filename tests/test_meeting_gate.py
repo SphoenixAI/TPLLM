@@ -1,6 +1,6 @@
 """Tests for the meeting gate workflow."""
 
-from lltpm.workflows.meeting_gate import MeetingGate, MeetingProposal, MeetingVerdict
+from tpllm.workflows.meeting_gate import MeetingGate, MeetingProposal, MeetingVerdict
 
 
 def test_approved_when_all_criteria_met():

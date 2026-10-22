@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.portfolio import (
+from tpllm.portfolio import (
     PortfolioOutcomeSummary,
     PortfolioSimulationResult,
     ProjectScenarioStatus,
@@ -368,10 +368,10 @@ class TestNoWorkerScoring:
         import ast
         import inspect
 
-        import lltpm.portfolio.optimization as optimization
-        import lltpm.portfolio.scenarios as scenarios
-        import lltpm.portfolio.shared_factors as shared
-        import lltpm.portfolio.simulation as simulation
+        import tpllm.portfolio.optimization as optimization
+        import tpllm.portfolio.scenarios as scenarios
+        import tpllm.portfolio.shared_factors as shared
+        import tpllm.portfolio.simulation as simulation
 
         def executable(module):
             tree = ast.parse(inspect.getsource(module))

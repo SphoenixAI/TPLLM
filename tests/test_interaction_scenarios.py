@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.scenarios import (
+from tpllm.scenarios import (
     INTERVENTION_COSTS,
     InteractionEffect,
     MiscommunicationRisk,
@@ -185,10 +185,10 @@ class TestNoWorkerScoring:
     def test_no_person_metrics_in_interaction_source(self):
         import ast
         import inspect
-        import lltpm.scenarios.interaction_models as models
-        import lltpm.scenarios.interaction_risk as risk_mod
-        import lltpm.scenarios.miscommunication as misc
-        import lltpm.scenarios.failure_propagation as prop
+        import tpllm.scenarios.interaction_models as models
+        import tpllm.scenarios.interaction_risk as risk_mod
+        import tpllm.scenarios.miscommunication as misc
+        import tpllm.scenarios.failure_propagation as prop
 
         def executable(module):
             """Source with docstrings and comments stripped, so prose

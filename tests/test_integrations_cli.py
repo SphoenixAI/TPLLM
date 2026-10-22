@@ -1,4 +1,4 @@
-"""The `lltpm integrations` surface.
+"""The `tpllm integrations` surface.
 
 Driven through click's runner with a recorded reader, so the whole path
 — fetch, translate, append, recompute — is exercised with no network and
@@ -20,15 +20,15 @@ import json
 import pytest
 from click.testing import CliRunner
 
-from lltpm.integrations.contracts import (
+from tpllm.integrations.contracts import (
     GITHUB_CONTRACT_PATHS,
     build_contract_bundle,
     contract_bundle_path,
     load_contract_bundle,
     serialize_contract_bundle,
 )
-from lltpm.integrations.github_reader import RecordedGitHubReader
-from lltpm.integrations_cli import integrations_cli
+from tpllm.integrations.github_reader import RecordedGitHubReader
+from tpllm.integrations_cli import integrations_cli
 from tests import _github_fixtures as fx
 
 
@@ -59,7 +59,7 @@ def recorded(monkeypatch, responses):
     """Point the CLI's reader factory at the recordings."""
     reader = RecordedGitHubReader(responses)
     monkeypatch.setattr(
-        "lltpm.integrations_cli._reader", lambda token: reader,
+        "tpllm.integrations_cli._reader", lambda token: reader,
     )
     return reader
 
@@ -121,7 +121,7 @@ class TestNormalize:
         def explode(token):
             raise AssertionError("normalize must not reach the network")
 
-        monkeypatch.setattr("lltpm.integrations_cli._reader", explode)
+        monkeypatch.setattr("tpllm.integrations_cli._reader", explode)
         result = runner.invoke(integrations_cli, [
             "normalize", self._write(tmp_path, "pull_requests"),
             "--repository", fx.REPOSITORY, "--project", fx.PROJECT,
@@ -182,27 +182,27 @@ class TestIngest:
     def test_real_payloads_become_durable_evidence(
         self, runner, recorded, tmp_path,
     ):
-        db = str(tmp_path / "lltpm.db")
+        db = str(tmp_path / "tpllm.db")
         result = self._ingest(runner, db)
         assert result.exit_code == 0, _all_output(result)
         assert "Journalled 8 evidence record(s)" in result.output
 
     def test_the_journal_is_a_single_file(self, runner, recorded, tmp_path):
-        db = tmp_path / "lltpm.db"
+        db = tmp_path / "tpllm.db"
         self._ingest(runner, str(db))
         assert db.exists()
 
     def test_reading_the_same_repository_twice_adds_nothing(
         self, runner, recorded, tmp_path,
     ):
-        db = str(tmp_path / "lltpm.db")
+        db = str(tmp_path / "tpllm.db")
         self._ingest(runner, db)
         second = self._ingest(runner, db)
         assert "Journalled 0 evidence record(s)" in second.output
         assert "already durable" in second.output
 
     def test_a_dry_run_journals_nothing(self, runner, recorded, tmp_path):
-        db = tmp_path / "lltpm.db"
+        db = tmp_path / "tpllm.db"
         result = self._ingest(runner, str(db), "--dry-run")
         assert result.exit_code == 0
         assert "nothing was journalled" in result.output
@@ -213,10 +213,10 @@ class TestIngest:
     def test_the_hash_chain_holds_after_a_live_shaped_ingest(
         self, runner, recorded, tmp_path,
     ):
-        from lltpm.persistence import SQLitePersistenceConfig, verify_journal
-        from lltpm.persistence.sqlite import initialize_sqlite_persistence
+        from tpllm.persistence import SQLitePersistenceConfig, verify_journal
+        from tpllm.persistence.sqlite import initialize_sqlite_persistence
 
-        db = str(tmp_path / "lltpm.db")
+        db = str(tmp_path / "tpllm.db")
         self._ingest(runner, db)
         persistence = initialize_sqlite_persistence(
             SQLitePersistenceConfig(path=db)
@@ -231,10 +231,10 @@ class TestIngest:
     ):
         responses.pop(f"repos/{fx.REPOSITORY}/events")
         monkeypatch.setattr(
-            "lltpm.integrations_cli._reader",
+            "tpllm.integrations_cli._reader",
             lambda token: RecordedGitHubReader(responses),
         )
-        result = self._ingest(runner, str(tmp_path / "lltpm.db"))
+        result = self._ingest(runner, str(tmp_path / "tpllm.db"))
         assert result.exit_code == 0, _all_output(result)
         assert "could not read events" in _all_output(result)
         assert "Journalled 8 evidence record(s)" in result.output
@@ -243,10 +243,10 @@ class TestIngest:
         self, runner, monkeypatch, tmp_path,
     ):
         monkeypatch.setattr(
-            "lltpm.integrations_cli._reader",
+            "tpllm.integrations_cli._reader",
             lambda token: RecordedGitHubReader({}),
         )
-        result = self._ingest(runner, str(tmp_path / "lltpm.db"))
+        result = self._ingest(runner, str(tmp_path / "tpllm.db"))
         assert result.exit_code == 1
         assert "outage" in _all_output(result)
 
@@ -265,10 +265,10 @@ class TestIngest:
     def test_reality_time_reaches_the_journal(
         self, runner, recorded, tmp_path,
     ):
-        from lltpm.persistence import SQLitePersistenceConfig
-        from lltpm.persistence.sqlite import initialize_sqlite_persistence
+        from tpllm.persistence import SQLitePersistenceConfig
+        from tpllm.persistence.sqlite import initialize_sqlite_persistence
 
-        db = str(tmp_path / "lltpm.db")
+        db = str(tmp_path / "tpllm.db")
         self._ingest(runner, db)
         persistence = initialize_sqlite_persistence(
             SQLitePersistenceConfig(path=db)
@@ -314,7 +314,7 @@ class TestVerify:
         for payload in broken[f"repos/{fx.REPOSITORY}/pulls"]:
             payload.pop("merged_at", None)
         monkeypatch.setattr(
-            "lltpm.integrations_cli._reader",
+            "tpllm.integrations_cli._reader",
             lambda token: RecordedGitHubReader(broken),
         )
         result = self._verify(runner)
@@ -328,7 +328,7 @@ class TestVerify:
         broken = copy.deepcopy(responses)
         broken[f"repos/{fx.REPOSITORY}/pulls"][0]["number"] = "8"
         monkeypatch.setattr(
-            "lltpm.integrations_cli._reader",
+            "tpllm.integrations_cli._reader",
             lambda token: RecordedGitHubReader(broken),
         )
         result = self._verify(runner)
@@ -342,7 +342,7 @@ class TestVerify:
         for payload in extended[f"repos/{fx.REPOSITORY}/pulls"]:
             payload["some_new_github_field"] = {"nested": True}
         monkeypatch.setattr(
-            "lltpm.integrations_cli._reader",
+            "tpllm.integrations_cli._reader",
             lambda token: RecordedGitHubReader(extended),
         )
         assert self._verify(runner).exit_code == 0
@@ -368,7 +368,7 @@ class TestVerify:
             ]
         }
         monkeypatch.setattr(
-            "lltpm.integrations_cli._reader",
+            "tpllm.integrations_cli._reader",
             lambda token: RecordedGitHubReader(only_issues),
         )
         result = self._verify(runner)
@@ -432,7 +432,7 @@ class TestRecord:
         """A fixture that leaks is worse than no fixture, because it gets
         committed."""
         monkeypatch.setattr(
-            "lltpm.integrations.contracts.scrub_github_payload",
+            "tpllm.integrations.contracts.scrub_github_payload",
             lambda payload, **kwargs: payload,
         )
         out = tmp_path / "fixtures"
@@ -463,7 +463,7 @@ class TestRecord:
         self, runner, monkeypatch, tmp_path,
     ):
         monkeypatch.setattr(
-            "lltpm.integrations_cli._reader",
+            "tpllm.integrations_cli._reader",
             lambda token: RecordedGitHubReader({}),
         )
         result = runner.invoke(integrations_cli, [
@@ -502,7 +502,7 @@ class TestTheShippedBundleMatchesTheFixtures:
     def test_the_bundle_is_shipped_inside_the_package(self):
         path = contract_bundle_path("github")
         assert path.exists()
-        assert "src/lltpm/integrations" in str(path).replace("\\", "/"), (
+        assert "src/tpllm/integrations" in str(path).replace("\\", "/"), (
             "a contract that only exists in a git checkout cannot be "
             "checked by the person running the installed tool"
         )

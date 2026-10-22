@@ -7,7 +7,7 @@ from datetime import date, timedelta
 
 import pytest
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     AGENT_AUTHORITY_ACTOR_ID,
     DECISION_ORIGIN_AUTONOMOUS,
     AgentAuthorityRef,
@@ -93,7 +93,7 @@ class TestAgentAuthorityIdentity:
         )
         actor_ref = ref.as_actor_reference()
         assert actor_ref.actor_id == AGENT_AUTHORITY_ACTOR_ID
-        assert actor_ref.display_name == "LLTPM"
+        assert actor_ref.display_name == "TPLLM"
         assert "delegated policy" in actor_ref.role
         # No human team is impersonated.
         assert actor_ref.team_id is None
@@ -177,7 +177,7 @@ class TestAgentCannotExpandAuthority:
 
     def test_no_policy_mutation_in_source(self):
         import inspect
-        import lltpm.coordination.autonomous_decisions as mod
+        import tpllm.coordination.autonomous_decisions as mod
 
         source = inspect.getsource(mod)
         # The module must never write policy scope, thresholds, or budget.

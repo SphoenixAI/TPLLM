@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.scenarios import (
+from tpllm.scenarios import (
     ScenarioEventType,
     ScenarioFactorType,
     ScenarioLattice,

@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.persistence import (
+from tpllm.persistence import (
     ExecutionContext,
     ExecutionMode,
     JournalEventType,
@@ -243,7 +243,7 @@ class TestAutonomousDecisionsAreNotReExecuted:
         import ast
         import inspect
 
-        import lltpm.runtime.durability as durability
+        import tpllm.runtime.durability as durability
 
         source = inspect.getsource(
             durability.RuntimeJournalReconstructor
@@ -259,7 +259,7 @@ class TestAutonomousDecisionsAreNotReExecuted:
         assert "finalize" not in called
 
     def test_a_blocked_decision_is_also_restored_as_history(self):
-        from lltpm.runtime import append_autonomous_decision
+        from tpllm.runtime import append_autonomous_decision
 
         persistence, _, _ = build_live_organization()
         append_autonomous_decision(
@@ -313,7 +313,7 @@ class TestDeterminismDuringReplay:
         import ast
         import inspect
 
-        import lltpm.persistence.replay as replay_module
+        import tpllm.persistence.replay as replay_module
 
         tree = ast.parse(inspect.getsource(replay_module))
         for node in ast.walk(tree):
@@ -331,7 +331,7 @@ class TestDeterminismDuringReplay:
     def test_replay_does_not_draw_random_numbers(self):
         import inspect
 
-        import lltpm.persistence.replay as replay_module
+        import tpllm.persistence.replay as replay_module
 
         source = inspect.getsource(replay_module)
         assert "random.random" not in source

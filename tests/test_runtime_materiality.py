@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.runtime import (
+from tpllm.runtime import (
     IntelligenceArtifactType as A,
     MaterialityReason,
     NoActionReason,

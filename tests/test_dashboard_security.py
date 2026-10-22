@@ -31,7 +31,7 @@ import textwrap
 
 import pytest
 
-from lltpm.dashboard import _DASHBOARD_HTML
+from tpllm.dashboard import _DASHBOARD_HTML
 
 #: Payloads from the security review plus the attribute-context ones the
 #: brief's list does not cover.
@@ -250,14 +250,14 @@ class TestTheApiDoesNotEscapeOnTheServer:
         # The page is a module-level constant served verbatim, so no
         # server-side value can be interpolated into it.
         assert "_DASHBOARD_HTML" in (
-            __import__("lltpm.dashboard", fromlist=["x"]).__dict__
+            __import__("tpllm.dashboard", fromlist=["x"]).__dict__
             and "_DASHBOARD_HTML"
         )
 
     def test_no_server_side_template_formatting_reaches_the_page(self):
         import inspect
 
-        import lltpm.dashboard as dashboard
+        import tpllm.dashboard as dashboard
 
         source = inspect.getsource(dashboard)
         serve = [
@@ -286,10 +286,10 @@ class TestSecurityHeaders:
         pytest.importorskip("httpx")
         from fastapi.testclient import TestClient
 
-        from lltpm.config import LLTPMConfig
-        from lltpm.dashboard import create_app
+        from tpllm.config import TPLLMConfig
+        from tpllm.dashboard import create_app
 
-        return TestClient(create_app(LLTPMConfig()))
+        return TestClient(create_app(TPLLMConfig()))
 
     def _policy(self, client) -> dict[str, str]:
         response = client.get("/health")

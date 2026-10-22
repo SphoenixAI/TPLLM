@@ -6,7 +6,7 @@ from datetime import timedelta
 
 import pytest
 
-from lltpm.evaluation import (
+from tpllm.evaluation import (
     ReplayLeakageError,
     assert_replay_is_leak_free,
     build_replay_case,
@@ -14,7 +14,7 @@ from lltpm.evaluation import (
     collect_observed_events,
     reconstruct_for_replay,
 )
-from lltpm.temporal import TemporalEventType
+from tpllm.temporal import TemporalEventType
 from tests._scenario_fixtures import horizon, lattice, temporal_state
 from tests._temporal_fixtures import PROJECT, at, event
 

@@ -20,7 +20,7 @@ from datetime import timedelta
 
 import pytest
 
-from lltpm.runtime import (
+from tpllm.runtime import (
     assert_no_future_events,
     classify_historical_effect,
     deduplicate_events,

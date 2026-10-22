@@ -4,9 +4,9 @@ import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.workflows.nudge_engine import NudgeEngine
-from lltpm.models.nudge import NudgeStatus, NudgeTier
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.workflows.nudge_engine import NudgeEngine
+from tpllm.models.nudge import NudgeStatus, NudgeTier
 
 
 def _make_store():

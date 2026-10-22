@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     ActorRelationType,
     DecisionPosition,
     OrganizationalActorRef,
@@ -15,7 +15,7 @@ from lltpm.coordination import (
     build_decision_capsule,
     build_workstream_state,
 )
-from lltpm.identity import (
+from tpllm.identity import (
     CanonicalEntityType,
     EntityResolutionStatus,
     ExplicitEntityAlias,
@@ -29,7 +29,7 @@ from lltpm.identity import (
     resolve_decision_capsule_actors,
     resolve_external_identity,
 )
-from lltpm.integrations import make_envelope
+from tpllm.integrations import make_envelope
 from tests._coordination_fixtures import (
     AS_OF as COORD_AS_OF,
     PROJECT,
@@ -356,7 +356,7 @@ class TestLayerBridges:
             source_system="ontology", external_id="priya",
             display_value="Priya Rao", email="priya.rao@company.com",
         )
-        from lltpm.identity import (
+        from tpllm.identity import (
             link_external_identity,
             register_external_identity,
         )
@@ -429,7 +429,7 @@ class TestLayerBridges:
         assert len(resolved.position_actors) == 1
 
     def test_procedural_signature_excludes_canonical_person_ids(self):
-        from lltpm.memory import build_problem_signature
+        from tpllm.memory import build_problem_signature
 
         workstream = build_workstream_state(
             workstream_id=WS, project_id=PROJECT, vertical="Payments",
@@ -455,7 +455,7 @@ class TestLayerBridges:
 
     def test_memory_layer_does_not_import_identity(self):
         import inspect
-        import lltpm.memory.pattern_matching as matching
+        import tpllm.memory.pattern_matching as matching
 
         source = inspect.getsource(matching)
-        assert "lltpm.identity" not in source
+        assert "tpllm.identity" not in source

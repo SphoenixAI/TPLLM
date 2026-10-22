@@ -6,7 +6,7 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import datetime
 
-from lltpm.integrations import (
+from tpllm.integrations import (
     InMemoryStateStore,
     IntelligenceUpdateType,
     RefreshScope,
@@ -187,9 +187,9 @@ class TestServerlessShape:
 
     def test_no_heavy_backend_dependencies(self):
         import inspect
-        import lltpm.integrations.runtime as runtime
-        import lltpm.integrations.envelopes as envelopes
-        import lltpm.integrations.registry as registry
+        import tpllm.integrations.runtime as runtime
+        import tpllm.integrations.envelopes as envelopes
+        import tpllm.integrations.registry as registry
 
         for mod in (runtime, envelopes, registry):
             source = inspect.getsource(mod).lower()

@@ -1,6 +1,6 @@
 """Tests for Quick Response Protocol."""
 
-from lltpm.workflows.quick_response import QuickResponseProtocol
+from tpllm.workflows.quick_response import QuickResponseProtocol
 
 
 def test_status_check():

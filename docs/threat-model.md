@@ -1,9 +1,9 @@
 # Threat model
 
-What LLTPM is built to withstand, what it is not, and where the line
+What TPLLM is built to withstand, what it is not, and where the line
 sits. Written so that nobody has to infer the boundary from the code.
 
-The short version: **LLTPM is a single-organization tool for a trusted
+The short version: **TPLLM is a single-organization tool for a trusted
 local operator.** Its reference deployment is one SQLite file and a
 dashboard bound to loopback. It is not a hardened multi-tenant service,
 and the gap is not small.
@@ -16,9 +16,9 @@ and the gap is not small.
 
 - One organization's data in one SQLite file, on a machine its operator
   controls.
-- The dashboard bound to `127.0.0.1`, which is what `lltpm dashboard`
+- The dashboard bound to `127.0.0.1`, which is what `tpllm dashboard`
   does by default.
-- `lltpm runtime` and `lltpm integrations` run by that operator, with
+- `tpllm runtime` and `tpllm integrations` run by that operator, with
   credentials in their environment.
 - Provider reads are read-only: every reader can issue nothing but GET,
   and a test asserts no other verb is nameable in those modules.
@@ -62,7 +62,7 @@ the one nobody enumerated:
 |---|---|
 | Durable journal | `make_envelope` redacts credential shapes in content and title; `assert_no_secret_material` refuses secret-looking payload keys at the model level |
 | Log lines | the formatter redacts at format time, by field name *and* by substring |
-| Fixtures | `lltpm integrations record` refuses to write a fixture that still discloses something; a test scans every committed fixture for token prefixes |
+| Fixtures | `tpllm integrations record` refuses to write a fixture that still discloses something; a test scans every committed fixture for token prefixes |
 | Exports | tested directly: no credential shape survives `export_journal` |
 | Exception messages | tested: no verification failure message contains the secret or the expected digest |
 
@@ -122,7 +122,7 @@ fence and counts what it suppressed.
 **The limit, stated plainly.** A hash chain detects an *in-place* edit.
 It cannot detect a history rewritten wholesale, because whoever rewrites
 the file recomputes every link after the record they changed, and the
-chain then verifies cleanly. This is why `lltpm runtime anchor` exists:
+chain then verifies cleanly. This is why `tpllm runtime anchor` exists:
 the operator retains the head hash somewhere the database is not, and
 `verify --anchor` compares against it. Without an anchor, verification
 says so in its own output rather than implying more than it checked.
@@ -130,7 +130,7 @@ says so in its own output rather than implying more than it checked.
 **Residual risk.** An anchor stored beside the database it anchors
 protects against accident, not against rewriting. A true
 Haber–Stornetta anchor is published where the holder cannot retract it;
-LLTPM's is operator-retained, which is the strongest honest mechanism
+TPLLM's is operator-retained, which is the strongest honest mechanism
 for a local single-file deployment.
 
 ---
@@ -203,7 +203,7 @@ a developer's localhost to HTTPS for months.
 - **No provider has been reached live except GitHub.** Slack and Jira
   webhook verification, pagination and payload shapes are implemented
   against published documentation and have never run against a real
-  delivery. `lltpm integrations sources` reports this per provider.
+  delivery. `tpllm integrations sources` reports this per provider.
 - **No penetration test.** The adversarial tests are written by the
   same author as the code they attack, which bounds what they can find.
 - **No fuzzing** of provider payloads beyond the hostile cases in

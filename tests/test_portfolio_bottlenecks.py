@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.portfolio import (
+from tpllm.portfolio import (
     CapacityResourceType,
     assess_intervention_leverage,
     biggest_shared_bottleneck,
@@ -183,11 +183,11 @@ class TestNoWorkerScoring:
     def test_portfolio_source_models_resources_not_people(self):
         import ast
         import inspect
-        import lltpm.portfolio.capacity as capacity
-        import lltpm.portfolio.graph as graph_mod
-        import lltpm.portfolio.models as models
-        import lltpm.portfolio.prioritization as prioritization
-        import lltpm.portfolio.queries as queries
+        import tpllm.portfolio.capacity as capacity
+        import tpllm.portfolio.graph as graph_mod
+        import tpllm.portfolio.models as models
+        import tpllm.portfolio.prioritization as prioritization
+        import tpllm.portfolio.queries as queries
 
         def executable(module):
             tree = ast.parse(inspect.getsource(module))

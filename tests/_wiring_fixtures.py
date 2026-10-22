@@ -17,7 +17,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Any
 
-from lltpm.intelligence import (
+from tpllm.intelligence import (
     EvidenceSourceType,
     KPIDefinition,
     KPIIndicatorRole,
@@ -30,18 +30,18 @@ from lltpm.intelligence import (
     UnderstandingClaimStatus,
     UnderstandingClaimType,
 )
-from lltpm.persistence import JournalRetentionClass
-from lltpm.portfolio import (
+from tpllm.persistence import JournalRetentionClass
+from tpllm.portfolio import (
     CapacityResourceType,
     OrganizationalCapacityWindow,
     PortfolioCapacityDemand,
     SharedScenarioFactor,
 )
-from lltpm.runtime import RuntimeStateStore as RuntimeProjection
-from lltpm.runtime.services import LiveIntelligenceServices
-from lltpm.runtime.sources import DomainInputs, JournalBackedDataSource
-from lltpm.scenarios import ScenarioEventCandidate, ScenarioEventType as E
-from lltpm.scenarios.models import ScenarioHorizon
+from tpllm.runtime import RuntimeStateStore as RuntimeProjection
+from tpllm.runtime.services import LiveIntelligenceServices
+from tpllm.runtime.sources import DomainInputs, JournalBackedDataSource
+from tpllm.scenarios import ScenarioEventCandidate, ScenarioEventType as E
+from tpllm.scenarios.models import ScenarioHorizon
 from tests._persistence_fixtures import (  # noqa: F401 — re-exported
     ORGANIZATION,
     PLATFORM,
@@ -375,7 +375,7 @@ def seeded_organization(
     *, inputs: DomainInputs | None = None,
 ) -> tuple[Persistence, RuntimeProjection, LiveIntelligenceServices]:
     """Journal the evidence, then run it through the real engines."""
-    from lltpm.runtime import process_durable_organizational_events
+    from tpllm.runtime import process_durable_organizational_events
 
     persistence = Persistence()
     services = live_services(persistence=persistence, inputs=inputs)

@@ -10,14 +10,14 @@ formality:
 - **Nothing private ships.** The wheel is built and inspected. Tests,
   recorded fixtures, caches and any database file must not be in it;
   ``py.typed`` and the recorded provider contracts must be, because
-  `lltpm integrations verify` has to work from an installed wheel.
+  `tpllm integrations verify` has to work from an installed wheel.
 - **No secret and no owner identity is committed.** Checked against the
   tracked file list, because the risk is what git has, not what the
   working tree happens to show.
 - **Every version agrees.** Three places state it and two are derived;
   a mismatch means a journal records a version that was never released.
 - **Every optional dependency is installable.** An extra naming a
-  package that does not exist turns `pip install lltpm[voice]` into a
+  package that does not exist turns `pip install tpllm[voice]` into a
   resolution error for a user who did nothing wrong.
 - **Public metadata exists.** A PyPI page with no repository link and no
   Python classifiers is a worse first impression than no page.
@@ -53,12 +53,12 @@ FORBIDDEN_IN_WHEEL = (
 
 #: Paths that must appear, each because something breaks without it.
 REQUIRED_IN_WHEEL = {
-    "lltpm/py.typed": (
+    "tpllm/py.typed": (
         "PEP 561 marker; without it a consumer's type checker ignores "
         "every annotation in the package"
     ),
-    "lltpm/integrations/contract_data/github.json": (
-        "`lltpm integrations verify` reads the recorded contracts, and "
+    "tpllm/integrations/contract_data/github.json": (
+        "`tpllm integrations verify` reads the recorded contracts, and "
         "has to work from an installed wheel rather than a checkout"
     ),
 }
@@ -238,27 +238,27 @@ class TestNothingPrivateIsCommitted:
 
 class TestVersionsAgree:
     def test_pyproject_and_the_journal_declaration_match(self, pyproject):
-        """`DECLARED_LLTPM_VERSION` is the fallback stamped into a
+        """`DECLARED_TPLLM_VERSION` is the fallback stamped into a
         reproducibility manifest when the package is not installed. If it
         lags, history records a version that was never released."""
-        from lltpm.persistence.versioning import DECLARED_LLTPM_VERSION
+        from tpllm.persistence.versioning import DECLARED_TPLLM_VERSION
 
-        assert DECLARED_LLTPM_VERSION == pyproject["project"]["version"]
+        assert DECLARED_TPLLM_VERSION == pyproject["project"]["version"]
 
     def test_the_installed_version_is_read_from_metadata(self):
         """The convention is that the version lives in pyproject.toml
         only. This asserts nothing hardcodes it a third time."""
-        import lltpm
-        from lltpm.persistence.versioning import LLTPM_VERSION
+        import tpllm
+        from tpllm.persistence.versioning import TPLLM_VERSION
 
-        assert lltpm.__version__ == LLTPM_VERSION
+        assert tpllm.__version__ == TPLLM_VERSION
 
     def test_no_module_hardcodes_a_release_version(self):
         """`0.0.0+unknown` is the sentinel used when the package is not
         installed, and is allowed. A real version number is not."""
         offenders = []
         pattern = re.compile(r"__version__\s*=\s*[\"'](\d+\.\d+[^\"']*)")
-        for path in sorted((_ROOT / "src" / "lltpm").rglob("*.py")):
+        for path in sorted((_ROOT / "src" / "tpllm").rglob("*.py")):
             for value in pattern.findall(path.read_text()):
                 if value.startswith("0.0.0"):
                     continue
@@ -377,7 +377,7 @@ class TestTheSdistContents:
     #: Paths that must never be in a published source distribution.
     FORBIDDEN = (
         "__pycache__", ".pyc", ".db", ".sqlite", ".pytest_cache",
-        "/.lltpm/", ".secrets-triage",
+        "/.tpllm/", ".secrets-triage",
     )
 
     @pytest.mark.parametrize("forbidden", FORBIDDEN)
@@ -405,11 +405,11 @@ class TestTheSdistContents:
 
     def test_the_sdist_carries_the_package_source(self, sdist_names):
         assert any(
-            name.endswith("src/lltpm/__init__.py") for name in sdist_names
+            name.endswith("src/tpllm/__init__.py") for name in sdist_names
         )
 
     def test_the_sdist_carries_the_recorded_contracts(self, sdist_names):
-        """`lltpm integrations verify` has to work from a source
+        """`tpllm integrations verify` has to work from a source
         install too."""
         assert any(
             name.endswith("integrations/contract_data/github.json")
@@ -477,17 +477,23 @@ class TestNoInternalScaffolding:
         )
 
     def test_the_product_name_is_spelled_one_way(self, tracked_files):
-        """`TPLLM` was a transposition of LLTPM that reached 25 places,
-        including the agent's own `display_name` in decision records —
-        so durable history recorded the wrong product name."""
+        """The product is TPLLM — Technical Program Manager, LLM.
+
+        `LLTPM` is the transposition, and it had become the dominant
+        spelling: the package, the CLI, every environment variable and
+        the repository itself, with TPLLM surviving only in newer
+        docstrings. Renamed wholesale before publication, while there
+        was no released package and no user to keep compatible. This
+        catches the transposition coming back.
+        """
         offenders = [
             name for name in tracked_files
             if name not in self.QUOTES_WHAT_IT_FORBIDS
             and (_ROOT / name).is_file()
             and (_ROOT / name).suffix in {".py", ".md", ".toml", ".yml", ".sh"}
-            and "TPLLM" in (_ROOT / name).read_text(errors="ignore")
+            and "LLTPM" in (_ROOT / name).read_text(errors="ignore").upper()
         ]
-        assert offenders == [], f"'TPLLM' should be 'LLTPM': {offenders}"
+        assert offenders == [], f"'LLTPM' should be 'TPLLM': {offenders}"
 
     def test_no_assistant_session_links_are_committed(self, tracked_files):
         """A session URL is a private link into somebody's account.
@@ -525,7 +531,7 @@ class TestNoInternalScaffolding:
 
 class TestLocalStateCannotBeCommitted:
     """The documentation tells a reader to create files in the working
-    directory — `lltpm.db`, `run.jsonl`, `sbom.json`. The journal is the
+    directory — `tpllm.db`, `run.jsonl`, `sbom.json`. The journal is the
     organization's durable record, so an ignore rule that misses it
     turns following the README into publishing your own history."""
 
@@ -545,8 +551,8 @@ class TestLocalStateCannotBeCommitted:
 
     def test_databases_and_local_output_are_ignored(self, ignored):
         missed = ignored(
-            "lltpm.db", "lltpm.sqlite", "run.jsonl", "sbom.json",
-            ".env", ".env.local", ".lltpm/config.json", "history.json",
+            "tpllm.db", "tpllm.sqlite", "run.jsonl", "sbom.json",
+            ".env", ".env.local", ".tpllm/config.json", "history.json",
             ".DS_Store", ".coverage",
         )
         assert missed == [], f"not covered by .gitignore: {missed}"
@@ -558,6 +564,51 @@ class TestLocalStateCannotBeCommitted:
             ".env.example is the committed template and must not be ignored"
         )
         assert ".env.example" in tracked_files
+
+    def test_no_file_from_a_data_directory_is_tracked(self, tracked_files):
+        """The data directory holds generated secrets, and an ignore rule
+        does not protect a file that is already tracked.
+
+        This is not hypothetical. Renaming the project moved the ignore
+        rule from `.lltpm/` to `.tpllm/` in the same commit that renamed
+        everything else, which un-ignored a local data directory that had
+        been sitting there; `git add -A` committed the JWT signing key
+        inside it. The secret scan would have caught it — it was run
+        before that commit rather than after. So the invariant is checked
+        here too, where it cannot depend on when somebody ran a script.
+        """
+        bad = [
+            name for name in tracked_files
+            if name.split("/")[0] in {
+                ".tpllm", ".tpllm-example", ".lltpm", ".lltpm-example",
+            }
+        ]
+        assert bad == [], (
+            f"generated local state is committed: {bad}"
+        )
+
+    def test_no_generated_signing_key_is_tracked(self, tracked_files):
+        """A content check as well as a path check, because the next data
+        directory will have a name nobody listed here."""
+        pattern = re.compile(r'"(?:secret_key|signing_key|private_key)"\s*:')
+        offenders = []
+        for name in tracked_files:
+            if name.startswith("tests/") or name in (
+                self.__class__.__dict__.get("ALLOWED", ())
+            ):
+                continue
+            path = _ROOT / name
+            if not path.is_file() or path.suffix in {".png", ".ico"}:
+                continue
+            try:
+                text = path.read_text()
+            except (OSError, UnicodeDecodeError):
+                continue
+            if pattern.search(text):
+                offenders.append(name)
+        assert offenders == [], (
+            f"a generated key looks committed: {offenders}"
+        )
 
     def test_no_database_or_env_file_is_tracked(self, tracked_files):
         bad = [

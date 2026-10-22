@@ -11,11 +11,11 @@ a colleague.
 import tempfile
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.artifacts.milestone_plan import MilestonePlanManager
-from lltpm.workflows.engagement_tracker import EngagementTracker
-from lltpm.workflows.personalized_briefing import PersonalizedBriefingEngine
-from lltpm.workflows.delegation_engine import DelegationEngine
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.artifacts.milestone_plan import MilestonePlanManager
+from tpllm.workflows.engagement_tracker import EngagementTracker
+from tpllm.workflows.personalized_briefing import PersonalizedBriefingEngine
+from tpllm.workflows.delegation_engine import DelegationEngine
 
 
 def _make_store():
@@ -107,7 +107,7 @@ class TestNothingHereRanksAnybody:
     """The grade and the rate are gone, and must stay gone."""
 
     def test_the_profile_has_no_grade(self):
-        import lltpm.models.engagement as engagement
+        import tpllm.models.engagement as engagement
 
         assert not hasattr(engagement, "ResponsivenessGrade")
         for field in ("grade", "response_rate", "total_ignored",

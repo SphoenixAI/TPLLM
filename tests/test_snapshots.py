@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.persistence import (
+from tpllm.persistence import (
     InMemorySnapshotStore,
     SQLitePersistenceConfig,
     build_runtime_snapshot,
@@ -20,7 +20,7 @@ from lltpm.persistence import (
     snapshots_are_compatible,
     verify_snapshot_integrity,
 )
-from lltpm.persistence.sqlite import initialize_sqlite_persistence
+from tpllm.persistence.sqlite import initialize_sqlite_persistence
 from tests._persistence_fixtures import (
     ORGANIZATION,
     PROJECT_A,
@@ -165,7 +165,7 @@ class TestManifestCompatibility:
         # The library version is metadata; the derivation identity is
         # what decides whether the state would be reproduced.
         assert snapshots_are_compatible(
-            snapshot=_snapshot(), manifest=manifest(lltpm_version="0.99.0"),
+            snapshot=_snapshot(), manifest=manifest(tpllm_version="0.99.0"),
         ) is True
 
 

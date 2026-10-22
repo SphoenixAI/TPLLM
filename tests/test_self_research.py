@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from lltpm.intelligence import (
+from tpllm.intelligence import (
     AIQualityRiskType,
     ClarificationNecessity,
     EvidenceReference,
@@ -484,13 +484,13 @@ class TestDeterminism:
 class TestGuardrails:
     def test_no_application_authority_imports(self):
         import inspect
-        import lltpm.intelligence.self_research as sr
-        import lltpm.intelligence.ai_quality as aq
+        import tpllm.intelligence.self_research as sr
+        import tpllm.intelligence.ai_quality as aq
 
         for mod in (sr, aq):
             source = inspect.getsource(mod)
             for pattern in (
-                "lltpm.application",
+                "tpllm.application",
                 "apply_calibration",
                 "register_active_calibration",
                 "transition_status",

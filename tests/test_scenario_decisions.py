@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     CounterfactualOverreachError,
     DecisionPosture,
     ScenarioDecisionPolicy,

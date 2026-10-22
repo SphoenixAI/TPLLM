@@ -16,7 +16,7 @@ more than a hand-written mock and strictly less than a recording.
 
 So the thing these tests mostly pin is that the weaker provenance is
 *stated* everywhere it could matter — in the index, in the shipped
-bundle, and in what ``lltpm integrations verify`` would report. A
+bundle, and in what ``tpllm integrations verify`` would report. A
 fixture labelled ``recorded`` would claim a verification that never
 happened, and that is the one failure the provenance vocabulary exists
 to prevent. ``test_no_slack_fixture_claims_to_be_a_recording`` is the
@@ -32,7 +32,7 @@ import pathlib
 
 import pytest
 
-from lltpm.integrations.contracts import (
+from tpllm.integrations.contracts import (
     PROVENANCE_RANK,
     ContractEvidence,
     PayloadContract,
@@ -44,7 +44,7 @@ from lltpm.integrations.contracts import (
     resolve_path,
     serialize_contract_bundle,
 )
-from lltpm.integrations.slack_contracts import (
+from tpllm.integrations.slack_contracts import (
     SLACK_BUNDLE_NOTE,
     SLACK_CHANNEL_SCOPE_FIELDS,
     SLACK_CONTRACT_PATHS,
@@ -56,7 +56,7 @@ from lltpm.integrations.slack_contracts import (
 )
 from tests import _slack_fixtures as fx
 
-_NORMALIZER = pathlib.Path("src/lltpm/integrations/slack_normalizer.py")
+_NORMALIZER = pathlib.Path("src/tpllm/integrations/slack_normalizer.py")
 
 #: Which fixture files feed which contract kind, so a test can extract a
 #: contract for a kind without re-deriving the grouping.
@@ -320,7 +320,7 @@ class TestContractChecking:
 
 
 class TestFixtureProvenance:
-    """``lltpm runtime coverage`` refuses to let a derived projection
+    """``tpllm runtime coverage`` refuses to let a derived projection
     pass for an engine. The same honesty applies to fixtures."""
 
     def test_every_fixture_file_is_in_the_index(self):
@@ -419,7 +419,7 @@ class TestFixtureProvenance:
 
     @pytest.mark.parametrize("name", fx.fixture_names())
     def test_no_fixture_carries_a_credential_shaped_value(self, name):
-        from lltpm.integrations.envelopes import redact_secret_text
+        from tpllm.integrations.envelopes import redact_secret_text
 
         raw = (fx.FIXTURE_DIR / f"{name}.json").read_text()
         _, found = redact_secret_text(raw)
@@ -475,7 +475,7 @@ class TestTheShippedBundleMatchesTheFixtures:
     def test_the_bundle_is_shipped_inside_the_package(self):
         path = contract_bundle_path("slack")
         assert path.exists()
-        assert "src/lltpm/integrations" in str(path).replace("\\", "/"), (
+        assert "src/tpllm/integrations" in str(path).replace("\\", "/"), (
             "a contract that only exists in a git checkout cannot be "
             "checked by the person running the installed tool"
         )
@@ -527,7 +527,7 @@ class TestTheShippedBundleMatchesTheFixtures:
         """The migration path, proven rather than promised: dropping a
         recording in beside a documented fixture upgrades the kind
         without touching the code that builds the bundle."""
-        from lltpm.integrations.contracts import ContractSource
+        from tpllm.integrations.contracts import ContractSource
 
         sources = fx.contract_sources() + [ContractSource(
             payload_kind="message", payloads=[fx.thread_root()],

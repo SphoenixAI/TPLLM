@@ -13,7 +13,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Any
 
-from lltpm.persistence import (
+from tpllm.persistence import (
     ExecutionContext,
     ExecutionMode,
     InMemoryEventJournalStore,
@@ -30,7 +30,7 @@ from lltpm.persistence import (
     build_runtime_snapshot,
     organization_stream,
 )
-from lltpm.runtime import (
+from tpllm.runtime import (
     IntelligenceArtifactType as A,
     RuntimeJournalReconstructor,
     RuntimeStateStore as RuntimeProjection,
@@ -158,7 +158,7 @@ class FakeOutboundPort:
         idempotency_key: str,
         context: Any = None,
     ):
-        from lltpm.persistence import DurableOutboundIntent
+        from tpllm.persistence import DurableOutboundIntent
 
         self.calls.append((target_system, action_type))
         return DurableOutboundIntent(
@@ -318,7 +318,7 @@ def build_live_organization(
     fingerprints = dict(
         durable_incident.result.metrics and {} or {}
     )
-    from lltpm.runtime import collect_state_fingerprints
+    from tpllm.runtime import collect_state_fingerprints
 
     fingerprints = collect_state_fingerprints(projection)
 
@@ -339,7 +339,7 @@ def make_snapshot(
     created_at: datetime | None = None,
     reproducibility: ReproducibilityManifest | None = None,
 ):
-    from lltpm.runtime import collect_state_fingerprints
+    from tpllm.runtime import collect_state_fingerprints
 
     head = persistence.journal.latest_position()
     snapshot = build_runtime_snapshot(

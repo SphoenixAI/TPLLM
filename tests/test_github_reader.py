@@ -13,7 +13,7 @@ import pathlib
 
 import pytest
 
-from lltpm.integrations.github_reader import (
+from tpllm.integrations.github_reader import (
     DEFAULT_PAGE_LIMIT,
     GITHUB_ENDPOINTS,
     TOKEN_ENVIRONMENT_VARIABLES,
@@ -25,7 +25,7 @@ from lltpm.integrations.github_reader import (
     fetch_github_payloads,
 )
 
-_SOURCE = pathlib.Path("src/lltpm/integrations/github_reader.py")
+_SOURCE = pathlib.Path("src/tpllm/integrations/github_reader.py")
 
 
 class TestTheReaderIsReadOnly:
@@ -73,12 +73,12 @@ class TestTheTokenStaysPrivate:
         monkeypatch.setenv(TOKEN_ENVIRONMENT_VARIABLES[0], "abc")
         assert UrllibGitHubReader().authenticated is True
 
-    def test_the_lltpm_specific_variable_wins(self, monkeypatch):
-        """So a deployment can scope LLTPM's token separately from
+    def test_the_tpllm_specific_variable_wins(self, monkeypatch):
+        """So a deployment can scope TPLLM's token separately from
         whatever else on the host reads GITHUB_TOKEN."""
         monkeypatch.setenv("GITHUB_TOKEN", "shared")
-        monkeypatch.setenv("LLTPM_GITHUB_TOKEN", "scoped")
-        assert TOKEN_ENVIRONMENT_VARIABLES[0] == "LLTPM_GITHUB_TOKEN"
+        monkeypatch.setenv("TPLLM_GITHUB_TOKEN", "scoped")
+        assert TOKEN_ENVIRONMENT_VARIABLES[0] == "TPLLM_GITHUB_TOKEN"
         assert UrllibGitHubReader().authenticated
 
     def test_a_blank_environment_token_is_not_a_token(self, monkeypatch):

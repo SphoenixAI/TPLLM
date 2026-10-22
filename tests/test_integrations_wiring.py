@@ -16,9 +16,9 @@ from pathlib import Path
 
 import pytest
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.models.task_board import TaskBoard, TaskSource, TaskStatus
-from lltpm.workflows.task_board_engine import TaskBoardEngine
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.models.task_board import TaskBoard, TaskSource, TaskStatus
+from tpllm.workflows.task_board_engine import TaskBoardEngine
 
 
 def _make_store():
@@ -33,7 +33,7 @@ class TestZoomTaskBoardIntegration:
 
     def test_ingest_auto_creates_tasks_from_action_items(self):
         store = _make_store()
-        from lltpm.tools.zoom_tools import get_zoom_tools
+        from tpllm.tools.zoom_tools import get_zoom_tools
 
         tools = {t["name"]: t["executor"] for t in get_zoom_tools(store)}
 
@@ -72,7 +72,7 @@ class TestZoomTaskBoardIntegration:
 
     def test_ingest_with_no_items_extracts_nothing(self):
         store = _make_store()
-        from lltpm.tools.zoom_tools import get_zoom_tools
+        from tpllm.tools.zoom_tools import get_zoom_tools
 
         tools = {t["name"]: t["executor"] for t in get_zoom_tools(store)}
 
@@ -87,7 +87,7 @@ class TestZoomTaskBoardIntegration:
 
     def test_ingest_message_mentions_auto_extraction(self):
         store = _make_store()
-        from lltpm.tools.zoom_tools import get_zoom_tools
+        from tpllm.tools.zoom_tools import get_zoom_tools
 
         tools = {t["name"]: t["executor"] for t in get_zoom_tools(store)}
 
@@ -109,7 +109,7 @@ class TestRiskTaskBoardIntegration:
 
     def test_risk_with_mitigation_creates_task(self):
         store = _make_store()
-        from lltpm.tools.project_tools import get_project_tools
+        from tpllm.tools.project_tools import get_project_tools
 
         tools = {t["name"]: t["executor"] for t in get_project_tools(store)}
 
@@ -143,7 +143,7 @@ class TestRiskTaskBoardIntegration:
 
     def test_risk_without_mitigation_skips_task(self):
         store = _make_store()
-        from lltpm.tools.project_tools import get_project_tools
+        from tpllm.tools.project_tools import get_project_tools
 
         tools = {t["name"]: t["executor"] for t in get_project_tools(store)}
 
@@ -174,7 +174,7 @@ class TestDelegationTaskBoardIntegration:
 
     def test_delegation_creates_board_task(self):
         store = _make_store()
-        from lltpm.tools.delegation_tools import get_delegation_tools
+        from tpllm.tools.delegation_tools import get_delegation_tools
 
         tools = {t["name"]: t["executor"] for t in get_delegation_tools(store)}
 
@@ -201,7 +201,7 @@ class TestDelegationTaskBoardIntegration:
 
     def test_delegation_priority_mapping(self):
         store = _make_store()
-        from lltpm.tools.delegation_tools import get_delegation_tools
+        from tpllm.tools.delegation_tools import get_delegation_tools
 
         tools = {t["name"]: t["executor"] for t in get_delegation_tools(store)}
 
@@ -218,7 +218,7 @@ class TestDelegationTaskBoardIntegration:
 
     def test_risk_mitigation_delegation_creates_task(self):
         store = _make_store()
-        from lltpm.tools.delegation_tools import get_delegation_tools
+        from tpllm.tools.delegation_tools import get_delegation_tools
 
         tools = {t["name"]: t["executor"] for t in get_delegation_tools(store)}
 
@@ -242,10 +242,10 @@ class TestDashboardTaskBoardEndpoints:
 
     @pytest.fixture()
     def client(self, tmp_path):
-        from lltpm.config import LLTPMConfig
-        from lltpm.dashboard import create_app
+        from tpllm.config import TPLLMConfig
+        from tpllm.dashboard import create_app
 
-        cfg = LLTPMConfig(data_dir=tmp_path / "data")
+        cfg = TPLLMConfig(data_dir=tmp_path / "data")
         cfg.ensure_data_dir()
         app = create_app(cfg)
 
@@ -352,33 +352,33 @@ class TestCLITaskBoardCommands:
     """Verify task board CLI commands are registered."""
 
     def test_tasks_command_exists(self):
-        from lltpm.main import cli
+        from tpllm.main import cli
         assert "tasks" in cli.commands
 
     def test_sprints_command_exists(self):
-        from lltpm.main import cli
+        from tpllm.main import cli
         assert "sprints" in cli.commands
 
     def test_workload_command_exists(self):
-        from lltpm.main import cli
+        from tpllm.main import cli
         assert "workload" in cli.commands
 
     def test_tasks_command_runs(self, tmp_path):
         from click.testing import CliRunner
-        from lltpm.main import cli
+        from tpllm.main import cli
 
         runner = CliRunner()
         result = runner.invoke(cli, ["tasks", "test-prog"], env={
-            "LLTPM_DATA_DIR": str(tmp_path / "data"),
+            "TPLLM_DATA_DIR": str(tmp_path / "data"),
         })
         assert result.exit_code == 0
 
     def test_sprints_command_runs(self, tmp_path):
         from click.testing import CliRunner
-        from lltpm.main import cli
+        from tpllm.main import cli
 
         runner = CliRunner()
         result = runner.invoke(cli, ["sprints", "test-prog"], env={
-            "LLTPM_DATA_DIR": str(tmp_path / "data"),
+            "TPLLM_DATA_DIR": str(tmp_path / "data"),
         })
         assert result.exit_code == 0

@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.runtime import (
+from tpllm.runtime import (
     DERIVED,
     ENGINE_BACKED,
     EVENT_CLASS_TO_TEMPORAL_TYPE,
@@ -31,13 +31,13 @@ from lltpm.runtime import (
     evidence_to_temporal_event,
     process_durable_organizational_events,
 )
-from lltpm.runtime import RuntimeStateStore as RuntimeProjection
-from lltpm.persistence import (
+from tpllm.runtime import RuntimeStateStore as RuntimeProjection
+from tpllm.persistence import (
     DurableEvidenceRecord,
     JournalRetentionClass,
     rebuild_runtime_projections,
 )
-from lltpm.temporal import TemporalEventType
+from tpllm.temporal import TemporalEventType
 from tests._persistence_fixtures import (
     ORGANIZATION,
     Persistence,
@@ -543,7 +543,7 @@ class TestJournalBackedDataSource:
     def test_contentless_evidence_is_excluded_from_claim_extraction(self):
         """Retention may drop content; an empty claim is worse than none."""
         persistence = Persistence()
-        from lltpm.runtime import append_evidence_accepted
+        from tpllm.runtime import append_evidence_accepted
         from tests._wiring_fixtures import envelope
 
         append_evidence_accepted(
@@ -674,7 +674,7 @@ class TestTemporalEventMapping:
     def test_the_classes_the_runtime_acts_on_are_mapped(self):
         """The event classes that invalidate something should produce a
         specific temporal type, not degrade to generic evidence."""
-        from lltpm.runtime import DIRECT_INVALIDATIONS
+        from tpllm.runtime import DIRECT_INVALIDATIONS
 
         acted_on = {
             name for name, invalidations in DIRECT_INVALIDATIONS.items()
@@ -693,7 +693,7 @@ class TestTemporalEventMapping:
 
 class TestDecisionsBecomeTemporalEvents:
     def test_a_recorded_decision_appears_in_project_history(self):
-        from lltpm.runtime import append_organizational_decision
+        from tpllm.runtime import append_organizational_decision
 
         persistence, _, _ = seeded_organization()
         append_organizational_decision(
@@ -753,8 +753,8 @@ class TestDeterminism:
         import ast
         import inspect
 
-        import lltpm.runtime.services as services
-        import lltpm.runtime.sources as sources
+        import tpllm.runtime.services as services
+        import tpllm.runtime.sources as sources
 
         for module in (services, sources):
             tree = ast.parse(inspect.getsource(module))
@@ -777,7 +777,7 @@ class TestReplayWithRealEngines:
 
     def _rebuild(self):
         persistence, projection, _ = seeded_organization()
-        from lltpm.runtime import collect_state_fingerprints
+        from tpllm.runtime import collect_state_fingerprints
 
         original = collect_state_fingerprints(projection)
         persistence.delete_all_derived_state()
@@ -814,7 +814,7 @@ class TestReplayWithRealEngines:
 
     def test_no_external_call_happens_during_the_rebuild(self):
         from tests._persistence_fixtures import FakeOutboundPort
-        from lltpm.persistence import (
+        from tpllm.persistence import (
             ReplayMode,
             ReplayRequest,
             replay_journal,
@@ -874,8 +874,8 @@ class TestNoWorkerScoring:
         import ast
         import inspect
 
-        import lltpm.runtime.services as services
-        import lltpm.runtime.sources as sources
+        import tpllm.runtime.services as services
+        import tpllm.runtime.sources as sources
 
         def executable(module):
             tree = ast.parse(inspect.getsource(module))

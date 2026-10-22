@@ -9,16 +9,16 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from lltpm.ontology.entities import (
+from tpllm.ontology.entities import (
     AuthorizedBridge,
     BridgeReason,
     Dependency,
     Milestone,
     WorkItem,
 )
-from lltpm.ontology.measurement import InsightSeverity
-from lltpm.ontology.validation import ValidationOutcome, validate_insight
-from lltpm.structural import (
+from tpllm.ontology.measurement import InsightSeverity
+from tpllm.ontology.validation import ValidationOutcome, validate_insight
+from tpllm.structural import (
     EdgeType,
     InterventionOption,
     InterventionType,

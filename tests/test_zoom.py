@@ -3,9 +3,9 @@
 import tempfile
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.models.zoom import ZoomMeetingStatus, ZoomWebhookEvent
-from lltpm.workflows.zoom_engine import ZoomEngine
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.models.zoom import ZoomMeetingStatus, ZoomWebhookEvent
+from tpllm.workflows.zoom_engine import ZoomEngine
 
 
 def _make_store():

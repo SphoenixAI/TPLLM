@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from types import SimpleNamespace
 
-from lltpm.portfolio import (
+from tpllm.portfolio import (
     CapacityResourceType,
     OrganizationalCapacityWindow,
     PortfolioCapacityDemand,

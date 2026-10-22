@@ -1,18 +1,18 @@
-# LLTPM Docker Compose — local development and testing
+# TPLLM Docker Compose — local development and testing
 version: "3.9"
 
 services:
-  # Main LLTPM dashboard and API
-  lltpm:
+  # Main TPLLM dashboard and API
+  tpllm:
     build: .
     ports:
       - "8080:8080"
     volumes:
-      - lltpm-data:/data
+      - tpllm-data:/data
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - LLTPM_MODEL=${LLTPM_MODEL:-claude-opus-4-6}
-      - LLTPM_DATA_DIR=/data
+      - TPLLM_MODEL=${TPLLM_MODEL:-claude-opus-4-6}
+      - TPLLM_DATA_DIR=/data
       # Optional integrations
       - GITHUB_TOKEN=${GITHUB_TOKEN:-}
       - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN:-}
@@ -25,29 +25,29 @@ services:
       - SMTP_USER=${SMTP_USER:-}
       - SMTP_PASSWORD=${SMTP_PASSWORD:-}
       - SENDGRID_API_KEY=${SENDGRID_API_KEY:-}
-      - EMAIL_FROM=${EMAIL_FROM:-lltpm@example.com}
+      - EMAIL_FROM=${EMAIL_FROM:-tpllm@example.com}
       - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY:-}
       - VOICE_BACKEND=${VOICE_BACKEND:-system}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "from lltpm.config import LLTPMConfig; print('ok')"]
+      test: ["CMD", "python", "-c", "from tpllm.config import TPLLMConfig; print('ok')"]
       interval: 30s
       timeout: 5s
       retries: 3
 
   # CLI mode — interactive chat
-  lltpm-cli:
+  tpllm-cli:
     build: .
     profiles: ["cli"]
     volumes:
-      - lltpm-data:/data
+      - tpllm-data:/data
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - LLTPM_DATA_DIR=/data
-    entrypoint: ["lltpm", "chat"]
+      - TPLLM_DATA_DIR=/data
+    entrypoint: ["tpllm", "chat"]
     stdin_open: true
     tty: true
 
 volumes:
-  lltpm-data:
+  tpllm-data:
     driver: local

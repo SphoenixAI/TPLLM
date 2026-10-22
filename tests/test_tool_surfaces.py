@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from lltpm.integrations import (
+from tpllm.integrations import (
     IntelligenceUpdate,
     IntelligenceUpdateType,
     QueryAdapterEvidenceSearchProvider,
@@ -14,7 +14,7 @@ from lltpm.integrations import (
     make_envelope,
     should_surface_update,
 )
-from lltpm.intelligence import ResearchStage
+from tpllm.intelligence import ResearchStage
 
 _OBSERVED = datetime(2026, 8, 10, 9, 30, 0)
 _PROJECT = "atlas"

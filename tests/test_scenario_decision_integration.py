@@ -7,7 +7,7 @@ from datetime import timedelta
 
 import pytest
 
-from lltpm.coordination import (
+from tpllm.coordination import (
     AgentRecommendationStatus,
     DecisionPosture,
     DecisionTimingAction,
@@ -24,7 +24,7 @@ from lltpm.coordination import (
     score_option_for_posture,
     select_agent_recommendation,
 )
-from lltpm.scenarios import InformationValueEstimate
+from tpllm.scenarios import InformationValueEstimate
 from tests._recommendation_fixtures import (
     POLICY as STATIC_POLICY,
     assessment as static_assessment,
@@ -351,7 +351,7 @@ class TestAutonomyIntegration:
     def test_optimizer_cannot_change_authority_policy(self):
         import ast
         import inspect
-        import lltpm.coordination.scenario_decisions as mod
+        import tpllm.coordination.scenario_decisions as mod
 
         tree = ast.parse(inspect.getsource(mod))
         for node in ast.walk(tree):
@@ -396,11 +396,11 @@ class TestDeterminismAndGuardrails:
     def test_no_worker_scoring(self):
         import ast
         import inspect
-        import lltpm.coordination.decision_timing as timing
-        import lltpm.coordination.decision_utility as utility
-        import lltpm.coordination.optionality as opt
-        import lltpm.coordination.regret as regret
-        import lltpm.coordination.scenario_decisions as decisions
+        import tpllm.coordination.decision_timing as timing
+        import tpllm.coordination.decision_utility as utility
+        import tpllm.coordination.optionality as opt
+        import tpllm.coordination.regret as regret
+        import tpllm.coordination.scenario_decisions as decisions
 
         def executable(module):
             tree = ast.parse(inspect.getsource(module))

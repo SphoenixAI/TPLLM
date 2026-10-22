@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from lltpm.portfolio import (
+from tpllm.portfolio import (
     PortfolioAllocationRecommendation,
     PortfolioRegretAssessment,
     allocation_from_capacity,

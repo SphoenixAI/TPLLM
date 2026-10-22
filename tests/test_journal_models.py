@@ -12,7 +12,7 @@ from enum import Enum
 
 import pytest
 
-from lltpm.persistence import (
+from tpllm.persistence import (
     AUTHORITATIVE_EVENT_TYPES,
     EVENT_TYPE_CATEGORY,
     DurableEvidenceRecord,

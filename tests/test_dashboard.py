@@ -9,17 +9,17 @@ import tempfile
 from datetime import date
 from pathlib import Path
 
-from lltpm.artifacts.store import ArtifactStore
-from lltpm.config import LLTPMConfig
+from tpllm.artifacts.store import ArtifactStore
+from tpllm.config import TPLLMConfig
 
 
 def _make_config():
     tmp = Path(tempfile.mkdtemp())
-    return LLTPMConfig(data_dir=tmp)
+    return TPLLMConfig(data_dir=tmp)
 
 
 def _seed_program(store):
-    from lltpm.models.program import Program, Stakeholder
+    from tpllm.models.program import Program, Stakeholder
     program = Program(
         id="test-prog", name="Auth Migration",
         goal="OAuth2 migration",
@@ -27,7 +27,7 @@ def _seed_program(store):
     )
     store.save("test-prog", "program", program)
 
-    from lltpm.models.risk import RAIDLog, Risk, Severity, Probability, RAIDItemStatus
+    from tpllm.models.risk import RAIDLog, Risk, Severity, Probability, RAIDItemStatus
     raid = RAIDLog(risks=[Risk(
         id="R-001", title="Rate limits", severity=Severity.HIGH,
         probability=Probability.MEDIUM, owner="Alice",
@@ -35,7 +35,7 @@ def _seed_program(store):
     )])
     store.save("test-prog", "raid_log", raid)
 
-    from lltpm.models.milestone import MilestonePlan, Milestone, MilestoneStatus
+    from tpllm.models.milestone import MilestonePlan, Milestone, MilestoneStatus
     plan = MilestonePlan(milestones=[Milestone(
         id="MS-001", name="Beta", owner="Alice",
         target_date=date(2026, 3, 15),
@@ -60,7 +60,7 @@ def test_dashboard_loads_program():
     store = ArtifactStore(cfg.data_dir)
     _seed_program(store)
 
-    from lltpm.models.program import Program
+    from tpllm.models.program import Program
     program = store.load("test-prog", "program", Program)
     assert program is not None
     assert program.name == "Auth Migration"
@@ -72,7 +72,7 @@ def test_dashboard_raid_endpoint_logic():
     store = ArtifactStore(cfg.data_dir)
     _seed_program(store)
 
-    from lltpm.models.risk import RAIDLog
+    from tpllm.models.risk import RAIDLog
     raid = store.load("test-prog", "raid_log", RAIDLog)
     assert raid is not None
     assert len(raid.risks) == 1
@@ -85,7 +85,7 @@ def test_dashboard_milestones_endpoint_logic():
     store = ArtifactStore(cfg.data_dir)
     _seed_program(store)
 
-    from lltpm.models.milestone import MilestonePlan
+    from tpllm.models.milestone import MilestonePlan
     plan = store.load("test-prog", "milestone_plan", MilestonePlan)
     assert plan is not None
     assert len(plan.milestones) == 1
@@ -97,7 +97,7 @@ def test_dashboard_predictions_endpoint_logic():
     store = ArtifactStore(cfg.data_dir)
     _seed_program(store)
 
-    from lltpm.workflows.risk_predictor import RiskPredictor
+    from tpllm.workflows.risk_predictor import RiskPredictor
     predictor = RiskPredictor(store)
     predictions = predictor.predict_risks("test-prog")
     # Should find at-risk items from seeded data
@@ -110,7 +110,7 @@ def test_dashboard_document_generation():
     store = ArtifactStore(cfg.data_dir)
     _seed_program(store)
 
-    from lltpm.workflows.document_generator import DocumentGenerator
+    from tpllm.workflows.document_generator import DocumentGenerator
     gen = DocumentGenerator(store)
 
     html = gen.render_program_brief("test-prog", "html")
@@ -123,7 +123,7 @@ def test_dashboard_memory_endpoint_logic():
     cfg = _make_config()
     store = ArtifactStore(cfg.data_dir)
 
-    from lltpm.workflows.persistent_memory import PersistentMemoryEngine
+    from tpllm.workflows.persistent_memory import PersistentMemoryEngine
     engine = PersistentMemoryEngine(store)
     summary = engine.get_summary("test-prog")
     assert "Persistent Memory" in summary
@@ -131,7 +131,7 @@ def test_dashboard_memory_endpoint_logic():
 
 def test_dashboard_agents_endpoint_logic():
     """Test agent listing via dashboard."""
-    from lltpm.workflows.agent_orchestrator import AgentOrchestrator
+    from tpllm.workflows.agent_orchestrator import AgentOrchestrator
     orch = AgentOrchestrator()
     agents = orch.list_agents()
     assert len(agents) == 6
@@ -139,10 +139,10 @@ def test_dashboard_agents_endpoint_logic():
 
 def test_dashboard_deployment_config():
     """Test deployment config generation."""
-    from lltpm.workflows.agent_orchestrator import AgentOrchestrator
+    from tpllm.workflows.agent_orchestrator import AgentOrchestrator
     orch = AgentOrchestrator()
     config = orch.get_deployment_config()
-    assert config["name"] == "LLTPM Multi-Agent System"
+    assert config["name"] == "TPLLM Multi-Agent System"
     assert "/webhooks/slack" in config["integration_endpoints"]["slack_webhook"]
 
 
@@ -155,7 +155,7 @@ def test_create_app_without_fastapi():
     except ImportError:
         pass
 
-    from lltpm.dashboard import create_app
+    from tpllm.dashboard import create_app
     try:
         create_app()
         assert False, "Should have raised ImportError"

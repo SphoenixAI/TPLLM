@@ -1,14 +1,14 @@
 # Research alignment
 
-This document checks LLTPM's design against the published work it
+This document checks TPLLM's design against the published work it
 overlaps with: where it agrees, where it deliberately goes further, and
 where reading the literature exposed a gap that has since been fixed.
 
-It exists because several of LLTPM's invariants were arrived at from
+It exists because several of TPLLM's invariants were arrived at from
 first principles while building, and a design that has never been
 checked against prior art is one assertion away from reinventing a
 known mistake. Three sections below record real changes made as a
-result; two record places where LLTPM departs from the standard answer
+result; two record places where TPLLM departs from the standard answer
 on purpose, with the reason and the cost.
 
 Each section states what was verified against a primary source and what
@@ -29,7 +29,7 @@ may substitute another time, such as the current time, provided all
 producers for a `source` are consistent. (Verified against the
 spec text at `cloudevents/spec` v1.0.2.)
 
-**What LLTPM does.** `EvidenceEnvelope` carries the same identifying
+**What TPLLM does.** `EvidenceEnvelope` carries the same identifying
 quartet under different names — `source_system` + `source_type` +
 `source_id` and `event_type` — plus an explicit `idempotency_key` that
 plays the role of the uniqueness constraint rather than leaving it
@@ -46,14 +46,14 @@ implicit in a pair of fields.
 | `dataschema` | the recorded contract in `integrations/contract_data/` |
 
 **Where it goes further, and why.** The `time` clause is the one place
-LLTPM declines to follow the spec. Substituting the current time when
+TPLLM declines to follow the spec. Substituting the current time when
 the occurrence time is unknown is reasonable for a message bus, where
 `time` is mostly for ordering and tracing. It is not reasonable here:
 `observed_at` feeds a bitemporal reconstruction, and recording a
 February merge as having happened today corrupts every scenario rooted
 in it. `to_naive_utc` therefore raises `TimestampMissingError` rather
 than defaulting, and the payload is reported as rejected. The spec's
-substitution is an availability trade; LLTPM takes the correctness side
+substitution is an availability trade; TPLLM takes the correctness side
 of it and loses the event instead.
 
 The second addition is the split between `observed_at` and
@@ -81,7 +81,7 @@ build environment, so GitHub's retry semantics specifically were not
 verified first-hand and are not relied on below — only the stability of
 the delivery id across a redelivery, which several sources agree on.)
 
-**What LLTPM does — and the gap this surfaced.** The journal already
+**What TPLLM does — and the gap this surfaced.** The journal already
 satisfied the atomicity clause: an append validates the stream
 sequence, checks idempotency, allocates the sequence, computes the hash
 link and inserts inside one transaction, so the key and the durable
@@ -130,7 +130,7 @@ about when things were true. (Verified via the publisher's description
 and chapter listing plus secondary sources that quote the definitions;
 the book text itself was not retrieved.)
 
-**What LLTPM does.** The distinction is load-bearing throughout, under
+**What TPLLM does.** The distinction is load-bearing throughout, under
 domain names: `observed_at` / `occurred_at` / `valid_from` is valid
 time, `received_at` / `known_at` / `known_from` is transaction time, and
 the two are never collapsed. Two consequences the architecture tests
@@ -173,7 +173,7 @@ system, retained where it could not be retracted. (Verified via the
 paper's abstract and multiple secondary summaries; the full text was not
 retrieved. The public-anchoring detail is consistently reported.)
 
-**What LLTPM does — and the gap this surfaced.** The journal is
+**What TPLLM does — and the gap this surfaced.** The journal is
 hash-chained exactly as described: each record links to its
 predecessor's hash, `verify_journal_hash_chain` walks the chain and
 reports the first break, and corruption is reported rather than
@@ -185,15 +185,15 @@ its own hash — which covers the realistic failures: a bad restore, a
 partial write, a manual `UPDATE`. It does not detect a history that was
 **rewritten wholesale**, because whoever rewrites the file can recompute
 every link after the record they changed. The chain then verifies
-cleanly. Before this commit, nothing in LLTPM said so, and the
+cleanly. Before this commit, nothing in TPLLM said so, and the
 documentation's "append-only hash-chained journal" invited the stronger
 reading.
 
 Three changes:
 
 1. `JournalAnchor` — the head sequence and head hash, as a frozen
-   object the operator retains out of band. `lltpm runtime anchor`
-   emits it; `lltpm runtime verify --anchor` checks against it.
+   object the operator retains out of band. `tpllm runtime anchor`
+   emits it; `tpllm runtime verify --anchor` checks against it.
 2. Verification now says what it checked. Without an anchor the
    explanation reads *"Internal consistency only: no anchor was
    supplied, so a wholesale rewrite would not be detected."*
@@ -208,7 +208,7 @@ verification **passes**, and then asserts the anchor catches it.
 **Residual limitation, stated.** An anchor stored beside the database it
 anchors protects against accident, not against rewriting — the CLI says
 this on every `anchor` run. A true Haber–Stornetta anchor is published
-where the holder cannot retract it. LLTPM's reference deployment is one
+where the holder cannot retract it. TPLLM's reference deployment is one
 local SQLite file with no external service, so the strongest honest
 mechanism available is operator-retained. Publishing to an external
 timestamping authority would be the next step and is not implemented.
@@ -228,7 +228,7 @@ practice. (Verified via Census Bureau and ISI working papers that quote
 the construction; Fellegi and Sunter's original paper was not
 retrieved.)
 
-**What LLTPM does.** The identity invariant was written as "an
+**What TPLLM does.** The identity invariant was written as "an
 ambiguous match is left unlinked for a person to settle; merging two
 colleagues who share a surname is worse than reporting an unlinked
 identity." That is the clerical review region, arrived at
@@ -239,7 +239,7 @@ canonical-name resemblance scoring 0.25, so an alias resolves where a
 resemblance does not.
 
 **Where it goes further.** Three ways, all driven by the fact that
-LLTPM's errors are organizational rather than statistical:
+TPLLM's errors are organizational rather than statistical:
 
 - **Asymmetric cost, not symmetric optimality.** Fellegi–Sunter
   minimises error at a chosen operating point. Here the two errors are
@@ -254,12 +254,12 @@ LLTPM's errors are organizational rather than statistical:
   from scratch and does not need the source systems to still answer.
 - **No field-weight model, so no independence assumption.** The known
   weakness of the Fellegi–Sunter weights is that field agreements are
-  usually dependent. LLTPM scores by explicit evidence class (a curated
+  usually dependent. TPLLM scores by explicit evidence class (a curated
   alias, an exact external id, a name resemblance) rather than by a
   product of per-field likelihood ratios, so it never relies on
   conditional independence. The cost is that the thresholds are
   declared rather than estimated from data, which is weaker where
-  labelled training pairs exist — and LLTPM has none.
+  labelled training pairs exist — and TPLLM has none.
 
 ---
 
@@ -279,7 +279,7 @@ on estimating the two terms; Murphy's 1973 paper itself was not
 retrieved, so the exact formulas were cross-checked against two
 independent secondary presentations.)
 
-**What LLTPM already did.** `forecast_metrics.py` reported Brier score,
+**What TPLLM already did.** `forecast_metrics.py` reported Brier score,
 log loss, expected calibration error and sharpness *separately*, with
 the stated reason that "a model that predicts 0.51 for everything can be
 accurate and useless." That is the sharpness-subject-to-calibration
@@ -290,7 +290,7 @@ their mass (`ScenarioTailMass`) so displayed futures never falsely sum
 to 100%.
 
 **What the literature added.** The decomposition was missing, and it is
-the one that catches the specific failure LLTPM most needs to catch: a
+the one that catches the specific failure TPLLM most needs to catch: a
 forecaster that always predicts the base rate has *perfect* reliability
 and *zero* resolution. Expected calibration error alone would score it
 flawless. `brier_decomposition` now reports all three terms,
@@ -323,7 +323,7 @@ when every modelled cause is absent. (Verified via JAIR and UAI papers
 on exploiting causal independence; Pearl's 1988 text was not retrieved,
 so the leak's formulation rests on secondary sources.)
 
-**What LLTPM does.** `combine_independent_transmissions` is noisy-OR:
+**What TPLLM does.** `combine_independent_transmissions` is noisy-OR:
 two routes at 0.6 give 0.84, not 1.2. The project adds a rule the
 canonical model does not have — two routes through the *same* shared
 resource describe one mechanism and are counted once — because the
@@ -357,7 +357,7 @@ translates because the upstream offers no clean protocol. (Verified via
 O'Reilly's context-mapping chapter and several secondary summaries;
 Evans' own chapter was not retrieved.)
 
-**What LLTPM does.** `integrations/normalizers.py` is exactly this, and
+**What TPLLM does.** `integrations/normalizers.py` is exactly this, and
 the fact that it was missing was the finding: every adapter returned its
 own shapes (`PRSummary`, `BuildStatus`, `SlackMessage`), the journal
 accepted only `EvidenceEnvelope`, and `WrappedToolAdapter` had always
@@ -392,9 +392,9 @@ stripping parameters that change between calls without affecting
 results before looking up stored values. (Verified against
 martinfowler.com/bliki/SelfInitializingFake.html.)
 
-**What LLTPM does.** Both halves, as explicit commands rather than
-hidden in a test run: `lltpm integrations record` is the recording half,
-`lltpm integrations verify` the occasional live check. The reader sits
+**What TPLLM does.** Both halves, as explicit commands rather than
+hidden in a test run: `tpllm integrations record` is the recording half,
+`tpllm integrations verify` the occasional live check. The reader sits
 behind a port with a live and a recorded implementation, so the offline
 suite and the live check drive the same code rather than two paths that
 merely agree.
@@ -440,10 +440,10 @@ entity, without naming the activity), `prov:wasGeneratedBy`,
 (activity to agent). (Verified via the W3C PROV-O generated
 documentation and the W3C blog's update post.)
 
-**What LLTPM does.** The export's provenance structures map onto PROV-O
+**What TPLLM does.** The export's provenance structures map onto PROV-O
 without having been designed from it:
 
-| PROV-O | LLTPM |
+| PROV-O | TPLLM |
 |---|---|
 | `prov:Entity` | a `DurableEvidenceRecord`; a published artifact |
 | `prov:Activity` | a recompute, identified by `revision_id` |
@@ -476,9 +476,9 @@ Stated here rather than discovered later.
 - **Two of four GitHub contracts are unverifiable.** The repository
   recorded from has no submitted reviews and no issue that is not a pull
   request, so those contracts are hand-written and derived
-  respectively. `lltpm integrations sources` says so.
+  respectively. `tpllm integrations sources` says so.
 - **Identity thresholds are declared, not estimated.** §5. With labelled
-  pairs, Fellegi–Sunter weights would be better founded. LLTPM has no
+  pairs, Fellegi–Sunter weights would be better founded. TPLLM has no
   labelled pairs.
 - **No leak term in propagation.** §7. Risk is under-estimated, on
   purpose.
@@ -540,7 +540,7 @@ Stated here rather than discovered later.
   nothing remaining can rank two people.
 
 - **There is pre-existing lint debt in the original TPM surface, and it
-  was deliberately not swept.** `python -m pyflakes src/lltpm/` reports
+  was deliberately not swept.** `python -m pyflakes src/tpllm/` reports
   103 findings that are not already annotated: 88 unused imports, 11
   f-strings with no placeholders, and 4 locals assigned and never read.
   A further 8 findings are availability probes the code already marks

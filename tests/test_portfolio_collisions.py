@@ -6,7 +6,7 @@ from datetime import timedelta
 
 import pytest
 
-from lltpm.portfolio import (
+from tpllm.portfolio import (
     PortfolioCollisionType,
     build_portfolio_graph,
     colliding_launches,

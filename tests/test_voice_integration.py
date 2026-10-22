@@ -6,8 +6,8 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from lltpm.config import IntegrationConfig
-from lltpm.integrations.voice_integration import (
+from tpllm.config import IntegrationConfig
+from tpllm.integrations.voice_integration import (
     VoiceIntegration,
     VoiceBackend,
     VoiceStyle,

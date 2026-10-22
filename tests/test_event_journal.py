@@ -11,7 +11,7 @@ import threading
 
 import pytest
 
-from lltpm.persistence import (
+from tpllm.persistence import (
     InMemoryEventJournalStore,
     JournalConcurrencyError,
     JournalEventType,
@@ -461,7 +461,7 @@ class TestRedeliveryIsNotAConflict:
             payload=self._evidence_payload("2026-11-16T09:00:05"),
         ))
         # Same derived key, different kind of fact.
-        from lltpm.persistence import build_journal_idempotency_key
+        from tpllm.persistence import build_journal_idempotency_key
 
         key = build_journal_idempotency_key(
             event_type=JournalEventType.EVIDENCE_ACCEPTED, source_key="k",
@@ -475,7 +475,7 @@ class TestRedeliveryIsNotAConflict:
             ))
 
     def test_only_delivery_metadata_is_ignored(self):
-        from lltpm.persistence import comparable_payload
+        from tpllm.persistence import comparable_payload
 
         stripped = comparable_payload(
             self._evidence_payload("2026-11-16T09:00:05")
@@ -487,7 +487,7 @@ class TestRedeliveryIsNotAConflict:
         assert stripped["evidence"]["normalized_content"]
 
     def test_stripping_does_not_mutate_the_original(self):
-        from lltpm.persistence import comparable_payload
+        from tpllm.persistence import comparable_payload
 
         payload = self._evidence_payload("2026-11-16T09:00:05")
         comparable_payload(payload)

@@ -40,7 +40,7 @@ from datetime import datetime
 
 import pytest
 
-from lltpm.integrations.jira_normalizer import (
+from tpllm.integrations.jira_normalizer import (
     BLOCKING_LINK_TYPE_NAMES,
     DEFAULT_DONE_STATUS_NAMES,
     JIRA,
@@ -60,18 +60,18 @@ from lltpm.integrations.jira_normalizer import (
     normalize_payload,
     site_from_self_url,
 )
-from lltpm.integrations.normalizers import (
+from tpllm.integrations.normalizers import (
     CONTENT_EXCERPT_LIMIT,
     RECOGNIZED_EVENT_CLASSES,
     NormalizationOutcome,
 )
-from lltpm.integrations.runtime import RefreshScope, determine_refresh_scope
+from tpllm.integrations.runtime import RefreshScope, determine_refresh_scope
 from tests import _jira_fixtures as fx
 
 RECEIVED = datetime(2026, 10, 22, 4, 40)
 LATER = datetime(2026, 10, 25, 9, 15)
 
-_SOURCE = pathlib.Path("src/lltpm/integrations/jira_normalizer.py")
+_SOURCE = pathlib.Path("src/tpllm/integrations/jira_normalizer.py")
 
 
 @pytest.fixture
@@ -390,8 +390,8 @@ class TestTheEventVocabularyIsClosed:
         the refresh-scope policy or the temporal mapping. A class in
         neither would be a string nothing downstream has an opinion
         about."""
-        from lltpm.integrations.runtime import _EVENT_SCOPE_MAP
-        from lltpm.runtime.sources import EVENT_CLASS_TO_TEMPORAL_TYPE
+        from tpllm.integrations.runtime import _EVENT_SCOPE_MAP
+        from tpllm.runtime.sources import EVENT_CLASS_TO_TEMPORAL_TYPE
 
         known = set(_EVENT_SCOPE_MAP) | set(EVENT_CLASS_TO_TEMPORAL_TYPE)
         assert JIRA_EMITTED_EVENT_CLASSES <= known
@@ -402,8 +402,8 @@ class TestTheEventVocabularyIsClosed:
         a state transition the bitemporal layer should assert, so a
         ticket lands as observed evidence while a blocker — which is a
         real organizational transition — gets its own temporal type."""
-        from lltpm.integrations.runtime import _EVENT_SCOPE_MAP
-        from lltpm.runtime.sources import EVENT_CLASS_TO_TEMPORAL_TYPE
+        from tpllm.integrations.runtime import _EVENT_SCOPE_MAP
+        from tpllm.runtime.sources import EVENT_CLASS_TO_TEMPORAL_TYPE
 
         assert {"ticket_updated", "ticket_completed"} <= set(
             _EVENT_SCOPE_MAP
@@ -1260,7 +1260,7 @@ class TestNoCredentialSurvives:
     def test_no_fixture_carries_a_credential_shape(self):
         """A committed fixture must not carry a secret even a synthetic
         one, because the next person to read it cannot tell."""
-        from lltpm.integrations.envelopes import redact_secret_text
+        from tpllm.integrations.envelopes import redact_secret_text
         import json
 
         for name in fx.fixture_names():
@@ -1331,7 +1331,7 @@ class TestTheRegistryEntryPoint:
         provider."""
         import inspect
 
-        from lltpm.integrations import normalizers as github
+        from tpllm.integrations import normalizers as github
 
         assert inspect.signature(normalize_payload) == inspect.signature(
             github.normalize_payload

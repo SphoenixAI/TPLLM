@@ -12,7 +12,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from lltpm.application import (
+from tpllm.application import (
     ActiveCalibrationRecord,
     ActiveCalibrationRegistry,
     ActiveRegistryStatus,
@@ -27,8 +27,8 @@ from lltpm.application import (
     register_active_calibration,
     score_option_with_active_calibrations,
 )
-from lltpm.application.registry import RankerCalibrationTrace
-from lltpm.structural.intervention import InterventionOption, InterventionType
+from tpllm.application.registry import RankerCalibrationTrace
+from tpllm.structural.intervention import InterventionOption, InterventionType
 
 
 # ── Fixtures ─────────────────────────────────────────────────────────
@@ -470,8 +470,8 @@ class TestBaseScorePreserved:
 class TestNoGovernanceAuthority:
     def test_registry_source_has_no_authority_literals(self):
         import inspect
-        import lltpm.application.registry as reg
-        import lltpm.application.ranker_adapter as adapter
+        import tpllm.application.registry as reg
+        import tpllm.application.ranker_adapter as adapter
 
         forbidden = [
             "issue_approval(",
@@ -494,8 +494,8 @@ class TestNoGovernanceAuthority:
 class TestNoRankerSourceEdit:
     def test_adapter_source_has_no_mutation_literals(self):
         import inspect
-        import lltpm.application.registry as reg
-        import lltpm.application.ranker_adapter as adapter
+        import tpllm.application.registry as reg
+        import tpllm.application.ranker_adapter as adapter
 
         forbidden = [
             "write(",
