@@ -17,7 +17,7 @@ checked and what the result means.
 | Area | Result |
 |---|---|
 | Git history secret scan | **passed** — 83 commits, 1010 blobs, no credential outside the test suite; no rewrite needed |
-| Dependency vulnerabilities | **passed** — base install and all seven extras clean |
+| Dependency vulnerabilities | **base install and `dev` clean; advisories in two extras** — see §3 |
 | SBOM | **generated** — CycloneDX 1.6, 28 components, 27 with licence metadata |
 | Wheel contents | **passed** |
 | Sdist contents | **passed after a fix** — excluded development-only files |
@@ -162,7 +162,23 @@ python scripts/audit_dependencies.py        # per-extra closures
 python scripts/generate_sbom.py -o sbom.json
 ```
 
-**Result: base and all seven extras clean.**
+**Result: the base install and `dev` are clean. Three transitive
+packages in two extras carry advisories.**
+
+| Extra | Package | Advisories | Fixed in |
+|---|---|---|---|
+| `dashboard` | starlette 0.52.1 | 5 | 1.0.1 / 1.1.0 / 1.3.0 |
+| `voice` | torch 2.6.0 | 22 | 2.7.0 / 2.10.0 / 2.13.0 |
+| `voice` | transformers 5.2.0 | 4 | 5.3.0 / 5.5.0 / 5.10.0 |
+
+These are pinned transitively through `fastapi`/`uvicorn` and the TTS
+backends rather than declared here, and none is reachable from the base
+install. A finding in the base install blocks a release; a finding in an
+extra is reported with the extra named, because a user who never
+installs it is not exposed and a user who does needs to know which one
+carried it. An earlier run of this audit found every extra clean — the
+difference is advisories published since, which is the argument for
+running this at each release rather than trusting the last result.
 
 `pip-audit` with no arguments reported 89 vulnerabilities across 8
 packages in this container, and **not one was an TPLLM dependency** —
