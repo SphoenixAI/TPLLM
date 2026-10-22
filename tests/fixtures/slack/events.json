@@ -1,0 +1,102 @@
+[
+ {
+  "api_app_id": "A0ABCDEF",
+  "authorizations": [
+   {
+    "enterprise_id": null,
+    "is_bot": true,
+    "is_enterprise_install": false,
+    "team_id": "T0ABCDEF",
+    "user_id": "U0ABCDE9"
+   }
+  ],
+  "event": {
+   "channel": "C0ABCDEF",
+   "channel_type": "channel",
+   "event_ts": "1772028000.000900",
+   "team": "T0ABCDEF",
+   "text": "Decision: we ship without the backfill. Logged in ADR-14.",
+   "ts": "1772028000.000900",
+   "type": "message",
+   "user": "U0ABCDEF"
+  },
+  "event_context": "4-eyJldCI6Im1lc3NhZ2UifQ",
+  "event_id": "Ev0ABCDEF1",
+  "event_time": 1772028000,
+  "is_ext_shared_channel": false,
+  "team_id": "T0ABCDEF",
+  "type": "event_callback"
+ },
+ {
+  "api_app_id": "A0ABCDEF",
+  "event": {
+   "channel": "C0ABCDEF",
+   "channel_type": "channel",
+   "event_ts": "1772028300.000940",
+   "parent_user_id": "U0ABCDEF",
+   "team": "T0ABCDEF",
+   "text": "Clarification: 4.3 means the March train, not April.",
+   "thread_ts": "1772028000.000900",
+   "ts": "1772028300.000940",
+   "type": "message",
+   "user": "U0ABCDE1"
+  },
+  "event_id": "Ev0ABCDEF3",
+  "event_time": 1772028300,
+  "team_id": "T0ABCDEF",
+  "type": "event_callback"
+ },
+ {
+  "api_app_id": "A0ABCDEF",
+  "event": {
+   "channel": "C0ABCDEF",
+   "channel_type": "channel",
+   "event_ts": "1772028540.000950",
+   "hidden": true,
+   "message": {
+    "edited": {
+     "ts": "1772028540.000950",
+     "user": "U0ABCDEF"
+    },
+    "team": "T0ABCDEF",
+    "text": "Conclusion: scope cut stands, backfill moves to 4.4.",
+    "ts": "1772028000.000900",
+    "type": "message",
+    "user": "U0ABCDEF"
+   },
+   "previous_message": {
+    "team": "T0ABCDEF",
+    "text": "Conclusion: scope cut stands, backfill moves to 4.3.",
+    "ts": "1772028000.000900",
+    "type": "message",
+    "user": "U0ABCDEF"
+   },
+   "subtype": "message_changed",
+   "ts": "1772028540.000950",
+   "type": "message"
+  },
+  "event_id": "Ev0ABCDEF4",
+  "event_time": 1772028540,
+  "team_id": "T0ABCDEF",
+  "type": "event_callback"
+ },
+ {
+  "api_app_id": "A0ABCDEF",
+  "event": {
+   "event_ts": "1772028120.000910",
+   "item": {
+    "channel": "C0ABCDEF",
+    "ts": "1772028000.000900",
+    "type": "message"
+   },
+   "item_user": "U0ABCDEF",
+   "reaction": "thumbsup",
+   "type": "reaction_added",
+   "user": "U0ABCDE1"
+  },
+  "event_id": "Ev0ABCDEF2",
+  "event_time": 1772028120,
+  "team_id": "T0ABCDEF",
+  "type": "event_callback"
+ }
+]

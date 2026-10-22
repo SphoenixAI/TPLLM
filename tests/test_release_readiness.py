@@ -64,6 +64,33 @@ REQUIRED_IN_WHEEL = {
 }
 
 
+def _expected_prefixes() -> tuple[str, ...]:
+    """The history scanner's own list of locations that legitimately
+    contain credential-shaped strings.
+
+    Read by parsing rather than importing. Executing the script would
+    register nothing in `sys.modules`, which the dataclass machinery in
+    it needs, and a test has no business running a scanner's
+    module-level code to read one constant.
+    """
+    import ast
+
+    source = (_ROOT / "scripts" / "scan_history.py").read_text()
+    for node in ast.parse(source).body:
+        if (
+            isinstance(node, ast.Assign)
+            and any(
+                isinstance(target, ast.Name)
+                and target.id == "EXPECTED_PREFIXES"
+                for target in node.targets
+            )
+        ):
+            return tuple(ast.literal_eval(node.value))
+    raise AssertionError(
+        "scripts/scan_history.py no longer declares EXPECTED_PREFIXES"
+    )
+
+
 @pytest.fixture(scope="module")
 def pyproject() -> dict:
     return tomllib.loads((_ROOT / "pyproject.toml").read_text())
@@ -145,19 +172,26 @@ class TestNothingPrivateIsCommitted:
     )
 
     def test_no_credential_is_committed(self, tracked_files):
-        """Scanned outside the test suite only.
+        """Scanned outside the locations the history scanner already
+        knows about.
 
-        A test that asserts credential redaction has to contain the
-        thing being redacted, and no scanner can tell a synthetic
-        `ghp_ABCDEF...` in a redaction test from a real one. Excluding
-        `tests/` keeps this check meaningful where it matters — shipped
-        code, docs, CI and deployment files — instead of making it
-        unrunnable.
+        The exclusion list is imported from `scripts/scan_history.py`
+        rather than restated here. Two scanners with two lists drifted
+        the moment the second one existed: this test flagged the history
+        scanner's own AWS canary, which the history scanner had always
+        known to expect. One list, one place.
+
+        Those locations are excluded because a test asserting credential
+        redaction has to contain the thing being redacted, and a
+        scanner's self-test has to contain a credential-shaped string to
+        prove it still fires. No scanner can tell those from a real
+        leak by content alone.
         """
+        expected = _expected_prefixes()
         offenders = []
         for name in tracked_files:
             path = _ROOT / name
-            if name.startswith("tests/"):
+            if name.startswith(expected):
                 continue
             if not path.is_file() or path.suffix in {".png", ".jpg", ".ico"}:
                 continue

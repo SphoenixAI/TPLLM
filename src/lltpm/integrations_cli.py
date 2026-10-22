@@ -473,7 +473,7 @@ def verify(repository: str, source: str, limit: int, token: str) -> None:
             breached = True
 
     console.print(table)
-    for kind in bundle.unverifiable_kinds:
+    for kind in bundle.not_live_verifiable_kinds:
         errors.print(
             f"[yellow]note[/yellow] the '{kind}' contract is "
             f"{bundle.provenance.get(kind)}, so nothing here verifies it"

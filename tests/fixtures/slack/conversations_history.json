@@ -1,0 +1,22 @@
+[
+ {
+  "channel_actions_count": 0,
+  "channel_actions_ts": null,
+  "has_more": true,
+  "messages": [
+   {
+    "team": "T0ABCDEF",
+    "text": "Proposal: cut scope to the v2 import path for the launch.",
+    "thread_ts": "1772010000.000100",
+    "ts": "1772010000.000100",
+    "type": "message",
+    "user": "U0ABCDEF"
+   }
+  ],
+  "ok": true,
+  "pin_count": 0,
+  "response_metadata": {
+   "next_cursor": "bWVzc2FnZToxNzcxOTk3NjAwLjAwMDEwMA=="
+  }
+ }
+]

@@ -1,0 +1,62 @@
+{
+ "fixtures": {
+  "changelog_entries": {
+   "derivation": "Reproduced from Atlassian's own published Jira Cloud REST API v3 documentation examples for this endpoint: the field names, nesting and value formats are the documented ones, with synthetic values (acme.atlassian.net, the ABC project, Atlassian's own example-style accountIds). Avatar URL maps and email addresses that appear in the published examples are omitted, because no normalizer reads them and a committed fixture should not carry contact details at all. This is therefore evidence that the shape is the *documented* one and is NOT evidence that the live API still matches it: documentation drifts from implementations, api.atlassian.com is unreachable from this environment, and no response was recorded. `lltpm integrations verify` reports it as unverifiable rather than passing. The entries cover every changelog item class the normalizer decides about: a status transition, a priority and due-date change saved together in one entry, an assignee change (accountId in `to`, display name in `toString`), a Link change, a time-spent and worklog pair, a Sprint custom field, and a resolution plus status pair.",
+   "endpoint": "GET /rest/api/3/issue/{issueIdOrKey}/changelog",
+   "payload_kind": "changelog",
+   "provenance": "official_documentation",
+   "recorded_at": "",
+   "samples": 7,
+   "source_system": "jira"
+  },
+  "comments": {
+   "derivation": "Reproduced from Atlassian's own published Jira Cloud REST API v3 documentation examples for this endpoint: the field names, nesting and value formats are the documented ones, with synthetic values (acme.atlassian.net, the ABC project, Atlassian's own example-style accountIds). Avatar URL maps and email addresses that appear in the published examples are omitted, because no normalizer reads them and a committed fixture should not carry contact details at all. This is therefore evidence that the shape is the *documented* one and is NOT evidence that the live API still matches it: documentation drifts from implementations, api.atlassian.com is unreachable from this environment, and no response was recorded. `lltpm integrations verify` reports it as unverifiable rather than passing. Three samples: a plain Atlassian Document Format comment, one whose `updated` differs from its `created` so the edited-comment path has a sample, and one carrying a role visibility restriction.",
+   "endpoint": "GET /rest/api/3/issue/{issueIdOrKey}/comment",
+   "payload_kind": "comment",
+   "provenance": "official_documentation",
+   "recorded_at": "",
+   "samples": 3,
+   "source_system": "jira"
+  },
+  "issue_links": {
+   "derivation": "Reproduced from Atlassian's own published Jira Cloud REST API v3 documentation examples for this endpoint: the field names, nesting and value formats are the documented ones, with synthetic values (acme.atlassian.net, the ABC project, Atlassian's own example-style accountIds). Avatar URL maps and email addresses that appear in the published examples are omitted, because no normalizer reads them and a committed fixture should not carry contact details at all. This is therefore evidence that the shape is the *documented* one and is NOT evidence that the live API still matches it: documentation drifts from implementations, api.atlassian.com is unreachable from this environment, and no response was recorded. `lltpm integrations verify` reports it as unverifiable rather than passing. Five samples, one per decision the link mapping makes: Blocks seen from the blocked side with the blocker still open, the same with the blocker in a done category, Blocks seen from the blocking side, Relates, and Duplicate.",
+   "endpoint": "GET /rest/api/3/issue/{issueIdOrKey} (fields.issuelinks)",
+   "payload_kind": "issue_link",
+   "provenance": "official_documentation",
+   "recorded_at": "",
+   "samples": 5,
+   "source_system": "jira"
+  },
+  "issues": {
+   "derivation": "Reproduced from Atlassian's own published Jira Cloud REST API v3 documentation examples for this endpoint: the field names, nesting and value formats are the documented ones, with synthetic values (acme.atlassian.net, the ABC project, Atlassian's own example-style accountIds). Avatar URL maps and email addresses that appear in the published examples are omitted, because no normalizer reads them and a committed fixture should not carry contact details at all. This is therefore evidence that the shape is the *documented* one and is NOT evidence that the live API still matches it: documentation drifts from implementations, api.atlassian.com is unreachable from this environment, and no response was recorded. `lltpm integrations verify` reports it as unverifiable rather than passing. Three samples cover the three mappings the snapshot has: an in-progress ticket (expanded with its changelog, comments and issue links), a ticket in a done status category with a resolution, and a minimal ticket with no description, priority or assignee so the contract records which fields are genuinely optional.",
+   "endpoint": "GET /rest/api/3/issue/{issueIdOrKey}?expand=changelog",
+   "payload_kind": "issue",
+   "provenance": "official_documentation",
+   "recorded_at": "",
+   "samples": 3,
+   "source_system": "jira"
+  },
+  "search_pages": {
+   "derivation": "Reproduced from Atlassian's own published Jira Cloud REST API v3 documentation examples for this endpoint: the field names, nesting and value formats are the documented ones, with synthetic values (acme.atlassian.net, the ABC project, Atlassian's own example-style accountIds). Avatar URL maps and email addresses that appear in the published examples are omitted, because no normalizer reads them and a committed fixture should not carry contact details at all. This is therefore evidence that the shape is the *documented* one and is NOT evidence that the live API still matches it: documentation drifts from implementations, api.atlassian.com is unreachable from this environment, and no response was recorded. `lltpm integrations verify` reports it as unverifiable rather than passing. Two pages, because one page cannot exercise pagination: the first carries a nextPageToken with isLast false, the second omits the token and sets isLast true. This is the shape most likely to have drifted and the first thing to re-verify once egress exists.",
+   "endpoint": "GET /rest/api/3/search/jql?jql={jql}",
+   "endpoint_note": "The token-paginated enhanced search. The offset-paginated GET /rest/api/3/search is deprecated on Jira Cloud and is deliberately not used.",
+   "payload_kind": "search",
+   "provenance": "official_documentation",
+   "recorded_at": "",
+   "samples": 2,
+   "source_system": "jira"
+  },
+  "webhooks": {
+   "derivation": "Reproduced from Atlassian's own published Jira Cloud REST API v3 documentation examples for this endpoint: the field names, nesting and value formats are the documented ones, with synthetic values (acme.atlassian.net, the ABC project, Atlassian's own example-style accountIds). Avatar URL maps and email addresses that appear in the published examples are omitted, because no normalizer reads them and a committed fixture should not carry contact details at all. This is therefore evidence that the shape is the *documented* one and is NOT evidence that the live API still matches it: documentation drifts from implementations, api.atlassian.com is unreachable from this environment, and no response was recorded. `lltpm integrations verify` reports it as unverifiable rather than passing. Three deliveries: an issue_updated carrying both the issue and the changelog entry that caused it, a comment_created, and a worklog_updated that the normalizer declines to interpret. Note that no delivery here is signed: a signature is computed over raw bytes in the webhook tests rather than stored, since a committed fixture must not carry a secret.",
+   "endpoint": "GET /rest/api/3/webhook (delivery body shape; nothing in this repository hosts a receiver yet)",
+   "payload_kind": "webhook",
+   "provenance": "official_documentation",
+   "recorded_at": "",
+   "samples": 3,
+   "source_system": "jira"
+  }
+ },
+ "note": "Jira Cloud REST v3 payloads for offline contract tests. Every file here has provenance 'official_documentation': it follows the shape Atlassian publishes for the endpoint, with synthetic values, and nothing was recorded from a live site \u2014 the network policy in this environment cannot reach api.atlassian.com or any *.atlassian.net host. That is weaker than a recording and stronger than a hand-written mock, and it is labelled as exactly that: calling one of these 'recorded' would claim a live check that never happened.",
+ "project_key": "ABC",
+ "site_alias": "acme.atlassian.net"
+}

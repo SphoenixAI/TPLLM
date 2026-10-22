@@ -1,0 +1,19 @@
+[
+ {
+  "channel": "C0ABCDEF",
+  "deleted_ts": "1772010000.000100",
+  "event_ts": "1772103600.000400",
+  "hidden": true,
+  "previous_message": {
+   "team": "T0ABCDEF",
+   "text": "Proposal: cut scope to the v3 import path for the launch.",
+   "thread_ts": "1772010000.000100",
+   "ts": "1772010000.000100",
+   "type": "message",
+   "user": "U0ABCDEF"
+  },
+  "subtype": "message_deleted",
+  "ts": "1772103600.000400",
+  "type": "message"
+ }
+]

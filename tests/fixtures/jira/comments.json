@@ -1,0 +1,121 @@
+[
+ {
+  "author": {
+   "accountId": "5b10a0effa615349cb016cd8",
+   "accountType": "atlassian",
+   "active": true,
+   "displayName": "Example Commenter",
+   "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10a0effa615349cb016cd8",
+   "timeZone": "Australia/Sydney"
+  },
+  "body": {
+   "content": [
+    {
+     "content": [
+      {
+       "text": "Approved from my side, the staging numbers look fine to me.",
+       "type": "text"
+      }
+     ],
+     "type": "paragraph"
+    }
+   ],
+   "type": "doc",
+   "version": 1
+  },
+  "created": "2026-10-02T11:04:19.332+0000",
+  "id": "10100",
+  "jsdPublic": true,
+  "self": "https://acme.atlassian.net/rest/api/3/issue/10005/comment/10100",
+  "updateAuthor": {
+   "accountId": "5b10a0effa615349cb016cd8",
+   "accountType": "atlassian",
+   "active": true,
+   "displayName": "Example Commenter",
+   "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10a0effa615349cb016cd8",
+   "timeZone": "Australia/Sydney"
+  },
+  "updated": "2026-10-02T11:04:19.332+0000"
+ },
+ {
+  "author": {
+   "accountId": "5b10ac8d82e05b22cc7d4ef5",
+   "accountType": "atlassian",
+   "active": true,
+   "displayName": "Example Reporter",
+   "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5",
+   "timeZone": "Australia/Sydney"
+  },
+  "body": {
+   "content": [
+    {
+     "content": [
+      {
+       "text": "Correction: the staging cluster is still waiting on the network change, so this is not ready.",
+       "type": "text"
+      }
+     ],
+     "type": "paragraph"
+    }
+   ],
+   "type": "doc",
+   "version": 1
+  },
+  "created": "2026-10-03T08:15:00.000+0000",
+  "id": "10101",
+  "jsdPublic": true,
+  "self": "https://acme.atlassian.net/rest/api/3/issue/10005/comment/10101",
+  "updateAuthor": {
+   "accountId": "5b10ac8d82e05b22cc7d4ef5",
+   "accountType": "atlassian",
+   "active": true,
+   "displayName": "Example Reporter",
+   "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5",
+   "timeZone": "Australia/Sydney"
+  },
+  "updated": "2026-10-03T09:41:27.118+0000"
+ },
+ {
+  "author": {
+   "accountId": "5b10a0effa615349cb016cd8",
+   "accountType": "atlassian",
+   "active": true,
+   "displayName": "Example Commenter",
+   "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10a0effa615349cb016cd8",
+   "timeZone": "Australia/Sydney"
+  },
+  "body": {
+   "content": [
+    {
+     "content": [
+      {
+       "text": "Internal note for the administrators only.",
+       "type": "text"
+      }
+     ],
+     "type": "paragraph"
+    }
+   ],
+   "type": "doc",
+   "version": 1
+  },
+  "created": "2026-10-04T15:00:00.000+0000",
+  "id": "10102",
+  "jsdPublic": true,
+  "self": "https://acme.atlassian.net/rest/api/3/issue/10005/comment/10102",
+  "updateAuthor": {
+   "accountId": "5b10a0effa615349cb016cd8",
+   "accountType": "atlassian",
+   "active": true,
+   "displayName": "Example Commenter",
+   "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10a0effa615349cb016cd8",
+   "timeZone": "Australia/Sydney"
+  },
+  "updated": "2026-10-04T15:00:00.000+0000",
+  "visibility": {
+   "identifier": "10002",
+   "type": "role",
+   "value": "Administrators"
+  }
+ }
+]

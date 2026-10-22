@@ -1,0 +1,20 @@
+[
+ {
+  "channel": "C0ABCDEF",
+  "subtype": "channel_topic",
+  "text": "<@U0ABCDE2> set the channel topic: Release 4.2 \u2014 code freeze 2026-03-03, owner: platform",
+  "topic": "Release 4.2 \u2014 code freeze 2026-03-03, owner: platform",
+  "ts": "1771921800.000500",
+  "type": "message",
+  "user": "U0ABCDE2"
+ },
+ {
+  "channel": "C0ABCDEF",
+  "purpose": "Coordination for the Atlas import rewrite.",
+  "subtype": "channel_purpose",
+  "text": "<@U0ABCDE2> set the channel purpose: Coordination for the Atlas import rewrite.",
+  "ts": "1771921860.000600",
+  "type": "message",
+  "user": "U0ABCDE2"
+ }
+]

@@ -1,0 +1,17 @@
+[
+ {
+  "bot_id": "B0ABCDEF",
+  "subtype": "bot_message",
+  "text": "Build 4812 succeeded on main.",
+  "ts": "1772010600.000700",
+  "type": "message",
+  "username": "ci"
+ },
+ {
+  "subtype": "channel_join",
+  "text": "<@U0ABCDE1> has joined the channel",
+  "ts": "1772009700.000800",
+  "type": "message",
+  "user": "U0ABCDE1"
+ }
+]

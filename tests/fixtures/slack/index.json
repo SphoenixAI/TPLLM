@@ -1,0 +1,70 @@
+{
+ "channel_alias": "C0ABCDEF",
+ "fixtures": {
+  "channel_scope": {
+   "derivation": "The documented `channel_topic` and `channel_purpose` message subtypes, one sample each. Workspace, channel, user, bot, app and event ids are replaced with obviously synthetic placeholders (T0ABCDEF / C0ABCDEF / U0ABCDEF and friends) and the ts values are moved to February 2026 so the bitemporal assertions have a reality time distinct from any plausible test clock. The deprecated verification `token` field is omitted entirely: a committed fixture carries no credential-shaped value. Nothing else is changed \u2014 the field set, the nesting and the type of every value are the published ones. This is therefore NOT a recording: slack.com was unreachable from the environment this integration was built in, so no live response could be captured, and calling it `recorded` would claim a verification that never happened. It is evidence that the shape is the documented one, and no evidence that the live API still matches it.",
+   "endpoint": "GET /api/conversations.history?channel={channel}&limit=100",
+   "payload_kind": "channel_scope",
+   "provenance": "official_documentation",
+   "recorded_at": "",
+   "samples": 2,
+   "source_system": "slack"
+  },
+  "conversations_history": {
+   "derivation": "The documented `conversations.history` response envelope, which is what the reader rather than a normalizer depends on: `ok`, `has_more` and the opaque `response_metadata.next_cursor` that pagination follows. Workspace, channel, user, bot, app and event ids are replaced with obviously synthetic placeholders (T0ABCDEF / C0ABCDEF / U0ABCDEF and friends) and the ts values are moved to February 2026 so the bitemporal assertions have a reality time distinct from any plausible test clock. The deprecated verification `token` field is omitted entirely: a committed fixture carries no credential-shaped value. Nothing else is changed \u2014 the field set, the nesting and the type of every value are the published ones. This is therefore NOT a recording: slack.com was unreachable from the environment this integration was built in, so no live response could be captured, and calling it `recorded` would claim a verification that never happened. It is evidence that the shape is the documented one, and no evidence that the live API still matches it.",
+   "endpoint": "GET /api/conversations.history?channel={channel}&limit=100",
+   "payload_kind": "conversations_history",
+   "provenance": "official_documentation",
+   "recorded_at": "",
+   "samples": 1,
+   "source_system": "slack"
+  },
+  "declined_messages": {
+   "derivation": "The documented `bot_message` and `channel_join` message subtypes, which exist here to exercise the paths where the normalizer declines to interpret a shape and says why. They share the `message` payload kind, which is why that contract records `user` and `text` as optional \u2014 on the history endpoint they genuinely are. Workspace, channel, user, bot, app and event ids are replaced with obviously synthetic placeholders (T0ABCDEF / C0ABCDEF / U0ABCDEF and friends) and the ts values are moved to February 2026 so the bitemporal assertions have a reality time distinct from any plausible test clock. The deprecated verification `token` field is omitted entirely: a committed fixture carries no credential-shaped value. Nothing else is changed \u2014 the field set, the nesting and the type of every value are the published ones. This is therefore NOT a recording: slack.com was unreachable from the environment this integration was built in, so no live response could be captured, and calling it `recorded` would claim a verification that never happened. It is evidence that the shape is the documented one, and no evidence that the live API still matches it.",
+   "endpoint": "GET /api/conversations.history?channel={channel}&limit=100",
+   "payload_kind": "message",
+   "provenance": "official_documentation",
+   "recorded_at": "",
+   "samples": 2,
+   "source_system": "slack"
+  },
+  "events": {
+   "derivation": "The documented Events API `event_callback` wrapper: a channel message, a thread reply, a `message_changed` edit, and a `reaction_added` the normalizer declines. An Events API delivery cannot be fetched at all \u2014 it is pushed to a hosted endpoint this project does not yet run \u2014 so the endpoint field names the delivery rather than a GET that would return it. Workspace, channel, user, bot, app and event ids are replaced with obviously synthetic placeholders (T0ABCDEF / C0ABCDEF / U0ABCDEF and friends) and the ts values are moved to February 2026 so the bitemporal assertions have a reality time distinct from any plausible test clock. The deprecated verification `token` field is omitted entirely: a committed fixture carries no credential-shaped value. Nothing else is changed \u2014 the field set, the nesting and the type of every value are the published ones. This is therefore NOT a recording: slack.com was unreachable from the environment this integration was built in, so no live response could be captured, and calling it `recorded` would claim a verification that never happened. It is evidence that the shape is the documented one, and no evidence that the live API still matches it.",
+   "endpoint": "GET /api/apps.event.authorizations.list (Events API delivery)",
+   "payload_kind": "event",
+   "provenance": "official_documentation",
+   "recorded_at": "",
+   "samples": 4,
+   "source_system": "slack"
+  },
+  "message_changed": {
+   "derivation": "The documented `message_changed` shape: the post-edit message under `message`, the pre-edit text under `previous_message`, and the edit's own time under `message.edited.ts`. Workspace, channel, user, bot, app and event ids are replaced with obviously synthetic placeholders (T0ABCDEF / C0ABCDEF / U0ABCDEF and friends) and the ts values are moved to February 2026 so the bitemporal assertions have a reality time distinct from any plausible test clock. The deprecated verification `token` field is omitted entirely: a committed fixture carries no credential-shaped value. Nothing else is changed \u2014 the field set, the nesting and the type of every value are the published ones. This is therefore NOT a recording: slack.com was unreachable from the environment this integration was built in, so no live response could be captured, and calling it `recorded` would claim a verification that never happened. It is evidence that the shape is the documented one, and no evidence that the live API still matches it.",
+   "endpoint": "GET /api/conversations.history?channel={channel}&limit=100",
+   "payload_kind": "message_changed",
+   "provenance": "official_documentation",
+   "recorded_at": "",
+   "samples": 1,
+   "source_system": "slack"
+  },
+  "message_deleted": {
+   "derivation": "The documented `message_deleted` shape, where `deleted_ts` identifies the message that went away and the outer `ts` is when the deletion happened. Workspace, channel, user, bot, app and event ids are replaced with obviously synthetic placeholders (T0ABCDEF / C0ABCDEF / U0ABCDEF and friends) and the ts values are moved to February 2026 so the bitemporal assertions have a reality time distinct from any plausible test clock. The deprecated verification `token` field is omitted entirely: a committed fixture carries no credential-shaped value. Nothing else is changed \u2014 the field set, the nesting and the type of every value are the published ones. This is therefore NOT a recording: slack.com was unreachable from the environment this integration was built in, so no live response could be captured, and calling it `recorded` would claim a verification that never happened. It is evidence that the shape is the documented one, and no evidence that the live API still matches it.",
+   "endpoint": "GET /api/conversations.history?channel={channel}&limit=100",
+   "payload_kind": "message_deleted",
+   "provenance": "official_documentation",
+   "recorded_at": "",
+   "samples": 1,
+   "source_system": "slack"
+  },
+  "messages": {
+   "derivation": "The documented message object in its four shapes: a thread root, a reply carrying `thread_ts` and `parent_user_id`, an already-edited history item carrying `edited.ts`, and the Events API form that carries `channel` and `channel_type`. A polled history item has no `channel` field at all, which is why the normalizer takes the channel as an argument as well as reading it, and why that field is optional in the contract. Workspace, channel, user, bot, app and event ids are replaced with obviously synthetic placeholders (T0ABCDEF / C0ABCDEF / U0ABCDEF and friends) and the ts values are moved to February 2026 so the bitemporal assertions have a reality time distinct from any plausible test clock. The deprecated verification `token` field is omitted entirely: a committed fixture carries no credential-shaped value. Nothing else is changed \u2014 the field set, the nesting and the type of every value are the published ones. This is therefore NOT a recording: slack.com was unreachable from the environment this integration was built in, so no live response could be captured, and calling it `recorded` would claim a verification that never happened. It is evidence that the shape is the documented one, and no evidence that the live API still matches it.",
+   "endpoint": "GET /api/conversations.replies?channel={channel}&ts={ts}&limit=100",
+   "payload_kind": "message",
+   "provenance": "official_documentation",
+   "recorded_at": "",
+   "samples": 4,
+   "source_system": "slack"
+  }
+ },
+ "note": "Slack payloads for offline contract tests. Every file here has provenance `official_documentation`: the shape is reproduced from Slack's own published API documentation examples, with synthetic ids. slack.com, api.slack.com and www.slack.com were unreachable from the environment this integration was built in, so every file here is documentation-faithful and not a recording of anything, and none of it is evidence that the live API still matches. `lltpm integrations verify` reports these contracts as unverifiable rather than letting them pass as verified. No real workspace, channel, person or token appears in any file.",
+ "workspace_alias": "T0ABCDEF"
+}

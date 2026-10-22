@@ -1,0 +1,188 @@
+[
+ {
+  "author": {
+   "accountId": "5b10a2844c20165700ede21g",
+   "accountType": "atlassian",
+   "active": true,
+   "displayName": "Example Assignee",
+   "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g",
+   "timeZone": "Australia/Sydney"
+  },
+  "created": "2026-09-14T09:12:30.000+0000",
+  "id": "10300",
+  "items": [
+   {
+    "field": "status",
+    "fieldId": "status",
+    "fieldtype": "jira",
+    "from": "10000",
+    "fromString": "To Do",
+    "to": "3",
+    "toString": "In Progress"
+   }
+  ]
+ },
+ {
+  "author": {
+   "accountId": "5b10ac8d82e05b22cc7d4ef5",
+   "accountType": "atlassian",
+   "active": true,
+   "displayName": "Example Reporter",
+   "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5",
+   "timeZone": "Australia/Sydney"
+  },
+  "created": "2026-09-28T16:45:02.000+0000",
+  "id": "10301",
+  "items": [
+   {
+    "field": "priority",
+    "fieldId": "priority",
+    "fieldtype": "jira",
+    "from": "3",
+    "fromString": "Medium",
+    "to": "2",
+    "toString": "High"
+   },
+   {
+    "field": "duedate",
+    "fieldId": "duedate",
+    "fieldtype": "jira",
+    "from": "2026-10-15",
+    "fromString": "2026-10-15",
+    "to": "2026-10-22",
+    "toString": "2026-10-22"
+   }
+  ]
+ },
+ {
+  "author": {
+   "accountId": "5b10ac8d82e05b22cc7d4ef5",
+   "accountType": "atlassian",
+   "active": true,
+   "displayName": "Example Reporter",
+   "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5",
+   "timeZone": "Australia/Sydney"
+  },
+  "created": "2026-10-01T10:00:00.000+0000",
+  "id": "10302",
+  "items": [
+   {
+    "field": "assignee",
+    "fieldId": "assignee",
+    "fieldtype": "jira",
+    "from": null,
+    "fromString": null,
+    "to": "5b10a2844c20165700ede21g",
+    "toString": "Example Assignee"
+   }
+  ]
+ },
+ {
+  "author": {
+   "accountId": "5b10ac8d82e05b22cc7d4ef5",
+   "accountType": "atlassian",
+   "active": true,
+   "displayName": "Example Reporter",
+   "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5",
+   "timeZone": "Australia/Sydney"
+  },
+  "created": "2026-10-05T12:30:00.000+0000",
+  "id": "10303",
+  "items": [
+   {
+    "field": "Link",
+    "fieldtype": "jira",
+    "from": null,
+    "fromString": null,
+    "to": "ABC-43",
+    "toString": "This issue is blocked by ABC-43"
+   }
+  ]
+ },
+ {
+  "author": {
+   "accountId": "5b10a2844c20165700ede21g",
+   "accountType": "atlassian",
+   "active": true,
+   "displayName": "Example Assignee",
+   "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g",
+   "timeZone": "Australia/Sydney"
+  },
+  "created": "2026-10-06T07:20:00.000+0000",
+  "id": "10304",
+  "items": [
+   {
+    "field": "timespent",
+    "fieldId": "timespent",
+    "fieldtype": "jira",
+    "from": null,
+    "fromString": null,
+    "to": "14400",
+    "toString": "14400"
+   },
+   {
+    "field": "WorklogId",
+    "fieldtype": "jira",
+    "from": null,
+    "fromString": null,
+    "to": "10400",
+    "toString": "10400"
+   }
+  ]
+ },
+ {
+  "author": {
+   "accountId": "5b10ac8d82e05b22cc7d4ef5",
+   "accountType": "atlassian",
+   "active": true,
+   "displayName": "Example Reporter",
+   "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5",
+   "timeZone": "Australia/Sydney"
+  },
+  "created": "2026-10-07T09:00:00.000+0000",
+  "id": "10305",
+  "items": [
+   {
+    "field": "Sprint",
+    "fieldId": "customfield_10020",
+    "fieldtype": "custom",
+    "from": "",
+    "fromString": "",
+    "to": "42",
+    "toString": "Sprint 42"
+   }
+  ]
+ },
+ {
+  "author": {
+   "accountId": "5b10a2844c20165700ede21g",
+   "accountType": "atlassian",
+   "active": true,
+   "displayName": "Example Assignee",
+   "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g",
+   "timeZone": "Australia/Sydney"
+  },
+  "created": "2026-10-19T14:02:11.000+0000",
+  "id": "10306",
+  "items": [
+   {
+    "field": "resolution",
+    "fieldId": "resolution",
+    "fieldtype": "jira",
+    "from": null,
+    "fromString": null,
+    "to": "10000",
+    "toString": "Done"
+   },
+   {
+    "field": "status",
+    "fieldId": "status",
+    "fieldtype": "jira",
+    "from": "3",
+    "fromString": "In Progress",
+    "to": "10001",
+    "toString": "Done"
+   }
+  ]
+ }
+]

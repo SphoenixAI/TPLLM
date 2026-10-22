@@ -1,0 +1,254 @@
+[
+ {
+  "changelog": {
+   "author": {
+    "accountId": "5b10a2844c20165700ede21g",
+    "accountType": "atlassian",
+    "active": true,
+    "displayName": "Example Assignee",
+    "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g",
+    "timeZone": "Australia/Sydney"
+   },
+   "created": "2026-10-19T14:02:11.000+0000",
+   "id": "10306",
+   "items": [
+    {
+     "field": "resolution",
+     "fieldId": "resolution",
+     "fieldtype": "jira",
+     "from": null,
+     "fromString": null,
+     "to": "10000",
+     "toString": "Done"
+    },
+    {
+     "field": "status",
+     "fieldId": "status",
+     "fieldtype": "jira",
+     "from": "3",
+     "fromString": "In Progress",
+     "to": "10001",
+     "toString": "Done"
+    }
+   ]
+  },
+  "issue": {
+   "fields": {
+    "assignee": {
+     "accountId": "5b10a2844c20165700ede21g",
+     "accountType": "atlassian",
+     "active": true,
+     "displayName": "Example Assignee",
+     "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g",
+     "timeZone": "Australia/Sydney"
+    },
+    "created": "2026-09-02T09:30:00.000+0000",
+    "creator": {
+     "accountId": "5b10ac8d82e05b22cc7d4ef5",
+     "accountType": "atlassian",
+     "active": true,
+     "displayName": "Example Reporter",
+     "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5",
+     "timeZone": "Australia/Sydney"
+    },
+    "description": {
+     "content": [
+      {
+       "content": [
+        {
+         "text": "Stand up the staging cluster for the rollout.",
+         "type": "text"
+        }
+       ],
+       "type": "paragraph"
+      }
+     ],
+     "type": "doc",
+     "version": 1
+    },
+    "duedate": null,
+    "issuelinks": [],
+    "issuetype": {
+     "id": "10002",
+     "name": "Task",
+     "self": "https://acme.atlassian.net/rest/api/3/issuetype/10002",
+     "subtask": false
+    },
+    "labels": [],
+    "priority": {
+     "iconUrl": "https://acme.atlassian.net/images/icons/priorities/medium.svg",
+     "id": "3",
+     "name": "Medium",
+     "self": "https://acme.atlassian.net/rest/api/3/priority/3"
+    },
+    "project": {
+     "id": "10000",
+     "key": "ABC",
+     "name": "Example Platform",
+     "projectTypeKey": "software",
+     "self": "https://acme.atlassian.net/rest/api/3/project/10000",
+     "simplified": false,
+     "style": "classic"
+    },
+    "reporter": {
+     "accountId": "5b10ac8d82e05b22cc7d4ef5",
+     "accountType": "atlassian",
+     "active": true,
+     "displayName": "Example Reporter",
+     "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5",
+     "timeZone": "Australia/Sydney"
+    },
+    "resolution": {
+     "description": "Work has been completed on this issue.",
+     "id": "10000",
+     "name": "Done",
+     "self": "https://acme.atlassian.net/rest/api/3/resolution/10000"
+    },
+    "status": {
+     "description": "",
+     "iconUrl": "https://acme.atlassian.net/images/icons/statuses/generic.png",
+     "id": "10001",
+     "name": "Done",
+     "self": "https://acme.atlassian.net/rest/api/3/status/10001",
+     "statusCategory": {
+      "colorName": "blue-gray",
+      "id": 3,
+      "key": "done",
+      "name": "Done",
+      "self": "https://acme.atlassian.net/rest/api/3/statuscategory/3"
+     }
+    },
+    "summary": "Provision the staging cluster",
+    "updated": "2026-10-19T14:02:11.000+0000"
+   },
+   "id": "10006",
+   "key": "ABC-43",
+   "self": "https://acme.atlassian.net/rest/api/3/issue/10006"
+  },
+  "issue_event_type_name": "issue_generic",
+  "timestamp": 1792152731000,
+  "user": {
+   "accountId": "5b10a2844c20165700ede21g",
+   "accountType": "atlassian",
+   "active": true,
+   "displayName": "Example Assignee",
+   "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g",
+   "timeZone": "Australia/Sydney"
+  },
+  "webhookEvent": "jira:issue_updated"
+ },
+ {
+  "comment": {
+   "author": {
+    "accountId": "5b10a0effa615349cb016cd8",
+    "accountType": "atlassian",
+    "active": true,
+    "displayName": "Example Commenter",
+    "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10a0effa615349cb016cd8",
+    "timeZone": "Australia/Sydney"
+   },
+   "body": {
+    "content": [
+     {
+      "content": [
+       {
+        "text": "Approved from my side, the staging numbers look fine to me.",
+        "type": "text"
+       }
+      ],
+      "type": "paragraph"
+     }
+    ],
+    "type": "doc",
+    "version": 1
+   },
+   "created": "2026-10-02T11:04:19.332+0000",
+   "id": "10100",
+   "jsdPublic": true,
+   "self": "https://acme.atlassian.net/rest/api/3/issue/10005/comment/10100",
+   "updateAuthor": {
+    "accountId": "5b10a0effa615349cb016cd8",
+    "accountType": "atlassian",
+    "active": true,
+    "displayName": "Example Commenter",
+    "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10a0effa615349cb016cd8",
+    "timeZone": "Australia/Sydney"
+   },
+   "updated": "2026-10-02T11:04:19.332+0000"
+  },
+  "issue": {
+   "fields": {
+    "assignee": null,
+    "created": "2026-10-20T06:00:00.000+0000",
+    "creator": {
+     "accountId": "5b10ac8d82e05b22cc7d4ef5",
+     "accountType": "atlassian",
+     "active": true,
+     "displayName": "Example Reporter",
+     "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5",
+     "timeZone": "Australia/Sydney"
+    },
+    "description": null,
+    "issuelinks": [],
+    "issuetype": {
+     "id": "10001",
+     "name": "Story",
+     "self": "https://acme.atlassian.net/rest/api/3/issuetype/10001",
+     "subtask": false
+    },
+    "labels": [],
+    "priority": null,
+    "project": {
+     "id": "10000",
+     "key": "ABC",
+     "name": "Example Platform",
+     "projectTypeKey": "software",
+     "self": "https://acme.atlassian.net/rest/api/3/project/10000",
+     "simplified": false,
+     "style": "classic"
+    },
+    "reporter": {
+     "accountId": "5b10ac8d82e05b22cc7d4ef5",
+     "accountType": "atlassian",
+     "active": true,
+     "displayName": "Example Reporter",
+     "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5",
+     "timeZone": "Australia/Sydney"
+    },
+    "resolution": null,
+    "status": {
+     "description": "",
+     "iconUrl": "https://acme.atlassian.net/images/icons/statuses/generic.png",
+     "id": "10000",
+     "name": "To Do",
+     "self": "https://acme.atlassian.net/rest/api/3/status/10000",
+     "statusCategory": {
+      "colorName": "blue-gray",
+      "id": 2,
+      "key": "new",
+      "name": "To Do",
+      "self": "https://acme.atlassian.net/rest/api/3/statuscategory/2"
+     }
+    },
+    "summary": "Document the rollout runbook",
+    "updated": "2026-10-20T06:00:00.000+0000"
+   },
+   "id": "10007",
+   "key": "ABC-7",
+   "self": "https://acme.atlassian.net/rest/api/3/issue/10007"
+  },
+  "timestamp": 1791019459000,
+  "webhookEvent": "comment_created"
+ },
+ {
+  "timestamp": 1791019999000,
+  "webhookEvent": "worklog_updated",
+  "worklog": {
+   "id": "10400",
+   "issueId": "10005",
+   "self": "https://acme.atlassian.net/rest/api/3/issue/10005/worklog/10400",
+   "started": "2026-10-06T07:00:00.000+0000",
+   "timeSpentSeconds": 14400
+  }
+ }
+]

@@ -1,0 +1,227 @@
+[
+ {
+  "id": "10200",
+  "inwardIssue": {
+   "fields": {
+    "issuetype": {
+     "id": "10002",
+     "name": "Task",
+     "self": "https://acme.atlassian.net/rest/api/3/issuetype/10002",
+     "subtask": false
+    },
+    "priority": {
+     "iconUrl": "https://acme.atlassian.net/images/icons/priorities/medium.svg",
+     "id": "3",
+     "name": "Medium",
+     "self": "https://acme.atlassian.net/rest/api/3/priority/3"
+    },
+    "status": {
+     "description": "",
+     "iconUrl": "https://acme.atlassian.net/images/icons/statuses/generic.png",
+     "id": "3",
+     "name": "In Progress",
+     "self": "https://acme.atlassian.net/rest/api/3/status/3",
+     "statusCategory": {
+      "colorName": "blue-gray",
+      "id": 4,
+      "key": "indeterminate",
+      "name": "In Progress",
+      "self": "https://acme.atlassian.net/rest/api/3/statuscategory/4"
+     }
+    },
+    "summary": "Provision the staging cluster"
+   },
+   "id": "10006",
+   "key": "ABC-43",
+   "self": "https://acme.atlassian.net/rest/api/3/issue/10006"
+  },
+  "self": "https://acme.atlassian.net/rest/api/3/issueLink/10200",
+  "type": {
+   "id": "10000",
+   "inward": "is blocked by",
+   "name": "Blocks",
+   "outward": "blocks",
+   "self": "https://acme.atlassian.net/rest/api/3/issueLinkType/10000"
+  }
+ },
+ {
+  "id": "10201",
+  "outwardIssue": {
+   "fields": {
+    "issuetype": {
+     "id": "10002",
+     "name": "Task",
+     "self": "https://acme.atlassian.net/rest/api/3/issuetype/10002",
+     "subtask": false
+    },
+    "priority": {
+     "iconUrl": "https://acme.atlassian.net/images/icons/priorities/medium.svg",
+     "id": "3",
+     "name": "Medium",
+     "self": "https://acme.atlassian.net/rest/api/3/priority/3"
+    },
+    "status": {
+     "description": "",
+     "iconUrl": "https://acme.atlassian.net/images/icons/statuses/generic.png",
+     "id": "10000",
+     "name": "To Do",
+     "self": "https://acme.atlassian.net/rest/api/3/status/10000",
+     "statusCategory": {
+      "colorName": "blue-gray",
+      "id": 2,
+      "key": "new",
+      "name": "To Do",
+      "self": "https://acme.atlassian.net/rest/api/3/statuscategory/2"
+     }
+    },
+    "summary": "Document the rollout runbook"
+   },
+   "id": "10007",
+   "key": "ABC-7",
+   "self": "https://acme.atlassian.net/rest/api/3/issue/10007"
+  },
+  "self": "https://acme.atlassian.net/rest/api/3/issueLink/10201",
+  "type": {
+   "id": "10003",
+   "inward": "relates to",
+   "name": "Relates",
+   "outward": "relates to",
+   "self": "https://acme.atlassian.net/rest/api/3/issueLinkType/10003"
+  }
+ },
+ {
+  "id": "10202",
+  "outwardIssue": {
+   "fields": {
+    "issuetype": {
+     "id": "10002",
+     "name": "Task",
+     "self": "https://acme.atlassian.net/rest/api/3/issuetype/10002",
+     "subtask": false
+    },
+    "priority": {
+     "iconUrl": "https://acme.atlassian.net/images/icons/priorities/medium.svg",
+     "id": "3",
+     "name": "Medium",
+     "self": "https://acme.atlassian.net/rest/api/3/priority/3"
+    },
+    "status": {
+     "description": "",
+     "iconUrl": "https://acme.atlassian.net/images/icons/statuses/generic.png",
+     "id": "10000",
+     "name": "To Do",
+     "self": "https://acme.atlassian.net/rest/api/3/status/10000",
+     "statusCategory": {
+      "colorName": "blue-gray",
+      "id": 2,
+      "key": "new",
+      "name": "To Do",
+      "self": "https://acme.atlassian.net/rest/api/3/statuscategory/2"
+     }
+    },
+    "summary": "Switch the gateway credentials"
+   },
+   "id": "10008",
+   "key": "ABC-9",
+   "self": "https://acme.atlassian.net/rest/api/3/issue/10008"
+  },
+  "self": "https://acme.atlassian.net/rest/api/3/issueLink/10202",
+  "type": {
+   "id": "10000",
+   "inward": "is blocked by",
+   "name": "Blocks",
+   "outward": "blocks",
+   "self": "https://acme.atlassian.net/rest/api/3/issueLinkType/10000"
+  }
+ },
+ {
+  "id": "10203",
+  "inwardIssue": {
+   "fields": {
+    "issuetype": {
+     "id": "10002",
+     "name": "Task",
+     "self": "https://acme.atlassian.net/rest/api/3/issuetype/10002",
+     "subtask": false
+    },
+    "priority": {
+     "iconUrl": "https://acme.atlassian.net/images/icons/priorities/medium.svg",
+     "id": "3",
+     "name": "Medium",
+     "self": "https://acme.atlassian.net/rest/api/3/priority/3"
+    },
+    "status": {
+     "description": "",
+     "iconUrl": "https://acme.atlassian.net/images/icons/statuses/generic.png",
+     "id": "10001",
+     "name": "Done",
+     "self": "https://acme.atlassian.net/rest/api/3/status/10001",
+     "statusCategory": {
+      "colorName": "blue-gray",
+      "id": 3,
+      "key": "done",
+      "name": "Done",
+      "self": "https://acme.atlassian.net/rest/api/3/statuscategory/3"
+     }
+    },
+    "summary": "Sign off the security review"
+   },
+   "id": "10009",
+   "key": "ABC-11",
+   "self": "https://acme.atlassian.net/rest/api/3/issue/10009"
+  },
+  "self": "https://acme.atlassian.net/rest/api/3/issueLink/10203",
+  "type": {
+   "id": "10000",
+   "inward": "is blocked by",
+   "name": "Blocks",
+   "outward": "blocks",
+   "self": "https://acme.atlassian.net/rest/api/3/issueLinkType/10000"
+  }
+ },
+ {
+  "id": "10204",
+  "inwardIssue": {
+   "fields": {
+    "issuetype": {
+     "id": "10002",
+     "name": "Task",
+     "self": "https://acme.atlassian.net/rest/api/3/issuetype/10002",
+     "subtask": false
+    },
+    "priority": {
+     "iconUrl": "https://acme.atlassian.net/images/icons/priorities/medium.svg",
+     "id": "3",
+     "name": "Medium",
+     "self": "https://acme.atlassian.net/rest/api/3/priority/3"
+    },
+    "status": {
+     "description": "",
+     "iconUrl": "https://acme.atlassian.net/images/icons/statuses/generic.png",
+     "id": "10000",
+     "name": "To Do",
+     "self": "https://acme.atlassian.net/rest/api/3/status/10000",
+     "statusCategory": {
+      "colorName": "blue-gray",
+      "id": 2,
+      "key": "new",
+      "name": "To Do",
+      "self": "https://acme.atlassian.net/rest/api/3/statuscategory/2"
+     }
+    },
+    "summary": "Checkout rollout (duplicate)"
+   },
+   "id": "10010",
+   "key": "ABC-12",
+   "self": "https://acme.atlassian.net/rest/api/3/issue/10010"
+  },
+  "self": "https://acme.atlassian.net/rest/api/3/issueLink/10204",
+  "type": {
+   "id": "10001",
+   "inward": "is duplicated by",
+   "name": "Duplicate",
+   "outward": "duplicates",
+   "self": "https://acme.atlassian.net/rest/api/3/issueLinkType/10001"
+  }
+ }
+]

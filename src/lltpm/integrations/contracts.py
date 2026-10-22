@@ -275,7 +275,31 @@ class ContractBundle(BaseModel):
 
     @property
     def unverifiable_kinds(self) -> list[str]:
-        return sorted(k for k in self.contracts if not self.is_evidence(k))
+        """Kinds backed by nothing: derived or hand-written.
+
+        A strict third of the partition. An earlier version defined this
+        as "not recorded", which put every `official_documentation`
+        contract in both this list and `official_kinds` — so a report
+        printing both counted Slack's six kinds twice and implied twelve.
+        """
+        return sorted(
+            k for k in self.contracts
+            if self.evidence_for(k) is ContractEvidence.NONE
+        )
+
+    @property
+    def not_live_verifiable_kinds(self) -> list[str]:
+        """Everything a live API check cannot confirm.
+
+        The union of official and unverifiable, which is what a report
+        warning "nothing here verifies this" actually needs. Kept
+        separate from `unverifiable_kinds` because the two answer
+        different questions: this one is about what `verify` can prove,
+        the other about what the contract rests on.
+        """
+        return sorted(
+            k for k in self.contracts if not self.is_evidence(k)
+        )
 
 
 def contract_bundle_path(source_system: str) -> pathlib.Path:

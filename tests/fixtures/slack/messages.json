@@ -1,0 +1,46 @@
+[
+ {
+  "latest_reply": "1772010300.000200",
+  "reply_count": 1,
+  "reply_users_count": 1,
+  "subscribed": false,
+  "team": "T0ABCDEF",
+  "text": "Proposal: cut scope to the v2 import path for the launch.",
+  "thread_ts": "1772010000.000100",
+  "ts": "1772010000.000100",
+  "type": "message",
+  "user": "U0ABCDEF"
+ },
+ {
+  "parent_user_id": "U0ABCDEF",
+  "team": "T0ABCDEF",
+  "text": "That drops the backfill. I disagree until we hear from data.",
+  "thread_ts": "1772010000.000100",
+  "ts": "1772010300.000200",
+  "type": "message",
+  "user": "U0ABCDE1"
+ },
+ {
+  "edited": {
+   "ts": "1772012520.000930",
+   "user": "U0ABCDE2"
+  },
+  "parent_user_id": "U0ABCDEF",
+  "team": "T0ABCDEF",
+  "text": "Data confirms the backfill can wait a sprint.",
+  "thread_ts": "1772010000.000100",
+  "ts": "1772012400.000920",
+  "type": "message",
+  "user": "U0ABCDE2"
+ },
+ {
+  "channel": "C0ABCDEF",
+  "channel_type": "channel",
+  "event_ts": "1772028000.000900",
+  "team": "T0ABCDEF",
+  "text": "Conclusion: scope cut stands, backfill moves to 4.3.",
+  "ts": "1772028000.000900",
+  "type": "message",
+  "user": "U0ABCDEF"
+ }
+]
