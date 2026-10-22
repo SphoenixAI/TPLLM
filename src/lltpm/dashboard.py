@@ -13,6 +13,8 @@ Run with: uvicorn lltpm.dashboard:app --reload
 
 from __future__ import annotations
 
+import logging
+
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any
@@ -30,6 +32,43 @@ from lltpm.config import LLTPMConfig
 from lltpm.persistence.versioning import LLTPM_VERSION
 from lltpm.models.security import JWTClaims, Permission, Role
 from lltpm.workflows.security_manager import SecurityManager
+
+
+#: Routes served with no credential, enumerated so the set cannot grow
+#: silently. Commit 44's review found 25 of 28 routes enforcing no
+#: authentication while the project advertised "FastAPI with JWT
+#: authentication" — true of the machinery, and not of most of the
+#: surface. The list is the honest boundary; `tests/test_auth_adversarial`
+#: fails if a route joins or leaves it without this being updated.
+UNAUTHENTICATED_READ_ROUTES: tuple[str, ...] = (
+    "/health",
+    "/",
+    "/api/auth/token",
+    "/api/auth/refresh",
+    "/api/programs",
+    "/api/programs/{program_id}",
+    "/api/programs/{program_id}/view/{role}",
+    "/api/programs/{program_id}/status",
+    "/api/programs/{program_id}/milestones",
+    "/api/programs/{program_id}/raid",
+    "/api/programs/{program_id}/decisions",
+    "/api/programs/{program_id}/delegations",
+    "/api/programs/{program_id}/engagement",
+    "/api/programs/{program_id}/predictions",
+    "/api/programs/{program_id}/documents",
+    "/api/programs/{program_id}/documents/{doc_type}",
+    "/api/programs/{program_id}/memory",
+    "/api/programs/{program_id}/events",
+    "/api/programs/{program_id}/tasks",
+    "/api/programs/{program_id}/tasks/board",
+    "/api/programs/{program_id}/tasks/workload",
+    "/api/programs/{program_id}/sprints",
+    "/api/programs/{program_id}/sprints/{sprint_id}/metrics",
+    "/api/agents",
+    "/api/agents/deployment-config",
+)
+
+logger = logging.getLogger(__name__)
 
 
 def create_app(config: LLTPMConfig | None = None) -> Any:
@@ -91,6 +130,25 @@ def create_app(config: LLTPMConfig | None = None) -> Any:
         title="LLTPM Dashboard",
         description="AI Technical Program Manager — Program Dashboard",
         version=LLTPM_VERSION,
+    )
+
+    # Said once, at startup, by whatever entry point built the app.
+    # The CLI binds loopback by default, but the Dockerfile and
+    # deploy.sh call uvicorn directly with --host 0.0.0.0 and bypass it
+    # entirely — so the warning belongs here rather than at the CLI,
+    # which is the one path that does not need it.
+    logger.warning(
+        "dashboard read endpoints are served without authentication",
+        extra={
+            "open_read_routes": len(UNAUTHENTICATED_READ_ROUTES),
+            "reason": (
+                "program, milestone, RAID, decision, task and document "
+                "reads require no credential. This is a single-operator "
+                "local reference deployment: bind it to loopback, or put "
+                "an authenticating proxy in front of it. JWT and RBAC "
+                "guard the mutating and admin routes only."
+            ),
+        },
     )
 
     @app.middleware("http")

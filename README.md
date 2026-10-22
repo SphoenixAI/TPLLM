@@ -251,7 +251,10 @@ three places where reading the literature exposed a real gap, and two
 where LLTPM departs from the standard answer on purpose.
 
 What was checked before publishing this — and what was deliberately
-not checked — is in [docs/release-audit.md](docs/release-audit.md).
+not checked — is in [docs/release-audit.md](docs/release-audit.md) and
+[docs/security-audit.md](docs/security-audit.md). The deployment
+boundary, including what is **not** supported, is in
+[docs/threat-model.md](docs/threat-model.md).
 
 ### What the stack guarantees
 

@@ -50,6 +50,11 @@ _SECRET_TEXT_PATTERNS = (
     re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}"),
     re.compile(r"\bsk-[A-Za-z0-9_-]{16,}"),
     re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
+    # Atlassian API tokens. Added in Commit 44: adding Jira made a
+    # token pasted into a ticket description a realistic way for a
+    # credential to reach append-only history, and this pattern was
+    # the one the GitHub and Slack work had no reason to include.
+    re.compile(r"\bATATT[A-Za-z0-9_\-=]{20,}"),
     re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]+"),
     re.compile(r"(?i)\b(?:bearer|authorization:)\s+[A-Za-z0-9._~+/-]{16,}=*"),
     re.compile(

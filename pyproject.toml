@@ -86,6 +86,21 @@ Changelog = "https://github.com/SphoenixAI/LLTPM/blob/main/CHANGELOG.md"
 [project.scripts]
 lltpm = "lltpm.main:cli"
 
+[tool.hatch.build.targets.sdist]
+# A source distribution should carry what is needed to build and test
+# the package, and nothing that only matters to this repository. The
+# triage file is an audit record of the history scan; CI config and the
+# deployment artefacts describe how this project is developed and
+# deployed rather than how it is consumed.
+exclude = [
+    ".secrets-triage.json",
+    ".github",
+    "deploy",
+    "Dockerfile",
+    "docker-compose.yml",
+    ".lltpm",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/lltpm"]
 # PEP 561: the package is annotated throughout, so say so — without this

@@ -227,10 +227,26 @@ class SecurityManager:
             scopes=token_scopes,
         )
 
-    def validate_jwt(self, token: str) -> JWTClaims | None:
+    def validate_jwt(
+        self, token: str, *, expect_type: str | None = "access",
+    ) -> JWTClaims | None:
         """Validate a JWT and return its claims, or None if invalid.
 
-        Checks: signature, expiration, issuer, audience.
+        Checks signature, expiration, issuer, audience, required claims,
+        revocation — and the token's type.
+
+        **``expect_type`` defaults to ``"access"`` deliberately.** A
+        refresh token is a valid JWT with a seven-day lifetime, so
+        anything that validated a bearer credential without checking the
+        type accepted one as an access token and extended a thirty-minute
+        window to a week. The dashboard's auth dependency did exactly
+        that until Commit 44. Making the restrictive answer the default
+        means a future caller is safe without having to know this, which
+        a second method named `validate_access_token` would not achieve —
+        nothing would stop the next caller reaching for the old name.
+
+        Pass ``expect_type=None`` to accept either, which only the
+        refresh path and token-introspection tests should want.
         """
         try:
             import jwt
@@ -252,6 +268,10 @@ class SecurityManager:
             if jti and self._is_token_revoked(jti):
                 return None
 
+            token_type = payload.get("token_type", "access")
+            if expect_type is not None and token_type != expect_type:
+                return None
+
             return JWTClaims(
                 sub=payload["sub"],
                 role=Role(payload["role"]),
@@ -261,7 +281,7 @@ class SecurityManager:
                 iat=datetime.utcfromtimestamp(payload["iat"]),
                 exp=datetime.utcfromtimestamp(payload["exp"]),
                 jti=jti,
-                token_type=payload.get("token_type", "access"),
+                token_type=token_type,
             )
         except (jwt.ExpiredSignatureError, jwt.InvalidTokenError, KeyError, ValueError):
             return None
@@ -271,11 +291,8 @@ class SecurityManager:
 
         The old refresh token's jti is revoked after use (rotation).
         """
-        claims = self.validate_jwt(refresh_token)
+        claims = self.validate_jwt(refresh_token, expect_type="refresh")
         if not claims:
-            return None
-
-        if claims.token_type != "refresh":
             return None
 
         # Revoke the old refresh token (rotation prevents replay)

@@ -68,6 +68,7 @@ STRUCTURED_FIELD_NAMES: frozenset[str] = frozenset({
     "identity_linked_count",
     "mismatch_count",
     "project_count",
+    "open_read_routes",
     "records_appended",
     "records_replayed",
     "rejected_count",

@@ -347,3 +347,76 @@ class TestDocumentedClaims:
         assert pyproject["project"]["version"] in changelog.read_text(), (
             "the changelog does not mention the version being released"
         )
+
+
+@pytest.fixture(scope="module")
+def sdist_names(tmp_path_factory) -> list[str]:
+    """Every path inside a built source distribution.
+
+    Commit 42 inspected the wheel only. An sdist is built from a
+    different file set — it includes what the wheel excludes — so a
+    database, a `.env` or a developer cache can ship in one and not the
+    other, and the sdist is what a `pip install` from source uses.
+    """
+    import tarfile
+
+    out = tmp_path_factory.mktemp("sdist")
+    result = subprocess.run(
+        [sys.executable, "-m", "build", "--sdist", "--outdir", str(out)],
+        cwd=_ROOT, capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        pytest.skip(f"cannot build an sdist here: {result.stderr[-200:]}")
+    archives = sorted(out.glob("*.tar.gz"))
+    assert archives, "the build produced no sdist"
+    with tarfile.open(archives[-1]) as archive:
+        return archive.getnames()
+
+
+class TestTheSdistContents:
+    #: Paths that must never be in a published source distribution.
+    FORBIDDEN = (
+        "__pycache__", ".pyc", ".db", ".sqlite", ".pytest_cache",
+        "/.lltpm/", ".secrets-triage",
+    )
+
+    @pytest.mark.parametrize("forbidden", FORBIDDEN)
+    def test_nothing_private_ships_in_the_sdist(
+        self, sdist_names, forbidden,
+    ):
+        offenders = [name for name in sdist_names if forbidden in name]
+        assert offenders == [], (
+            f"{offenders[:5]} contain '{forbidden}' and must not be in a "
+            f"published sdist"
+        )
+
+    def test_a_real_environment_file_never_ships(self, sdist_names):
+        """`.env.example` is a template and is useful to ship. A real
+        `.env` holds the credentials it is a template for."""
+        offenders = [
+            name for name in sdist_names
+            if pathlib.Path(name).name == ".env"
+        ]
+        assert offenders == [], offenders
+
+    def test_the_sdist_carries_the_licence_and_readme(self, sdist_names):
+        assert any(name.endswith("LICENSE") for name in sdist_names)
+        assert any(name.endswith("README.md") for name in sdist_names)
+
+    def test_the_sdist_carries_the_package_source(self, sdist_names):
+        assert any(
+            name.endswith("src/lltpm/__init__.py") for name in sdist_names
+        )
+
+    def test_the_sdist_carries_the_recorded_contracts(self, sdist_names):
+        """`lltpm integrations verify` has to work from a source
+        install too."""
+        assert any(
+            name.endswith("integrations/contract_data/github.json")
+            for name in sdist_names
+        )
+
+    def test_the_sdist_is_not_suspiciously_large(self, sdist_names):
+        assert len(sdist_names) < 900, (
+            f"{len(sdist_names)} entries; check what was added"
+        )

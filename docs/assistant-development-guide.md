@@ -145,10 +145,15 @@ match prior art, and §11 lists the open limitations so they are not
 rediscovered as bugs.
 
 `docs/release-audit.md` records the open-source release audit: what
-ships, dependency licences, public claims, and an explicit list of
-what it does *not* cover (git history, vulnerability scanning, SBOM,
-dashboard XSS). The assertable parts live in
-`tests/test_release_readiness.py`.
+ships, dependency licences, public claims, and what it does *not*
+cover. `docs/security-audit.md` closes the gaps it listed — history
+scan, dependency audit, SBOM, dashboard XSS, authentication — and
+`docs/threat-model.md` states the deployment boundary, including that
+25 of 28 dashboard routes are unauthenticated and that multi-tenancy
+is absent rather than partial. The assertable parts live in
+`tests/test_release_readiness.py`, `tests/test_auth_adversarial.py`,
+`tests/test_provider_security.py` and
+`tests/test_dashboard_security.py`.
 
 ### Architectural invariants
 

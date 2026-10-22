@@ -163,13 +163,26 @@ def test_validate_jwt_success():
 
 
 def test_validate_jwt_refresh_token():
+    """A refresh token validates only when a refresh token is what the
+    caller asked for.
+
+    Commit 44 made `expect_type="access"` the default: a refresh token
+    is a valid JWT with a seven-day life, and anything validating a
+    bearer credential without checking the type accepted one as an
+    access token.
+    """
     mgr = _make_manager(secret_key="test-secret-key-long-enough-for-hs256")
     pair = mgr.issue_token_pair("bob", Role.ENGINEER)
 
-    claims = mgr.validate_jwt(pair.refresh_token)
+    assert mgr.validate_jwt(pair.refresh_token) is None
+
+    claims = mgr.validate_jwt(pair.refresh_token, expect_type="refresh")
     assert claims is not None
     assert claims.token_type == "refresh"
-    assert claims.sub == "bob"
+
+    either = mgr.validate_jwt(pair.refresh_token, expect_type=None)
+    assert either is not None
+    assert either.sub == "bob"
 
 
 def test_validate_jwt_invalid_token():
