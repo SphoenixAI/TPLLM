@@ -25,6 +25,21 @@ from lltpm.integrations.envelopes import (
     redact_secret_text,
     sanitize_metadata,
 )
+# Commit 43 — the provider registry and the Slack and Jira providers
+from lltpm.integrations.providers import (
+    PROVIDERS,
+    ProviderCapability,
+    ProviderDescriptor,
+    describe_providers,
+    provider,
+    provider_names,
+)
+from lltpm.integrations.contracts import (
+    ContractEvidence,
+    PROVENANCE_RANK,
+    PROVENANCE_VALUES,
+)
+
 # Commit 37 — the anti-corruption layer: provider payloads -> envelopes
 from lltpm.integrations.normalizers import (
     CONTENT_EXCERPT_LIMIT,
@@ -89,6 +104,15 @@ __all__ = [
     "EvidenceEnvelope",
     "EvidenceReferenceStore",
     "InMemoryStateStore",
+    "PROVIDERS",
+    "ProviderCapability",
+    "ProviderDescriptor",
+    "describe_providers",
+    "provider",
+    "provider_names",
+    "ContractEvidence",
+    "PROVENANCE_RANK",
+    "PROVENANCE_VALUES",
     "CONTENT_EXCERPT_LIMIT",
     "DEFAULT_BLOCKING_LABELS",
     "RECOGNIZED_EVENT_CLASSES",

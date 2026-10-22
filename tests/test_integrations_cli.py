@@ -81,7 +81,10 @@ class TestSources:
 
     def test_it_says_what_recorded_means(self, runner):
         result = runner.invoke(integrations_cli, ["sources"])
-        assert "evidence about the live API" in result.output
+        assert "evidence that the live API still matches" in result.output
+        # Commit 43 added the third tier, so the listing has to
+        # distinguish it rather than calling everything unrecorded.
+        assert "official docs" in result.output
 
 
 # ── normalize ────────────────────────────────────────────────────────

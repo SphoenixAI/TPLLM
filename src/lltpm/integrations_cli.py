@@ -64,79 +64,140 @@ def integrations_cli(log_level: str, log_format: str) -> None:
 
 @integrations_cli.command()
 def sources() -> None:
-    """Which source systems normalize, and how trustworthy each is.
+    """What each source system can do, and how trustworthy it is.
 
-    Reports the provenance of every contract rather than a pass/fail,
-    because a contract derived from a hand-written payload is not
-    evidence that the live API still agrees — and presenting it as
-    though it were is the failure this command exists to prevent.
+    Two tables, because "is Slack supported?" has no single answer.
+    Capabilities say what the integration can do; contract provenance
+    says how much the output should be trusted. A bare `supported=True`
+    would hide the difference between a provider whose shapes were
+    recorded from its live API and one whose shapes were read out of its
+    documentation.
     """
-    from lltpm.integrations.contracts import (
-        available_contract_bundles,
-        load_contract_bundle,
+    from lltpm.integrations.contracts import load_contract_bundle
+    from lltpm.integrations.providers import (
+        ProviderCapability, describe_providers,
     )
 
-    bundles = available_contract_bundles()
-    if not bundles:
-        console.print(
-            "[yellow]no recorded contracts[/yellow] — nothing can be "
-            "verified against a live API"
-        )
+    providers = describe_providers()
+    if not providers:
+        console.print("[red]no providers are registered[/red]")
         return
 
-    table = Table(title="Source contracts")
-    table.add_column("Source")
-    table.add_column("Payload kind")
-    table.add_column("Fields read", justify="right")
-    table.add_column("Samples", justify="right")
-    table.add_column("Backing")
-    for name in bundles:
-        bundle = load_contract_bundle(name)
+    capability_order = (
+        ProviderCapability.NORMALIZATION,
+        ProviderCapability.LIVE_READ,
+        ProviderCapability.WEBHOOK_NORMALIZATION,
+        ProviderCapability.WEBHOOK_SIGNATURE_VERIFICATION,
+        ProviderCapability.RATE_LIMIT_AWARE,
+        ProviderCapability.CONTRACT_VERIFICATION,
+    )
+    capabilities = Table(title="Provider capabilities")
+    capabilities.add_column("Source")
+    capabilities.add_column("Scope")
+    for capability in capability_order:
+        capabilities.add_column(
+            capability.value.replace("_", "\n"), justify="center",
+        )
+    for descriptor in providers:
+        capabilities.add_row(
+            descriptor.source_system,
+            descriptor.scope_label,
+            *[
+                "[green]yes[/green]" if descriptor.has(c) else "[dim]—[/dim]"
+                for c in capability_order
+            ],
+        )
+    console.print(capabilities)
+
+    contracts = Table(title="Contract provenance")
+    contracts.add_column("Source")
+    contracts.add_column("Payload kind")
+    contracts.add_column("Fields read", justify="right")
+    contracts.add_column("Samples", justify="right")
+    contracts.add_column("Backing")
+    backing_label = {
+        "recorded": "[green]recorded (live)[/green]",
+        "official_documentation": "[cyan]official docs[/cyan]",
+        "derived": "[yellow]derived[/yellow]",
+        "hand_written": "[red]hand-written[/red]",
+    }
+    for descriptor in providers:
+        bundle = load_contract_bundle(descriptor.source_system)
         if bundle is None:
+            contracts.add_row(
+                descriptor.source_system, "[dim]none[/dim]", "-", "-",
+                "[red]no contract[/red]",
+            )
             continue
         for kind, contract in sorted(bundle.contracts.items()):
             provenance = bundle.provenance.get(kind, "unknown")
-            backing = {
-                "recorded": "[green]recorded[/green]",
-                "derived": "[yellow]derived[/yellow]",
-                "hand_written": "[red]hand-written[/red]",
-            }.get(provenance, provenance)
-            table.add_row(
-                bundle.source_system, kind, str(len(contract.fields)),
-                str(contract.recorded_from_samples), backing,
+            contracts.add_row(
+                descriptor.source_system, kind,
+                str(len(contract.fields)),
+                str(contract.recorded_from_samples),
+                backing_label.get(provenance, provenance),
             )
-    console.print(table)
+    console.print(contracts)
+
     console.print(
-        "\nOnly a [green]recorded[/green] contract is evidence about the "
-        "live API. A [yellow]derived[/yellow] one was built from a "
-        "recording of a related shape; a [red]hand-written[/red] one was "
-        "never recorded at all, and `verify` reports it as unverifiable "
-        "rather than passing."
+        "\nOnly a [green]recorded[/green] contract is evidence that the "
+        "live API still matches. [cyan]Official docs[/cyan] means the "
+        "shape came from the provider's own published example — worth "
+        "more than nothing, and less than a recording, because "
+        "documentation drifts from implementations. `verify` reports "
+        "anything that is not recorded as unverifiable rather than "
+        "passing."
     )
+    for descriptor in providers:
+        if descriptor.notes:
+            console.print(f"\n[dim]{descriptor.source_system}: "
+                          f"{descriptor.notes}[/dim]")
 
 
 # ── Offline ──────────────────────────────────────────────────────────
 
 
-def _bindings(repository: str, projects: tuple[str, ...], file: str | None):
+def _bindings(
+    *,
+    source_system: str,
+    scope: str,
+    projects: tuple[str, ...],
+    file: str | None,
+):
     """Declared bindings from flags or a file, never inferred.
 
-    A repository with no binding produces a reported unbound payload
-    rather than evidence filed under a plausible project.
+    Provider-agnostic: the scope is whatever the provider calls the
+    container a payload lives in — a repository, a workspace/channel
+    pair, a site and project key. An unbound scope produces a reported
+    unbound payload rather than evidence filed under a plausible
+    project, for every provider equally.
     """
-    from lltpm.integrations.normalizers import GITHUB, ProjectBindings
+    from lltpm.integrations.normalizers import ProjectBindings
 
     if file:
         mapping = json.loads(Path(file).read_text())
         return ProjectBindings.from_mapping(
-            source_system=GITHUB,
+            source_system=source_system,
             mapping={k: list(v) for k, v in mapping.items()},
         )
-    if repository and projects:
+    if scope and projects:
         return ProjectBindings.from_mapping(
-            source_system=GITHUB, mapping={repository: list(projects)},
+            source_system=source_system, mapping={scope: list(projects)},
         )
     return ProjectBindings()
+
+
+def _provider_or_exit(name: str):
+    from lltpm.integrations.providers import provider, provider_names
+
+    descriptor = provider(name)
+    if descriptor is None:
+        errors.print(
+            f"[red]unknown provider '{name}'[/red] — registered: "
+            f"{', '.join(provider_names())}"
+        )
+        raise SystemExit(2)
+    return descriptor
 
 
 def _report(outcome) -> None:
@@ -177,19 +238,37 @@ def _report(outcome) -> None:
 @integrations_cli.command()
 @click.argument("payload_file", type=click.Path(exists=True))
 @click.option(
-    "--kind", type=click.Choice(PAYLOAD_KINDS), default="pull_request",
-    show_default=True, help="Which provider shape the file contains",
+    "--provider", default="github", show_default=True,
+    help="Source system the payload came from",
 )
-@click.option("--repository", default="", help="owner/name the payload is from")
+@click.option(
+    "--kind", default="", show_default=True,
+    help=(
+        "Which provider shape the file contains; see "
+        "`lltpm integrations sources` for each provider's kinds"
+    ),
+)
+@click.option(
+    "--scope", default="",
+    help=(
+        "Provider scope to bind: owner/name, workspace/channel, or "
+        "site/project key. Run `lltpm integrations sources` for each "
+        "provider's format"
+    ),
+)
+@click.option(
+    "--repository", default="",
+    help="Deprecated alias for --scope, kept for GitHub callers",
+)
 @click.option(
     "--project", "projects", multiple=True,
-    help="LLTPM project the repository is bound to; repeatable",
+    help="LLTPM project the scope is bound to; repeatable",
 )
 @click.option(
     # default=None, not "": click validates the default against
     # exists=True, and an empty path does not exist.
     "--bindings", "bindings_file", type=click.Path(exists=True), default=None,
-    help="JSON mapping of owner/name to a list of project ids",
+    help="JSON mapping of provider scope to a list of project ids",
 )
 @click.option(
     "--output", "-o", type=click.Path(), default="",
@@ -197,7 +276,9 @@ def _report(outcome) -> None:
 )
 def normalize(
     payload_file: str,
+    provider: str,
     kind: str,
+    scope: str,
     repository: str,
     projects: tuple[str, ...],
     bindings_file: str,
@@ -207,42 +288,37 @@ def normalize(
 
     Touches no network and no database, so it is the safe way to see
     exactly what a payload would become before journalling anything.
+    Works for every registered provider through the one uniform entry
+    point, rather than a branch per provider.
     """
-    from lltpm.integrations.normalizers import (
-        NormalizationOutcome,
-        normalize_github_event,
-        normalize_github_issue,
-        normalize_github_pull_request,
-        normalize_github_review,
-    )
+    descriptor = _provider_or_exit(provider)
+    scope = scope or repository
+    payload_kind = kind or descriptor.payload_kinds[0]
+    if payload_kind not in descriptor.payload_kinds:
+        errors.print(
+            f"[red]'{payload_kind}' is not a {provider} payload kind[/red] "
+            f"— known: {', '.join(descriptor.payload_kinds)}"
+        )
+        raise SystemExit(2)
 
+    from lltpm.integrations.normalizers import NormalizationOutcome
+
+    normalizer = descriptor.normalizer()
     payload = json.loads(Path(payload_file).read_text())
     payloads = payload if isinstance(payload, list) else [payload]
-    bindings = _bindings(repository, projects, bindings_file)
+    bindings = _bindings(
+        source_system=descriptor.source_system, scope=scope,
+        projects=projects, file=bindings_file,
+    )
     received_at = utc_now()
 
     outcome = NormalizationOutcome()
     for item in payloads:
-        if kind == "pull_request":
-            step = normalize_github_pull_request(
-                item, bindings=bindings, received_at=received_at,
-                repository=repository,
-            )
-        elif kind == "issue":
-            step = normalize_github_issue(
-                item, bindings=bindings, received_at=received_at,
-                repository=repository,
-            )
-        elif kind == "review":
-            step = normalize_github_review(
-                item, bindings=bindings, received_at=received_at,
-                repository=repository,
-            )
-        else:
-            step = normalize_github_event(
-                item, bindings=bindings, received_at=received_at,
-            )
-        outcome = outcome.merge(step)
+        outcome = outcome.merge(normalizer(
+            payload_kind=payload_kind, payload=item, bindings=bindings,
+            received_at=received_at,
+            scope=descriptor.normalizer_scope(scope),
+        ))
 
     _report(outcome)
     if output:
@@ -319,7 +395,10 @@ def ingest(
         events=fetched.get("events"),
         pull_requests=fetched.get("pull_requests"),
         issues=fetched.get("issues"),
-        bindings=_bindings(repository, projects, ""),
+        bindings=_bindings(
+            source_system="github", scope=repository,
+            projects=projects, file=None,
+        ),
         received_at=received_at,
         repository=repository,
     )
