@@ -27,6 +27,7 @@ except ImportError:
 
 from lltpm.artifacts.store import ArtifactStore
 from lltpm.config import LLTPMConfig
+from lltpm.persistence.versioning import LLTPM_VERSION
 from lltpm.models.security import JWTClaims, Permission, Role
 from lltpm.workflows.security_manager import SecurityManager
 
@@ -89,8 +90,64 @@ def create_app(config: LLTPMConfig | None = None) -> Any:
     app = FastAPI(
         title="LLTPM Dashboard",
         description="AI Technical Program Manager — Program Dashboard",
-        version="0.1.0",
+        version=LLTPM_VERSION,
     )
+
+    @app.middleware("http")
+    async def security_headers(request: Request, call_next):
+        """Response headers for the reference dashboard.
+
+        **What the CSP here does and does not do.** The page carries its
+        script and styles inline, so `script-src` must allow
+        `'unsafe-inline'` — and that means this policy does *not*
+        mitigate cross-site scripting. Saying otherwise would be the
+        decorative kind of CSP that reads as a control and is not one.
+        The actual XSS control is the escaping at the render sites, which
+        `tests/test_dashboard_security.py` executes against live
+        payloads.
+
+        What the policy does achieve is worth having: no external
+        script, style, frame or object origin is reachable, so an
+        injected tag cannot load a remote payload or exfiltrate to one;
+        `base-uri 'none'` stops a `<base>` tag redirecting every
+        relative URL; and `frame-ancestors 'none'` blocks clickjacking.
+
+        Dropping `'unsafe-inline'` means serving the script as a
+        separate file so `script-src 'self'` suffices. That is recorded
+        as named debt in docs/security-audit.md rather than left as an
+        implied future.
+        """
+        response = await call_next(request)
+        response.headers.setdefault(
+            "Content-Security-Policy",
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data:; "
+            "connect-src 'self'; "
+            "object-src 'none'; "
+            "base-uri 'none'; "
+            "form-action 'self'; "
+            "frame-ancestors 'none'",
+        )
+        # Stops a browser second-guessing a declared content type, which
+        # is how a JSON response gets rendered as HTML.
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault(
+            "Referrer-Policy", "strict-origin-when-cross-origin",
+        )
+        # frame-ancestors covers modern browsers; this covers the rest.
+        response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault(
+            "Permissions-Policy",
+            "geolocation=(), microphone=(), camera=()",
+        )
+        # Deliberately not set: Strict-Transport-Security. The reference
+        # deployment is local HTTP, and an HSTS header served over HTTP
+        # is ignored — while one served once over HTTPS would pin a
+        # developer's localhost to HTTPS for months. A hosted deployment
+        # should set it at the edge.
+        return response
 
     # ── Health (public) ───────────────────────────────────
 
@@ -111,7 +168,7 @@ def create_app(config: LLTPMConfig | None = None) -> Any:
     async def login(request: Request):
         """Exchange an API key for a JWT token pair.
 
-        Body: {"api_key": "lltpm_..."}
+        Body: {"api_key": "lltpm_..."}  # pragma: allowlist secret
         Returns: {"access_token": "...", "refresh_token": "...", "expires_in": ...}
         """
         body = await request.json()
@@ -713,9 +770,9 @@ async function loadProgram() {
     document.getElementById('stat-sprint-sub').textContent =
       `${active.name} — ${metrics.days_remaining}d left`;
     document.getElementById('sprint-info').innerHTML =
-      `<strong>${active.name}</strong><br>` +
-      `Done: ${metrics.done}/${metrics.total_tasks} | ` +
-      `Blocked: ${metrics.blocked} | ` +
+      `<strong>${esc(active.name)}</strong><br>` +
+      `Done: ${esc(metrics.done)}/${esc(metrics.total_tasks)} | ` +
+      `Blocked: ${esc(metrics.blocked)} | ` +
       `${metrics.on_track ? '<span class="badge DONE">On Track</span>' : '<span class="badge CRITICAL">At Risk</span>'}`;
   } else {
     document.getElementById('stat-sprint').textContent = '—';
@@ -727,8 +784,8 @@ async function loadProgram() {
   const alertsDiv = document.getElementById('alerts');
   const alertsList = document.getElementById('alerts-list');
   const alertItems = [];
-  overdue.forEach(t => alertItems.push({sev:'critical',msg:`Overdue: ${t.title} (${t.assignee||'unassigned'})`}));
-  blocked.forEach(t => alertItems.push({sev:'high',msg:`Blocked: ${t.title} (${t.assignee||'unassigned'})`}));
+  overdue.forEach(t => alertItems.push({sev:'critical',msg:`Overdue: ${esc(t.title)} (${esc(t.assignee||'unassigned')})`}));
+  blocked.forEach(t => alertItems.push({sev:'high',msg:`Blocked: ${esc(t.title)} (${esc(t.assignee||'unassigned')})`}));
   if (alertItems.length) {
     alertsDiv.style.display = 'block';
     alertsList.innerHTML = alertItems.map(a =>
@@ -743,16 +800,46 @@ async function loadProgram() {
   const wl = workload.workload || {};
   if (Object.keys(wl).length) {
     wt.innerHTML = Object.entries(wl).map(([p, d]) =>
-      `<tr><td>${p}</td><td>${d.total_tasks}</td><td><span class="badge ${
-        d.health==='healthy'?'DONE':d.health==='heavy'?'MEDIUM':d.health==='at_risk'?'HIGH':'CRITICAL'
-      }">${d.health.toUpperCase()}</span></td></tr>`
+      `<tr><td>${esc(p)}</td><td>${esc(d.total_tasks)}</td><td><span class="badge ${
+        cls(d.health==='healthy'?'DONE':d.health==='heavy'?'MEDIUM':d.health==='at_risk'?'HIGH':'CRITICAL')
+      }">${esc(String(d.health).toUpperCase())}</span></td></tr>`
     ).join('');
   } else { wt.innerHTML = '<tr><td colspan="3" class="empty">No assigned tasks</td></tr>'; }
 
   // RAID
   const rs = document.getElementById('raid-summary');
   if (raid.message) { rs.textContent = raid.message; }
-  else { rs.innerHTML = `Risks: <strong>${raid.open_risks||0}</strong> open | Issues: <strong>${raid.open_issues||0}</strong> | Dependencies: <strong>${raid.open_dependencies||0}</strong>`; }
+  else { rs.innerHTML = `Risks: <strong>${esc(raid.open_risks||0)}</strong> open | Issues: <strong>${esc(raid.open_issues||0)}</strong> | Dependencies: <strong>${esc(raid.open_dependencies||0)}</strong>`; }
+}
+
+// ── Escaping ─────────────────────────────────────────────────────────
+// Every value below reaches the DOM through innerHTML, and every one of
+// them is program data somebody typed: a task title, an assignee, a
+// sprint name. A task called `<img src=x onerror=alert(1)>` executed
+// before Commit 44. Escaping happens here, at the point of rendering,
+// because that is the only place that knows the value is about to
+// become HTML.
+function esc(value) {
+  if (value === null || value === undefined) return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// A value going into a class attribute is whitelisted rather than
+// escaped. Escaping would be enough today, but an attribute context is
+// one quoting mistake away from breakout, and these values are a closed
+// enum — so anything unrecognized becomes a neutral class instead.
+const KNOWN_CLASSES = new Set([
+  'BACKLOG', 'TODO', 'IN_PROGRESS', 'IN_REVIEW', 'BLOCKED', 'DONE',
+  'CANCELLED', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL',
+]);
+function cls(value) {
+  const name = String(value === null || value === undefined ? '' : value);
+  return KNOWN_CLASSES.has(name) ? name : 'MEDIUM';
 }
 
 function filterTasks(status) {
@@ -761,10 +848,10 @@ function filterTasks(status) {
   const tbody = document.getElementById('task-table');
   if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">No tasks</td></tr>'; return; }
   tbody.innerHTML = filtered.map(t =>
-    `<tr><td>${t.id}</td><td>${t.title}</td>` +
-    `<td><span class="badge ${t.priority}">${t.priority}</span></td>` +
-    `<td><span class="badge ${t.status}">${t.status}</span></td>` +
-    `<td>${t.assignee||'—'}</td><td>${t.due_date||'—'}</td></tr>`
+    `<tr><td>${esc(t.id)}</td><td>${esc(t.title)}</td>` +
+    `<td><span class="badge ${cls(t.priority)}">${esc(t.priority)}</span></td>` +
+    `<td><span class="badge ${cls(t.status)}">${esc(t.status)}</span></td>` +
+    `<td>${esc(t.assignee||'—')}</td><td>${esc(t.due_date||'—')}</td></tr>`
   ).join('');
 }
 
