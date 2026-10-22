@@ -129,13 +129,47 @@ jobs:
       - name: Quickstart runs offline
         run: |
           python -m lltpm runtime ingest examples/evidence.json \
-            --db /tmp/ci.db --organization demo
+            --db /tmp/ci.db --organization demo | tee /tmp/ingest.txt
+          python -m lltpm runtime journal --db /tmp/ci.db \
+            | tee /tmp/journal.txt
           python -m lltpm runtime verify --db /tmp/ci.db
+          python -m lltpm runtime anchor --db /tmp/ci.db > /dev/null
           python -m lltpm runtime status --db /tmp/ci.db --organization demo
+          python -m lltpm runtime coverage > /dev/null
+          python -m lltpm runtime replay --db /tmp/ci.db \
+            --organization demo | tee /tmp/replay.txt
+          python -m lltpm runtime snapshot --db /tmp/ci.db \
+            --organization demo
           python -m lltpm runtime replay --db /tmp/ci.db \
             --organization demo --publish
           python -m lltpm runtime export --db /tmp/ci.db \
             --organization demo --what decisions > /dev/null
+
+      # The README quotes this output. A quoted example that no longer
+      # matches the program is worse than no example, so the specific
+      # claims it makes are asserted rather than the commands merely
+      # being run.
+      - name: The quickstart says what the README says it says
+        run: |
+          python - <<'PY'
+          import pathlib
+          ingest = pathlib.Path('/tmp/ingest.txt').read_text()
+          journal = pathlib.Path('/tmp/journal.txt').read_text()
+          replay = pathlib.Path('/tmp/replay.txt').read_text()
+
+          # It names which evidence moved the intelligence.
+          assert 'because' in ingest, ingest
+          # A probability move never travels without its confidence.
+          assert 'P(blocker_persisted)' in ingest, ingest
+          assert 'confidence' in ingest, ingest
+          # Most passes are routed below a human interrupt.
+          assert 'attention: async_information' in ingest, ingest
+          # Reality time is the time of the fact, not of the run.
+          assert '2026-10-19' in journal, journal
+          # Replay fences external effects and counts what it fenced.
+          assert 'Suppressed' in replay, replay
+          print('the README\'s quoted claims still hold')
+          PY
 
       # Following has to terminate and has to stay read-only. A loop
       # that hangs in CI is better found here than on a laptop.
@@ -152,6 +186,12 @@ jobs:
       - name: Integrations work offline
         run: |
           python -m lltpm integrations sources
+          # Exactly as the README shows it, table output and all.
+          python -m lltpm integrations normalize \
+            tests/fixtures/github/pull_requests.json \
+            --kind pull_request --repository acme/atlas-service \
+            --project atlas | tee /tmp/normalize.txt
+          grep -q '2026-02-25' /tmp/normalize.txt
           python -m lltpm integrations normalize \
             tests/fixtures/github/pull_requests.json \
             --kind pull_request --repository acme/atlas-service \

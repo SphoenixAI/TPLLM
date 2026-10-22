@@ -509,6 +509,63 @@ def coverage() -> None:
         )
 
 
+def _explain(result) -> None:
+    """Report what the new intelligence says, not just that it published.
+
+    The orchestrator already computes a per-project account of what moved
+    and which evidence moved it. Printing only ``published revision-1``
+    discarded the half of the work a reader actually wants, and left the
+    explanation reachable only from Python.
+
+    Evidence-derived text is escaped before printing: a ticket title is
+    not Rich markup, and a title containing ``[red]`` should not be able
+    to colour the terminal.
+    """
+    from rich.markup import escape
+    from rich.table import Table
+
+    def block(project: str, groups: list[tuple[str, str, list[str]]]) -> None:
+        if not any(lines for _, _, lines in groups):
+            return
+        # A borderless table rather than indented prints, so a long
+        # scenario summary wraps under its own column instead of under
+        # the label and losing which line it belongs to.
+        table = Table(
+            box=None, show_header=False, pad_edge=False, padding=(0, 1),
+            title=f"[bold]{escape(project)}[/bold]", title_justify="left",
+        )
+        table.add_column(style="dim", no_wrap=True)
+        table.add_column(overflow="fold")
+        for label, style, lines in groups:
+            for line in lines:
+                table.add_row(
+                    f"[{style}]{label}[/{style}]" if style else label,
+                    escape(line),
+                )
+        console.print()
+        console.print(table)
+
+    for update in result.project_updates:
+        block(update.project_id, [
+            ("decision", "red", update.decisions_required),
+            ("risk", "yellow", update.new_risks),
+            ("resolved", "green", update.resolved_risks),
+            ("scenario", "", update.scenario_changes),
+            ("kpi", "", update.kpi_changes),
+            ("readiness", "", update.readiness_changes),
+            ("changed", "", update.what_changed),
+            ("because", "", update.why_it_changed),
+            ("no action", "", update.no_action_required),
+        ])
+
+    portfolio = result.portfolio_update
+    if portfolio is not None:
+        block("portfolio", [
+            ("bottleneck", "yellow", portfolio.new_bottlenecks),
+            ("resolved", "green", portfolio.resolved_bottlenecks),
+        ])
+
+
 # ── State-changing ───────────────────────────────────────────────────
 
 
@@ -523,8 +580,13 @@ def coverage() -> None:
     "--horizon-days", default=14, show_default=True,
     help="Forecast window the scenario lattice may reason over",
 )
+@click.option(
+    "--explain/--no-explain", default=True, show_default=True,
+    help="Report what each affected project's intelligence now says",
+)
 def ingest(
     evidence_file: str, db: str, organization: str, horizon_days: int,
+    explain: bool,
 ) -> None:
     """Journal evidence from a JSON file, then recompute intelligence.
 
@@ -648,6 +710,8 @@ def ingest(
             console.print(f"  attention: {action.value}")
         for reason in result.no_action_reasons:
             console.print(f"  no action: {reason.value}")
+        if explain:
+            _explain(result)
     finally:
         persistence.close()
 

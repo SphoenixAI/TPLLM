@@ -7,6 +7,118 @@ Each entry says what changed and, where it matters, what was wrong
 before. Several entries record the removal of something that shipped —
 those are the ones worth reading.
 
+## Unreleased
+
+Commits 43–45. The release-candidate pass folds these into a version.
+
+### Added
+
+- **Slack as an evidence source.** Messages and thread replies; an edit
+  becomes new versioned evidence rather than a mutation; a delete
+  becomes a source-availability change rather than the disappearance of
+  a fact. Reactions, DMs and bot messages are declined with a stated
+  reason instead of ingested as something they are not. GET-only reader,
+  rate-limit aware, HMAC-SHA256 signature verification over the raw body
+  with a replay window. (Commit 43)
+- **Jira as an evidence source.** REST v3 with token pagination.
+  Transitions come from the changelog and are never inferred from a
+  snapshot; `statusCategory.key` is read in preference to the display
+  name, which teams rename; only a `Blocks` link read from the blocked
+  side becomes a dependency; worklogs and `timespent` are refused
+  outright because they are hours-per-person by construction.
+  `JIRA_WEBHOOK_LIFECYCLE` records that Cloud dynamic webhooks expire
+  after 30 days, so a future receiver cannot quietly let registrations
+  lapse. (Commit 43)
+- **A provider registry** (`integrations/providers.py`). One descriptor
+  per source declares its capabilities, scope shape and normalizer entry
+  point, and both CLI groups dispatch through it — a fourth provider is
+  a descriptor rather than another branch. `integrations sources` prints
+  capabilities and contract provenance as two tables.
+- **An `official_documentation` contract-provenance tier.** Slack and
+  Jira could not be reached from the environment this was built in, so
+  their contracts come from the providers' own published examples.
+  Rather than let those pass as recordings, provenance is ranked:
+  `recorded` > `official_documentation` > `derived` > `hand_written`,
+  and `verify` reports anything unrecorded as unverifiable.
+- **`lltpm runtime ingest` now says what the intelligence concluded**,
+  per project: what moved, which evidence moved it, which scenarios
+  changed and whether a decision is required. The orchestrator always
+  computed this and the command discarded it, so the useful half of the
+  work was reachable only from Python. `--no-explain` reduces it to the
+  counts; a test asserts that choice changes no durable state.
+  (Commit 45)
+- **Security headers** on every dashboard response, with the CSP's
+  limits stated rather than implied: the page's script is inline, so the
+  policy does not mitigate XSS and the escaping is the control.
+  (Commit 44)
+- **`docs/threat-model.md`** — what the system withstands, what it does
+  not, and the configurations that are explicitly unsupported, including
+  that multi-tenancy is absent rather than partial.
+- **`docs/security-audit.md`** — history scan, per-extra dependency
+  audit, CycloneDX SBOM, and what each result does and does not mean.
+- **A self-testing history scanner** (`scripts/scan_history.py`). Its
+  first version reported a confident zero while running only its own
+  regexes, because `detect-secrets` returns nothing outside a
+  `default_settings()` context. It now plants known synthetic
+  credentials and refuses to report on a history its detectors cannot
+  find them in. Findings are tiered, because entropy at line granularity
+  cannot tell a long identifier from a key.
+
+### Fixed
+
+- **Colliding envelope ids.** `make_envelope` derived the id from the
+  first sixteen characters of the idempotency key, which was a digest
+  until Commit 37 allowed readable keys — after which eight envelopes
+  shared two ids. No test caught it because the journal deduplicates on
+  the key rather than the id. The id is now a digest of the whole key.
+- **A refresh token was accepted as an access token.** `dashboard.py`
+  validated bearer credentials without checking `token_type`, so a
+  leaked seven-day refresh token granted a week of API access.
+  `validate_jwt` now takes `expect_type`, **defaulting to `"access"`**,
+  so a future caller is safe without knowing this history.
+- **A real DOM XSS in the dashboard.** Task titles, assignees, sprint
+  names and workload keys were interpolated into `innerHTML` unescaped,
+  and `priority`/`status` landed in a `class` attribute. Escaped at
+  every render site; the attribute values are whitelisted against a
+  closed enum rather than escaped, because an attribute context is one
+  quoting mistake from breakout. The tests execute the escaping in Node
+  against live payloads, since a helper that returned its input
+  unchanged would satisfy any source-level check.
+- **Log redaction was weaker than evidence redaction.** It replaced a
+  value that *was* a credential, not one embedded in a longer string, so
+  `reason="Authorization: ghp_…"` — what a failed provider read actually
+  produces — passed through intact while the same string in a pull
+  request body was redacted. The weaker rule was in the likelier place.
+- **Atlassian `ATATT` tokens were unrecognised** by both layers, which
+  Jira made a realistic paste into append-only history.
+- **Development files shipped in the sdist.** Commit 42 inspected only
+  the wheel; the sdist is built from a different file set and carried
+  the triage file, CI config and deployment artefacts.
+- Evidence-derived text printed to the terminal is escaped: a Jira
+  summary of `[red]URGENT[/red]` prints as itself rather than being
+  consumed as a style tag.
+
+### Documentation
+
+- **The README is now one document** rather than a chronology: the
+  problem, the thesis, the attention ladder, the loop, an offline
+  quickstart that runs a real organizational scenario and quotes its
+  real output, what the system is *not*, per-provider evidence status,
+  the architecture and its invariants. CI asserts the quoted claims
+  still hold — that the output names which evidence moved it, that a
+  probability move never travels without its confidence, and that
+  reality time is the time of the fact. (Commit 45)
+- **The dashboard's authentication surface is now stated accurately.**
+  The project advertised "FastAPI with JWT authentication": true of the
+  machinery, false of the surface, where 25 of 28 routes enforce no
+  credential. The open set is enumerated in
+  `dashboard.UNAUTHENTICATED_READ_ROUTES`, a test fails if it changes, a
+  test asserts every mutating route is guarded, and `create_app` warns
+  at startup because the shipped container binds `0.0.0.0`. A first
+  attempt at measuring this said "6 of 28" by scanning a fixed number of
+  characters after each handler, which truncated the longer bodies; the
+  count is now taken from the AST.
+
 ## 0.41.0 — first public release
 
 The release that the open-source audit was done against.

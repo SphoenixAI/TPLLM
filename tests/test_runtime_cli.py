@@ -12,6 +12,7 @@ cannot change anything.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import re
 import sqlite3
@@ -19,6 +20,7 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
+from rich.console import Console
 
 from lltpm.runtime.baselines import (
     BASELINE_RECOMMENDATION_METHOD,
@@ -1024,3 +1026,131 @@ class TestAnchorCommand:
         before = _head_sequence(seeded)
         runner.invoke(runtime_cli, ["anchor", "--db", seeded])
         assert _head_sequence(seeded) == before
+
+
+class TestExplanation:
+    """`ingest` must say what the intelligence concluded.
+
+    The orchestrator always computed a per-project account of what moved
+    and which evidence moved it; the command printed `published
+    revision-1` and discarded it, so the useful half of the work was
+    reachable only from Python. These tests pin the surface, and pin that
+    it stays honest about confidence.
+    """
+
+    def test_it_reports_which_evidence_moved_the_intelligence(
+        self, runner, workspace,
+    ):
+        _, db, evidence = workspace
+        result = _ingest(runner, db, evidence)
+        output = _all_output(result)
+        assert "because" in output
+        # Reality time, not the time of the run: the blocker was opened
+        # on the 19th whatever day this test executes on.
+        assert "2026-10-19" in output
+
+    def test_a_probability_move_never_travels_without_its_confidence(
+        self, runner, workspace,
+    ):
+        """The one line a reader is most likely to quote out of context.
+
+        A displayed probability move with the confidence silently dropped
+        would read as a forecast. The baseline generator's confidence is
+        0.00, and the output has to say so in the same breath.
+        """
+        _, db, evidence = workspace
+        result = _ingest(runner, db, evidence)
+        output = _all_output(result)
+        assert "P(blocker_persisted)" in output
+        assert "confidence" in output
+
+    def test_no_explain_still_publishes(self, runner, workspace):
+        """Scripted use can turn the prose off without changing the work."""
+        _, db, evidence = workspace
+        result = _ingest(runner, db, evidence, "--no-explain")
+        assert result.exit_code == 0
+        output = _all_output(result)
+        assert "published revision" in output
+        assert "because" not in output
+
+    def test_turning_the_explanation_off_changes_no_durable_state(
+        self, runner, workspace, tmp_path,
+    ):
+        """Reporting is not computation."""
+        _, db, evidence = workspace
+        other = str(tmp_path / "quiet.db")
+        _ingest(runner, db, evidence)
+        _ingest(runner, other, evidence, "--no-explain")
+        assert _count_evidence(db) == _count_evidence(other)
+        assert _head_sequence(db) == _head_sequence(other)
+
+    def test_evidence_derived_text_cannot_colour_the_terminal(self):
+        """A ticket title is data, not Rich markup.
+
+        Jira summaries and Slack messages reach these strings. A title of
+        `[red]URGENT[/red]` must print as itself rather than be consumed
+        as a style tag — the same escaping discipline as the dashboard's
+        HTML, applied to the terminal.
+        """
+        from lltpm.runtime.models import (
+            LiveOrchestrationResult,
+            ProjectIntelligenceUpdate,
+        )
+        from lltpm.runtime_cli import _explain
+
+        hostile = "[red]URGENT[/red] blocked on /tmp/x"
+        result = LiveOrchestrationResult(
+            project_updates=[
+                ProjectIntelligenceUpdate(
+                    project_id="[bold]billing[/bold]",
+                    revision_id="revision-1",
+                    what_changed=[hostile],
+                ),
+            ],
+        )
+        with _captured() as output:
+            _explain(result)
+        assert "[red]URGENT[/red]" in output(), (
+            "the tag was consumed as markup instead of printed as text"
+        )
+        assert "[bold]billing[/bold]" in output()
+
+    def test_nothing_is_printed_when_there_is_nothing_to_say(self):
+        from lltpm.runtime.models import (
+            LiveOrchestrationResult,
+            ProjectIntelligenceUpdate,
+        )
+        from lltpm.runtime_cli import _explain
+
+        result = LiveOrchestrationResult(
+            project_updates=[
+                ProjectIntelligenceUpdate(
+                    project_id="billing", revision_id="revision-1",
+                ),
+            ],
+        )
+        with _captured() as output:
+            _explain(result)
+        assert output().strip() == "", (
+            "an empty update must not print a heading with nothing under it"
+        )
+
+
+@contextlib.contextmanager
+def _captured():
+    """Capture what the CLI's shared console writes.
+
+    `console` is module-level, so the test swaps its file rather than
+    constructing a second console that would not be the one under test.
+    """
+    import io
+
+    from lltpm import runtime_cli
+
+    buffer = io.StringIO()
+    original = runtime_cli.console
+    runtime_cli.console = Console(file=buffer, width=100, no_color=True)
+    try:
+        yield buffer.getvalue
+    finally:
+        runtime_cli.console = original

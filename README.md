@@ -1,192 +1,584 @@
-# LLTPM — AI Technical Program Manager Agent
+# LLTPM — an AI Technical Program Manager
 
-An AI-powered TPM agent that replaces unnecessary meetings with concise, decision-ready insight. Built on Claude (Opus 4.6) with a full agentic tool-use loop, LLTPM manages programs the way a senior TPM would — but faster, because it can see the whole program simultaneously.
+LLTPM reads what a program's source systems already know — pull
+requests, tickets, messages, meeting notes — and maintains a current,
+explainable account of where the program stands, what changed, and what
+needs a human decision. It is built to replace status meetings with
+something more useful than a summary: a reasoned position with its
+evidence attached.
 
-## The Problem
+The reference deployment is one SQLite file on a laptop. No cloud
+account, no broker, no daemon, and the core install needs no API key.
 
-Human TPMs are bottlenecked by:
-- **Meeting overhead**: Status syncs that could be async updates
-- **Context switching**: Can't hold the full dependency graph in their heads
-- **Manual aggregation**: Hours spent compiling status from tickets, PRs, and Slack
-- **Delayed risk detection**: Risks surface in meetings, not when they actually emerge
+---
 
-## What LLTPM Does Differently
+## The problem it addresses
 
-- **Async-first**: Never proposes a meeting when a structured async update will do. Enforces a Meeting Gate that requires decision owner, options doc, pre-read, and deadline before any meeting is approved.
-- **Automatic risk detection**: Scans milestones, dependencies, and tickets for drift, compression, unmitigated risks, and approaching deadlines — continuously, not once a week.
-- **Decision-ready briefs**: Aggregates data from tickets, PRs, bugs, and action items into a single program pulse. No more "let me check and get back to you."
-- **Living artifacts**: RAID logs, decision logs, milestone plans, and status updates are auto-maintained — always current, never stale.
+A technical program manager's hardest work is not writing updates. It is
+holding a model of the program in their head — the dependency graph, who
+is waiting on whom, which risks have quietly stopped being hypothetical
+— and keeping it current while the program changes underneath them.
+
+That model degrades in predictable ways:
+
+- **It is reconstructed from meetings**, so it is only as fresh as the
+  last one, and the meeting exists mainly to rebuild it.
+- **It cannot hold the whole graph.** Four projects sharing one approval
+  authority is invisible from inside any one of them.
+- **It loses its evidence.** By the time a risk is stated out loud,
+  nobody can say which observation produced it or when.
+- **It mistakes arrival order for truth.** The thing mentioned most
+  recently sounds like the thing that happened most recently.
+
+## The thesis
+
+**Evidence in, intelligence out, and almost nothing demands attention.**
+
+Every input becomes an immutable piece of evidence with two timestamps:
+when the fact happened, and when we found out. From that history the
+engines derive a position — understanding, scenarios, decisions,
+dependencies, portfolio topology — and publish it as one coherent
+revision.
+
+Then the interesting part: most of it is routed to nobody. Each pass
+chooses the weakest rung that is still honest.
+
+```
+silent                 nothing moved that anyone needs to know
+update_internal_state  the model changed; no human action follows
+async_information      worth reading, not worth interrupting for
+decision_request       a named decision is now blocking
+high_priority_alert    this cannot wait for the next read
+```
+
+A system that escalates everything has only moved the meeting. The
+ladder is the product.
+
+## The loop
+
+```
+   GitHub · Jira · Slack · meeting notes · documents
+                       │
+                       ▼
+       ┌─────────────────────────────┐
+       │  normalizers                │  refuses to guess a project,
+       │  provider payload →         │  invent an event class, or
+       │  EvidenceEnvelope           │  stamp `now` on a past fact
+       └─────────────────────────────┘
+                       │   keyed on the provider's own event id,
+                       │   so re-reading a source appends nothing
+                       ▼
+       ┌─────────────────────────────┐
+       │  append-only journal        │  reality time and knowledge
+       │  hash-chained, replayable   │  time, kept separately
+       └─────────────────────────────┘
+                       │   journal first, promote last
+                       ▼
+       ┌─────────────────────────────┐
+       │  engines                    │  understanding · scenarios
+       │  one coherent revision,     │  decisions · dependencies
+       │  never half-recomputed      │  portfolio topology
+       └─────────────────────────────┘
+                       │
+                       ▼
+       ┌─────────────────────────────┐
+       │  attention routing          │  the weakest rung that is
+       │  silent → … → alert         │  still honest
+       └─────────────────────────────┘
+```
+
+Two properties of that picture are load-bearing. Evidence is journalled
+**before** anything derives from it, so a failed recompute loses no
+facts and a later `replay` rebuilds the projection. And every derived
+thing is rebuildable from the journal alone — delete the projections and
+replay; the result is the same, with external effects fenced off.
+
+---
+
+## Five minutes, offline
+
+No API key, no account, one file. The two engines that would otherwise
+need a model fall back to deterministic baselines, labelled as baselines
+in the reproducibility manifest so their output is never mistaken for
+model-derived output.
+
+```bash
+git clone https://github.com/SphoenixAI/LLTPM && cd LLTPM
+python -m pip install -e .
+
+python -m lltpm runtime ingest examples/evidence.json \
+  --db lltpm.db --organization acme
+```
+
+[`examples/evidence.json`](examples/evidence.json) is three observations
+across two projects, the kind of thing a week produces:
+
+| From | Reality time | What it said |
+|---|---|---|
+| Slack | Oct 19, 09:00 | Billing activation depends on Platform approving the contract standard |
+| Jira | Oct 19, 09:30 | Platform Architecture is in incident response; review capacity is reduced |
+| Meeting | Oct 19, 08:58 | Identity owns the migration; the target is 60% activation |
+
+Nobody in that week said "billing is at risk". The ingest says what
+moved, and which observations moved it:
+
+```
+Journalled 3 evidence record(s).
+published revision revision-1 across 2 project(s)
+  attention: async_information
+
+billing
+scenario  scenario_lattice changed materially. P(blocker_persisted) moved
+          0% → 45%. The estimate changed materially, but its confidence
+          is 0.00 — treat it as a signal to investigate, not as a firm
+          number. P(blockers_cleared) moved 0% → 55%. […]
+changed   decision state projected from reconstructed state for 2 […]
+changed   decision recommendation projected from reconstructed state […]
+changed   Scenario lattice rebuilt for 2 project(s).
+changed   scenario decision recommendation projected from […]
+because   Meeting transcript at 2026-10-19T08:58:00.
+because   Architecture evidence at 2026-10-19T09:00:00.
+because   Blocker opened at 2026-10-19T09:30:00.
+```
+
+(`[…]` marks text cut to fit this page; nothing is reordered. A second
+block for `identity` follows, which the engines compute the same way.)
+
+Read what that output refuses to do. It moved a probability and then
+**said its confidence is zero in the same breath** — the baseline
+generator is structural, not predictive, and a 45% with no confidence
+attached is a prompt to go look, not a forecast. It named which evidence
+moved it. It called one artifact a *projection* rather than letting it
+pass for a dedicated engine. And it routed the whole thing to
+`async_information`: worth reading, not worth a meeting.
+
+The structural reading is the useful one here. Billing is not slow.
+Billing is downstream of an approval authority that is currently
+absorbed by an incident — a fact about the approval authority, which
+stays true and stays actionable. Converted into a judgement about the
+billing team, the same evidence becomes both less true and less useful.
+
+Then inspect the history it kept:
+
+```bash
+python -m lltpm runtime journal --db lltpm.db
+```
+
+```
+┏━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┓
+┃ # ┃ Event                         ┃ Occurred         ┃ Projects          ┃
+┡━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━┩
+│ 1 │ evidence_accepted             │ 2026-10-19T09:00 │ billing           │
+│ 2 │ evidence_accepted             │ 2026-10-19T09:30 │ billing           │
+│ 3 │ evidence_accepted             │ 2026-10-19T08:58 │ identity          │
+│ 4 │ intelligence_revision_publis… │ 2026-10-22T19:24 │ billing, identity │
+└───┴───────────────────────────────┴──────────────────┴───────────────────┘
+```
+
+The evidence occurred on October 19th. The conclusion was reached when
+the command ran — the fourth row will carry the day you run it, while
+the first three stay on the 19th forever. Both times are kept,
+separately, which is what makes "what did we believe last Tuesday, and
+on what basis" an answerable question rather than an archaeology
+project.
+
+The rest of the surface:
+
+```bash
+# Current revision, journal head, storage health
+python -m lltpm runtime status --db lltpm.db --organization acme
+
+# Verify the hash chain (read-only; reports corruption, never repairs it)
+python -m lltpm runtime verify --db lltpm.db
+
+# Retain the head hash out of band, so a wholesale rewrite is detectable
+python -m lltpm runtime anchor --db lltpm.db
+
+# Rebuild every projection from the journal (dry run unless --publish)
+python -m lltpm runtime replay --db lltpm.db --organization acme
+
+# Checkpoint, so future replays start here instead of at record 1
+python -m lltpm runtime snapshot --db lltpm.db --organization acme
+
+# Which artifact types run a dedicated engine, and which are projections
+python -m lltpm runtime coverage
+
+# Durable history as JSON, carrying its own integrity verdict
+python -m lltpm runtime export --db lltpm.db --organization acme \
+  --what decisions
+
+# Watch records land, like tail -f (read-only; Ctrl-C to stop)
+python -m lltpm runtime journal --db lltpm.db --follow
+```
+
+`replay` reports what it suppressed:
+
+```
+│ Replayed:   4 record(s) (1..4)                                   │
+│ Suppressed: 1 external effect(s)                                 │
+```
+
+Rebuilding history must not re-send a message or re-finalize a decision.
+Counting what the fence caught is what makes that checkable rather than
+merely promised. (Run it twice and the second pass reports the evidence
+as already processed, which is the same discipline seen from the other
+side.)
+
+### Watching the process itself
+
+`--log-level` adds the process's own account of itself on **stderr** —
+which engine ran, what was deduplicated, why a revision was not
+promoted — so redirecting stdout keeps both streams usable.
+
+```bash
+python -m lltpm runtime --log-level info --log-format json \
+  ingest examples/evidence.json --db lltpm.db 2> run.jsonl
+```
+
+Log lines carry the ids that join them back to durable history
+(`revision_id`, `journal_sequence`, `causal_event_id`,
+`organization_id`), and anything a replay produces is marked
+`execution_mode=replay`, so reconstruction is never mistaken for live
+work. Credential-shaped material is redacted at format time.
+
+The log and the journal are deliberately not the same thing. The journal
+records **what happened to the organization**: durable, ordered,
+hash-chained, replayed. The log records **what the process did**:
+transient, cheap, safe to lose. No log line is authoritative, none is
+ever replayed, and turning logging off changes no result — a test
+asserts it.
+
+---
+
+## Reading a real source system
+
+`lltpm integrations` is the path from a provider's API to durable
+evidence. It is read-only against the provider by construction: each
+reader can issue nothing but GET, and a test asserts no write verb is
+nameable in those modules.
+
+```bash
+# What can be read, and how good the evidence for each contract is
+python -m lltpm integrations sources
+
+# See what a payload would become — offline, no network, no database
+python -m lltpm integrations normalize \
+  tests/fixtures/github/pull_requests.json \
+  --kind pull_request --repository acme/atlas-service --project atlas
+```
+
+```
+5 envelope(s); 0 payload(s) produced none
+┏━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Event class ┃ Occurred (reality time) ┃ Source               ┃
+┡━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━┩
+│ pr_merged   │ 2026-02-25T05:45        │ acme/atlas-service#8 │
+│ pr_merged   │ 2026-02-25T05:30        │ acme/atlas-service#7 │
+│ …           │ …                       │ …                    │
+└─────────────┴─────────────────────────┴──────────────────────┘
+```
+
+Merged in February, read today, recorded as February. Then the live
+path. Pass the credential through the environment rather than the
+`--token` argument the commands also accept: an argument lands in shell
+history and in the process list, which is a worse place for a token than
+anything the code does with it.
+
+```bash
+read -rs LLTPM_GITHUB_TOKEN && export LLTPM_GITHUB_TOKEN
+
+python -m lltpm integrations ingest --repository acme/atlas \
+  --project atlas --db lltpm.db --organization acme
+
+# Do the recorded contracts still match the live API?
+python -m lltpm integrations verify --repository acme/atlas
+```
+
+Slack reads `LLTPM_SLACK_TOKEN` (or `SLACK_BOT_TOKEN`) and Jira reads
+`LLTPM_JIRA_API_TOKEN` the same way. A token never enters the journal, a
+log line, a fixture, an export or an exception message, and each of
+those five routes is closed and tested separately in
+`tests/test_provider_security.py` — the one that leaks is always the one
+nobody enumerated.
+
+### Three things a normalizer refuses to do
+
+Each alternative is a specific false statement, so each is a reported
+refusal rather than a best guess:
+
+- **It never guesses a project.** Bindings are declared. An unbound
+  repository, workspace or Jira project is reported, not filed under a
+  plausible-looking project.
+- **It never invents an event class.** A push, a comment-only review, a
+  draft pull request, a Slack reaction, a Jira worklog — each is
+  reported as uninterpreted with a stated reason. Merged code stays
+  technical evidence; it is not promoted to feature completion.
+- **It never stamps `now` on a past fact.** A payload with no usable
+  timestamp is rejected rather than dated today.
+
+Idempotency follows the same discipline: the key is the provider's own
+event id — a webhook delivery id, an Events API event id, or a polled
+resource's identity plus its version — and never a clock, a timestamp or
+a payload hash. **Reading the same repository twice appends nothing.**
+
+### Where each source actually stands
+
+Evidence quality differs between providers, so it is reported per
+provider rather than flattened into "supported".
+
+| Source | Read path | Contract evidence | Webhook signature | Overall |
+|---|---|---|---|---|
+| **GitHub** | verified against the live API | **recorded** from live responses (pull requests, events); issues derived from those recordings, reviews hand-written | not implemented | **live verified** |
+| **Jira** | implemented — REST v3, token pagination | **official documentation** — six payload kinds from Atlassian's published examples | implemented, never seen a real delivery | **contract verified, awaiting live verification** |
+| **Slack** | implemented — Web API, rate-limit aware | **official documentation** — six payload kinds from Slack's published examples | implemented, never seen a real delivery | **contract verified, awaiting live verification** |
+
+The reason is boring and worth stating: `slack.com` and
+`api.atlassian.com` were unreachable from the environment this was built
+in. Rather than let documentation-derived fixtures pass as recordings,
+provenance is a first-class property — `recorded` outranks
+`official_documentation`, which outranks `derived` and `hand_written`,
+and `integrations verify` reports anything unrecorded as *unverifiable*
+rather than as passing. `integrations sources` prints the whole table.
+
+Moving Slack and Jira to **live verified** needs network egress and a
+read-scoped token; nothing in the code is waiting.
+
+### Keeping the recordings honest
+
+The offline tests run against payloads recorded from live APIs, in the
+shape of Fowler's self-initializing fake: record once, replay offline,
+re-check the recordings on their own schedule. A contract is the set of
+fields the normalizers **actually read**, with the types they may take —
+so a new GitHub field cannot fail the build, and a renamed `merged_at`
+must.
+
+Recorded fixtures name nobody. Handles, account ids and repository names
+are pseudonymized before anything is written, and
+`integrations record` refuses to write a fixture that still discloses
+something.
+
+---
+
+## What LLTPM is not
+
+Stated plainly, because each of these is a thing a reader could
+reasonably assume.
+
+- **Not a tool for measuring people.** It measures dependency
+  congestion, approval queues, information divergence, capacity
+  constraints, decision latency, KPI state, context handoff depth and
+  organizational topology. It does not grade anyone's responsiveness,
+  reliability or collaboration, and it does not name who "was the
+  blocker". This is enforced, not just intended:
+  [`tests/test_person_measurement_scope.py`](tests/test_person_measurement_scope.py)
+  asserts that no model anywhere has a person as its subject *and* a
+  grade, score, rate or hours count, that no agent tool can be asked for
+  a verdict on a colleague, that the dashboard serves no per-person
+  review, and that the log field vocabulary stays a closed list. An
+  earlier version of this project had a quarterly-evaluation surface;
+  removing it made the system more capable, not less, for the reason the
+  scenario above shows.
+- **Not a replacement for GitHub, Jira or Slack.** The evidence path
+  only reads: `github_reader`, `slack_reader` and `jira_reader` can
+  issue nothing but GET, and a test asserts no other verb is nameable in
+  those modules. Nothing writes to a pull request or a Jira issue at
+  all. The TPM surface is a separate thing and *does* send — Slack and
+  Google Chat messages, email digests, and Linear or Notion items when
+  those are configured — which is how an async update reaches anyone
+  instead of a meeting doing it. Reading and sending are different
+  modules on purpose.
+- **Not a hosted multi-tenant service.** There is no tenant isolation —
+  not partial, none. `organization_id` exists on records but nothing
+  below the query layer enforces it.
+  [`docs/threat-model.md`](docs/threat-model.md) §5 lists what a hosted
+  mode would need.
+- **Not safe to expose to a network.** 25 of the dashboard's 28 routes
+  enforce no authentication, the set is enumerated in code, and a test
+  fails if it changes. The shipped container binds `0.0.0.0`; the CLI
+  binds loopback. See [`docs/threat-model.md`](docs/threat-model.md) §1.
+- **Not a forecasting engine that hides its uncertainty.** Probability
+  and confidence are separate numbers and both are displayed. Pruned
+  scenario branches keep their mass, so displayed futures never falsely
+  sum to 100%.
+- **Not finished.** `memory`, `evaluation`, `application`, `structural`,
+  `ontology` and `advisory` are built and tested but not yet on the live
+  path. `runtime coverage` reports which artifact types run a dedicated
+  engine and which are thinner projections, rather than letting a
+  projection pass for an engine.
+
+---
 
 ## Architecture
 
+Two layers. The **TPM surface** is the agent, its tools and the
+artifacts it produces. Underneath sits a **layered
+organizational-reasoning stack**.
+
+The layering is enforced rather than described:
+[`tests/test_architecture_boundaries.py`](tests/test_architecture_boundaries.py)
+builds the first-party import graph by parsing source and asserts it
+stays acyclic, that the foundations import nothing first-party, and that
+nothing imports the orchestrator.
+
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    CLI / Chat Interface                  │
-├─────────────────────────────────────────────────────────┤
-│                  TPM Agent (Claude Opus 4.6)            │
-│              Agentic loop with tool use                 │
-├──────────────┬──────────────┬───────────────────────────┤
-│    Tools     │   Workflows  │       Artifacts           │
-│  (30+ tools) │              │                           │
-│  - Project   │  - Meeting   │  - Program Brief          │
-│  - Tracking  │    Gate      │  - RAID Log               │
-│  - Comms     │  - Risk      │  - Decision Log           │
-│  - GitHub    │    Engine    │  - Milestone Plan          │
-│  - Analytics │  - Dep       │  - Status Updates          │
-│  - Calendar  │    Tracker   │  - Launch Checklist        │
-│              │  - Daily     │  - Action Tracker          │
-│              │    Cadence   │  - Bug Dashboard           │
-│              │  - Weekly    │                            │
-│              │    Planner   │                            │
-├──────────────┴──────────────┴───────────────────────────┤
-│                   Integrations                          │
-│         GitHub · Jira · Slack · Linear · Calendar       │
-├─────────────────────────────────────────────────────────┤
-│                  Artifact Store (JSON)                   │
-└─────────────────────────────────────────────────────────┘
+src/lltpm/
+│   # ── Foundations: import no first-party package ──
+├── core/            shared domain primitives
+├── temporal/        bitemporal truth — reality time vs knowledge time
+├── identity/        cross-system entity resolution
+├── structural/      causal/structural graph engine
+├── persistence/     journal, snapshots, replay, SQLite reference backend
+│
+│   # ── Domain intelligence ──
+├── intelligence/    project understanding, KPIs, launch readiness
+├── coordination/    decisions, authority policy, bounded autonomy
+├── scenarios/       probabilistic scenario lattice
+├── portfolio/       cross-project topology, capacity, collisions
+├── memory/          procedural coordination memory
+├── evaluation/      historical replay, forecast calibration
+├── application/     governed calibration application, auto-revert
+│
+│   # ── Orchestration: composes the domains; nothing imports it ──
+├── runtime/         dedupe, temporal ordering, coalesced recompute,
+│                    coherent revisions, materiality, causal compression,
+│                    attention routing, durability seam
+│
+│   # ── Application infrastructure: imports no first-party package ──
+├── observability/   log formatting, field vocabulary, redaction
+│
+│   # ── The TPM surface ──
+├── models/          Pydantic data models
+├── workflows/       meeting gate, risk engine, sprint, standup, security
+├── integrations/    two kinds, deliberately separate modules:
+│                    *_reader.py + *_normalizer.py — evidence in, GET only
+│                    *_integration.py — outbound: Slack, Google Chat,
+│                      email, Calendar, Linear, Notion, Zoom, voice
+├── artifacts/       artifact store
+├── tools/           LLM tool definitions
+└── dashboard.py     FastAPI dashboard with JWT auth and RBAC
 ```
 
-## Quick Start
+### Invariants
+
+These are asserted by tests, and relaxing one is a design decision
+rather than a refactor.
+
+- **Dependency direction.** The foundations import no first-party
+  package; no domain imports `persistence` or `sqlite3`; nothing imports
+  `runtime`.
+- **Journal first, promote last.** Durable changes are appended before
+  the runtime treats them as real. Derived state is always rebuildable.
+- **Arrival order is not temporal authority.** A late-arriving event
+  cannot move an already-decided decision back to pending.
+- **Coherent revisions.** Intelligence is published as a revision
+  computed against one evidence cutoff; a partial recompute never
+  becomes current.
+- **Probability honesty.** Probability, confidence and impact are three
+  separate quantities. Pruned branches keep their mass.
+- **No stale autonomous action.** Validation and finalization happen in
+  one guarded call, kill switch checked first, and nothing widens its
+  own authority.
+- **Identity is resolved conservatively.** A curated alias resolves; a
+  name resemblance does not. An ambiguous match is left unlinked for a
+  person to settle, because merging two colleagues who share a surname
+  is worse than reporting an unlinked identity.
+- **Replay touches nothing external.** Rebuilding history never
+  re-sends a message or re-finalizes a decision, and the suppressions
+  are counted.
+- **An idempotency key never depends on our clock.**
+- **Reality time is the time of the fact.**
+- **A normalizer guesses nothing.**
+- **Logs are not a second journal.**
+- **No worker scoring or activity tracking.**
+
+### Durable storage
+
+The reference deployment is one local SQLite file. Every backend sits
+behind a protocol, and `persistence` imports no other first-party
+package.
 
 ```bash
-# Install
-pip install -e .
-
-# Set your API key
-export ANTHROPIC_API_KEY=sk-...
-
-# Interactive chat with the TPM agent
-lltpm chat
-
-# One-shot command
-lltpm ask "Set up a new program called Phoenix to rebuild our payments service"
-
-# Run the daily brief
-lltpm daily phoenix
-
-# Check program health
-lltpm pulse phoenix
-
-# Scan for risks
-lltpm risks phoenix
-
-# See today's focus
-lltpm today
+cp lltpm.db lltpm.db.backup   # back up everything
 ```
 
-## Agent Capabilities
+A hash chain detects an in-place edit. It cannot detect a history
+rewritten wholesale, because whoever rewrites the file recomputes every
+link. That is what `runtime anchor` is for: retain the head hash
+somewhere the database is not, and `verify --expect-head` compares
+against it. Unanchored, `verify` says in its own output what it did not
+check rather than implying more than it verified.
 
-### Program Management
-- Create programs with briefs (goal, non-goals, stakeholders, success metrics)
-- Manage milestones with entry/exit criteria and critical path tracking
-- Maintain RAID logs (Risks, Assumptions, Issues, Dependencies)
-- Track decisions with options, rationale, and follow-ups
-- Generate structured status updates for different audiences
+---
 
-### Meeting Gate
-Every meeting request is evaluated against four criteria:
-1. Decision owner identified
-2. Options/tradeoffs documented
-3. Pre-read available
-4. Decide-by deadline set
+## The TPM agent surface
 
-If any fail, the agent proposes an async alternative workflow.
+The agent runs a manual Claude tool-use loop over the workflow engines.
+This part needs an API key.
 
-### Risk Detection
-Automatic scanning for:
-- **Schedule compression**: Too many milestones in too little time
-- **Dependency drift**: Tickets stale for 48h+, overdue commitments
-- **Unmitigated risks**: High/critical risks with no mitigation plan
-- **Dependency clustering**: Too many deps blocked on one team
-- **Approaching deadlines**: Milestones not started but due soon
-
-### Daily Cadence
-Runs the full TPM daily routine in seconds:
-1. Aggregate program pulse from all data sources
-2. Check for dependency drift
-3. Scan for risk signals
-4. Synthesize recommended actions
-
-### Weekly Rhythm
-Structured weekly themes:
-- **Monday**: Plan Integrity
-- **Tuesday**: Execution Acceleration
-- **Wednesday**: Quality + Integration
-- **Thursday**: Launch Readiness
-- **Friday**: Reporting + Retro
-
-### Bug Triage
-- Severity classification (P0-P3)
-- SLA tracking and violation detection
-- Stop-ship bug identification
-- Burn-down tracking
-
-## Integrations
-
-Configure via environment variables:
-
-| Integration | Variables | What It Enables |
-|-------------|-----------|-----------------|
-| GitHub | `GITHUB_TOKEN` | PR tracking, build health |
-| Jira | `JIRA_BASE_URL`, `JIRA_API_TOKEN`, `JIRA_EMAIL` | Ticket tracking, sprint status |
-| Slack | `SLACK_BOT_TOKEN` | Async updates, structured nudges |
-| Linear | `LINEAR_API_KEY` | Issue tracking |
-
-## Example Session
-
+```bash
+read -rs ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY
+python -m lltpm init          # configuration wizard
+python -m lltpm chat          # interactive
+python -m lltpm ask "Set up a program called Atlas V2 to rebuild auth"
+python -m lltpm daily atlas   # the daily cadence brief
+python -m lltpm pulse atlas   # aggregated program pulse
+python -m lltpm risks atlas   # risk signal scan
+python -m lltpm today         # today's focus
+python -m lltpm tools         # every tool the agent can call
+python -m lltpm dashboard     # local web dashboard
 ```
-You: Set up a new program called Atlas V2 to rebuild the Atlas service
-     with new auth. Target date September 1. Alice is eng lead, Bob is PM.
 
-LLTPM: [tool: create_program]
-       [tool: add_milestone] x3
-       [tool: init_launch_checklist]
+The **meeting gate** is the surface where the thesis is most visible.
+Every meeting request is evaluated against four criteria — a named
+decision owner, written options and trade-offs, an available pre-read,
+and a decide-by date. If any fail, the agent proposes the async
+workflow instead of booking the meeting.
 
-I've created the Atlas V2 program with the following structure:
+Risk detection runs on every pass rather than once a week in a meeting,
+scanning for schedule compression, dependency drift, unmitigated
+high-severity risks, dependency clustering on one team, and milestones
+due but not started. There is no daemon: a pass happens when a command
+runs or a scheduler runs one.
 
-## Atlas V2
-**Goal**: Rebuild the Atlas service with new auth
-**Target date**: 2025-09-01
-**Health**: GREEN
+This is also the layer that sends. An async update reaches people
+through Slack, Google Chat or an email digest, and Linear or Notion
+items where those are configured — the alternative to the meeting has to
+arrive somewhere.
 
-**Stakeholders**:
-- Alice (Eng Lead)
-- Bob (PM)
+---
 
-I've also set up:
-- 3 milestones (Alpha → Beta → GA) on the critical path
-- Launch readiness checklist with 11 default gates
+## Install
 
-You: Should we have a weekly status meeting?
+Not yet published to a package index; install from source.
 
-LLTPM: [tool: evaluate_meeting]
-
-**Meeting verdict: REJECTED — use async instead.**
-
-Failures:
-- No decision owner identified
-- Options/tradeoffs are not pre-written
-- No pre-read available
-- No decide-by deadline set
-
-Instead:
-1. I'll generate a structured weekly status update every Friday
-2. Post it to the team channel with a 24h review deadline
-3. If anyone has concerns, they comment inline
-4. Only escalate to a 15-min focused meeting if there's an actual decision
+```bash
+git clone https://github.com/SphoenixAI/LLTPM && cd LLTPM
+python -m pip install -e .                      # core: stack, CLI, journal
 ```
+
+The core install needs no account and no network. Everything else is an
+extra, so nothing heavy is pulled in by default:
+
+```bash
+python -m pip install -e ".[integrations]"   # GitHub, Jira, Slack, Calendar
+python -m pip install -e ".[dashboard]"      # the FastAPI dashboard
+python -m pip install -e ".[email]"          # SendGrid delivery
+python -m pip install -e ".[openai]"         # an OpenAI-compatible backend
+python -m pip install -e ".[pdf]"            # PDF export (WeasyPrint)
+python -m pip install -e ".[voice]"          # local TTS backends
+python -m pip install -e ".[all]"            # all but pdf, voice, dev
+```
+
+`all` deliberately leaves out `pdf` and `voice`: both pull in large
+native dependencies and neither is needed to run the stack.
+
+Requires Python 3.11, 3.12 or 3.13.
 
 ## Development
 
 ```bash
-# Install with dev dependencies
 python -m pip install -e ".[dev]"
-
-# Run tests (3,400+)
 python -m pytest tests/ -q
-
-# Run with integrations
-python -m pip install -e ".[integrations]"
 ```
 
 Use `python -m pip` and `python -m pytest` rather than the bare
@@ -194,276 +586,42 @@ executables — on some systems `pip` is bound to a different interpreter
 than `python`, which installs the dependencies where the tests cannot
 see them.
 
+CI runs the suite on 3.11, 3.12 and 3.13, plus four jobs that exist so a
+specific kind of regression is visible in the checks list rather than
+buried in a passing suite: the architecture boundaries, release
+readiness, the security and secret-scanning pass, and an offline
+quickstart that executes the commands this README promises.
 
-## Project Structure
+[`docs/assistant-development-guide.md`](docs/assistant-development-guide.md) is the engineering handbook — conventions,
+wiring state, and which invariant each test file defends. Read it before
+moving an import between packages.
 
-LLTPM has two layers. The **TPM surface** is the agent, its tools, and
-the artifacts it produces. Underneath sits a **layered
-organizational-reasoning stack** — temporal truth, scenarios, portfolio
-topology, governed autonomy, a live orchestrator, and a durable journal.
+---
 
-The layering is not aspirational: `tests/test_architecture_boundaries.py`
-builds a first-party import graph by parsing source and asserts it stays
-acyclic, that the foundations import nothing, and that nothing imports
-the orchestrator.
+## Design, security and limits
 
-```
-src/lltpm/
-├── agent.py              # Core TPM agent (LLM tool-use loop)
-├── main.py               # CLI entry point
-├── config.py             # Configuration management
-├── system_prompt.py      # Agent personality and rules
-├── dashboard.py          # FastAPI dashboard with JWT auth
-│
-│   # ── Foundations: import no first-party package ──
-├── core/                 # Shared domain primitives
-├── temporal/             # Bitemporal truth (reality time vs knowledge time)
-├── identity/             # Cross-system entity resolution
-├── structural/           # Causal/structural graph engine
-├── persistence/          # Durable journal, snapshots, replay, SQLite
-│
-│   # ── Domain intelligence ──
-├── intelligence/         # Project understanding, KPIs, launch readiness
-├── coordination/         # Decisions, authority policy, bounded autonomy
-├── scenarios/            # Probabilistic scenario lattice
-├── portfolio/            # Cross-project topology and simulation
-├── memory/               # Procedural coordination memory
-├── evaluation/           # Replay, forecast metrics, calibration
-├── application/          # Governed calibration application, auto-revert
-│
-│   # ── Orchestration: nothing imports this ──
-├── runtime/              # Live orchestrator + durability seam
-│
-│   # ── Application infrastructure ──
-├── observability/        # Log formatting, redaction; only the CLI uses it
-│
-│   # ── Original TPM surface ──
-├── models/               # Pydantic data models
-├── artifacts/            # Artifact store and generators
-├── workflows/            # TPM workflow engines
-├── integrations/         # GitHub, Jira, Slack, Linear, Calendar, voice
-└── tools/                # LLM tool definitions
-```
+- [`docs/research-alignment.md`](docs/research-alignment.md) — where the
+  design overlaps published work (CloudEvents, Snodgrass bitemporality,
+  Haber–Stornetta hash chaining, Fellegi–Sunter record linkage, Murphy's
+  Brier decomposition, Pearl's noisy-OR, Evans' anti-corruption layer,
+  Fowler's self-initializing fake, W3C PROV-O), including three places
+  where reading the literature exposed a real gap, two deliberate
+  departures, and §11's open limitations.
+- [`docs/threat-model.md`](docs/threat-model.md) — what the system
+  withstands, what it does not, and the configurations that are
+  explicitly unsupported.
+- [`docs/security-audit.md`](docs/security-audit.md) — the history scan,
+  dependency audit, SBOM, the dashboard XSS that was found and fixed,
+  the authentication findings, and what is still uncovered.
+- [`docs/release-audit.md`](docs/release-audit.md) — what shipped, every
+  dependency's licence, and which public claims were checked.
+- [`SECURITY.md`](SECURITY.md) — reporting route.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) and
+  [`CHANGELOG.md`](CHANGELOG.md).
 
-Design decisions are checked against the published work they overlap
-with in [docs/research-alignment.md](docs/research-alignment.md) — including
-three places where reading the literature exposed a real gap, and two
-where LLTPM departs from the standard answer on purpose.
+Nothing in those documents uses "secure" as a state. Each says what was
+checked, what the result means, and what was not checked.
 
-What was checked before publishing this — and what was deliberately
-not checked — is in [docs/release-audit.md](docs/release-audit.md) and
-[docs/security-audit.md](docs/security-audit.md). The deployment
-boundary, including what is **not** supported, is in
-[docs/threat-model.md](docs/threat-model.md).
+## Licence
 
-### What the stack guarantees
-
-- **Probability honesty** — likelihood and confidence are separate numbers,
-  and pruned branches keep their mass, so displayed futures never falsely
-  sum to 100%.
-- **Arrival order is not temporal authority** — a webhook that lands late
-  cannot move an approved decision back to pending.
-- **Coherent revisions** — intelligence is published as a set computed
-  against one evidence cutoff; a partial recompute never becomes current.
-- **No stale autonomous action** — a recommendation is revalidated and
-  finalized inside one guarded call, kill switch first.
-- **Durability** — an append-only hash-chained journal is the source of
-  truth; every derived projection can be deleted and rebuilt from it.
-- **Not a surveillance tool** — it measures dependency congestion, approval
-  queues, information divergence, capacity constraints, decision latency,
-  KPI state, context handoff depth and organizational topology. It does not
-  grade anyone's responsiveness, reliability or collaboration, and it does
-  not name who "was the blocker". A source-level guardrail asserts that no
-  model anywhere has a person as its subject *and* a grade, score, rate or
-  hours count, that no agent tool can be asked for a verdict on a
-  colleague, and that no per-person review is served over HTTP.
-
-  This is also why the structural reading is the more capable one. A team
-  can look slow because four projects share one approval authority. The
-  system can say that. A quarterly letter grade takes the same evidence
-  and converts a structural failure into an individual's score — less
-  true, and less useful to everyone including the person graded.
-- **Your history is yours** — durable state is JSON in one SQLite file, and
-  `lltpm runtime export` gives you the journal, decisions, recommendations
-  and evidence provenance without parsing anything opaque.
-
-### Running the organizational stack
-
-The reasoning stack has its own command group. It works offline — no API
-key, no cloud account, one local SQLite file — because the two engines
-that would otherwise need a model fall back to deterministic baselines
-that are labelled as baselines in the reproducibility manifest.
-
-```bash
-# Journal evidence, then recompute intelligence from it
-lltpm runtime ingest evidence.json --db lltpm.db --organization acme
-
-# Current revision, journal head, storage health
-lltpm runtime status --db lltpm.db --organization acme
-
-# Verify the journal hash chain (read-only; never repairs)
-lltpm runtime verify --db lltpm.db
-
-# Inspect durable history
-lltpm runtime journal --db lltpm.db --event-type evidence_accepted
-
-# Watch records land, like tail -f (read-only; Ctrl-C to stop)
-lltpm runtime journal --db lltpm.db --follow
-
-# Rebuild projections from the journal (dry run by default)
-lltpm runtime replay --db lltpm.db --organization acme --publish
-
-# Checkpoint so future replays start from here
-lltpm runtime snapshot --db lltpm.db --organization acme
-
-# Which artifact types run a dedicated engine
-lltpm runtime coverage
-
-# Export durable history as JSON (read-only)
-lltpm runtime export --db lltpm.db --organization acme > history.json
-lltpm runtime export --db lltpm.db --what decisions
-```
-
-#### Watching it work
-
-Each command reports what it did on stdout. `--log-level` adds the
-process's own account of itself on stderr — which engine ran, what was
-deduplicated, why a revision was not promoted — so redirecting stdout to
-a file keeps both usable:
-
-```bash
-# Human-readable, on stderr
-lltpm runtime --log-level info ingest evidence.json --db lltpm.db
-
-# One JSON object per line, for a log pipeline
-lltpm runtime --log-level debug --log-format json \
-  ingest evidence.json --db lltpm.db 2> run.jsonl
-
-# Clean JSON on stdout, process account on stderr, at the same time
-lltpm runtime --log-level info export --db lltpm.db > history.json
-```
-
-Log lines carry the ids that join them back to durable history —
-`revision_id`, `journal_sequence`, `causal_event_id`,
-`organization_id` — and anything produced by a replay is marked
-`execution_mode=replay`, so reconstruction is never mistaken for live
-work. Credential-looking material is redacted at format time.
-
-The log and the journal answer different questions and are deliberately
-not the same thing. The journal records *what happened to the
-organization*: durable, ordered, hash-chained, replayable. The log
-records *what the process did*: transient, cheap, and safe to lose. No
-log line is authoritative and none is ever replayed.
-
-Nothing in the log describes an individual's activity. The field
-vocabulary is a closed list and a source guardrail walks every log call
-in the package to keep it that way.
-
-### Optional extras
-
-The core install needs no account and no network. Everything else is an
-extra, so nothing heavy is pulled in by default:
-
-```bash
-pip install lltpm                  # core: the stack, the CLI, the journal
-pip install "lltpm[integrations]"  # GitHub, Jira, Slack, Google Calendar
-pip install "lltpm[dashboard]"     # the FastAPI dashboard
-pip install "lltpm[email]"         # SendGrid delivery
-pip install "lltpm[openai]"        # an OpenAI-compatible model backend
-pip install "lltpm[pdf]"           # PDF export (WeasyPrint)
-pip install "lltpm[voice]"         # local TTS backends
-pip install "lltpm[all]"           # integrations, email, openai, dashboard
-```
-
-`all` deliberately leaves out `pdf` and `voice`: both pull in large
-native dependencies, and neither is needed to run the stack.
-
-### Reading a real source system
-
-`lltpm integrations` is the path from a provider's API to durable
-evidence. It is read-only against the provider by construction: the
-reader can issue nothing but GET, and a test asserts no write verb
-appears in it.
-
-```bash
-# What can be read, and how trustworthy each contract is
-lltpm integrations sources
-
-# See what a payload would become — offline, no network, no database
-lltpm integrations normalize pulls.json --kind pull_request \
-  --repository acme/atlas --project atlas
-
-# The live path: read a repository and journal what it says
-lltpm integrations ingest --repository acme/atlas --project atlas \
-  --db lltpm.db --organization acme
-
-# Check the recorded contracts still match the live API
-lltpm integrations verify --repository acme/atlas
-```
-
-Three things it refuses to do, because each alternative is a specific
-false statement:
-
-- **It never guesses a project.** Bindings are declared. An unbound
-  repository is reported, not filed under a plausible project.
-- **It never invents an event class.** A push, a comment-only review and
-  a draft pull request are reported as uninterpreted with a stated
-  reason. Merged code stays technical evidence, not feature completion.
-- **It never stamps `now` on a past fact.** A pull request merged in
-  February and read in October occurred in February; a payload with no
-  usable timestamp is rejected rather than dated today.
-
-Idempotency follows the published guidance for webhook delivery: the key
-is the provider's own event id — `X-GitHub-Delivery` for a delivery, the
-event id from the Events API, or a polled resource's identity plus its
-version — never a timestamp and never a payload hash. Reading the same
-repository twice appends nothing.
-
-#### Keeping the recordings honest
-
-The offline tests run against payloads recorded from the live API, in
-the shape of Fowler's self-initializing fake: record once, replay
-offline, re-check the recordings on their own schedule. The contract is
-the set of fields the normalizers actually read, with the types they may
-take — so a new GitHub field cannot fail the build and a renamed
-`merged_at` must.
-
-`lltpm integrations sources` reports the provenance of every contract,
-and `verify` refuses to report an unrecorded one as passing:
-
-```
-│ github │ event        │ recorded     │
-│ github │ issue        │ derived      │
-│ github │ pull_request │ recorded     │
-│ github │ review       │ hand-written │
-```
-
-Recorded fixtures name nobody: handles, account ids and repository names
-are pseudonymized before anything is written, and `record` refuses to
-write a fixture that still discloses something.
-
-A worked example lives in `examples/evidence.json` — three pieces of
-evidence across two projects, enough for the engines to produce a
-revision. The whole walkthrough runs in CI on every push, so if the
-offline promise above stops being true, the build says so.
-
-Every export carries its own integrity verdict. An export of damaged
-history says so in the JSON and exits non-zero, so a copy that was never
-verified cannot be mistaken for one that was. Caveats go to stderr, so
-redirecting stdout gives clean JSON.
-
-`ingest` is journal-first: the evidence is durable before anything
-derives from it, so a recompute that fails leaves the evidence intact
-and a later `replay` rebuilds the projection.
-
-### Durable storage
-
-The reference deployment is one local SQLite file. No Kafka, no Redis,
-no Postgres, no object store, no daemon — every backend sits behind a
-protocol, and `persistence` imports no other first-party package.
-
-```bash
-# Back up everything: copy one file
-cp lltpm.db lltpm.db.backup
-```
-
+MIT. See [`LICENSE`](LICENSE).
