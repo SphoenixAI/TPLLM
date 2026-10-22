@@ -1,4 +1,4 @@
-"""Scenario lattice generation (Commit 24).
+"""Scenario lattice generation.
 
 Beam expansion with probability pruning, impact preservation, and tail
 aggregation. "Cover every path" means covering the *material* scenario

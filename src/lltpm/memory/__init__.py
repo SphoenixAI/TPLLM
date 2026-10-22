@@ -1,4 +1,4 @@
-"""Procedural organizational memory (Commit 17).
+"""Procedural organizational memory.
 
 Stores how coordination problems were resolved — observable event
 traces, extracted resolution patterns with success/failure records, and

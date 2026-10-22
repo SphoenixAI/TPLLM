@@ -35,7 +35,7 @@ from lltpm.workflows.security_manager import SecurityManager
 
 
 #: Routes served with no credential, enumerated so the set cannot grow
-#: silently. Commit 44's review found 25 of 28 routes enforcing no
+#: silently. The security review found 25 of 28 routes enforcing no
 #: authentication while the project advertised "FastAPI with JWT
 #: authentication" — true of the machinery, and not of most of the
 #: surface. The list is the honest boundary; `tests/test_auth_adversarial`
@@ -874,7 +874,7 @@ async function loadProgram() {
 // Every value below reaches the DOM through innerHTML, and every one of
 // them is program data somebody typed: a task title, an assignee, a
 // sprint name. A task called `<img src=x onerror=alert(1)>` executed
-// before Commit 44. Escaping happens here, at the point of rendering,
+// before this was fixed. Escaping happens here, at the point of rendering,
 // because that is the only place that knows the value is about to
 // become HTML.
 function esc(value) {

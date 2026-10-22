@@ -1,4 +1,4 @@
-"""Tests for Commit 27 — counterfactuals and option scenario analysis."""
+"""Counterfactuals and option scenario analysis."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Lightweight event-driven intelligence runtime (Commit 18).
+"""Lightweight event-driven intelligence runtime.
 
 Pipeline: incoming event → normalize → idempotency check → evidence
 reference → determine affected scope → refresh only the affected

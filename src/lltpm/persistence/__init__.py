@@ -1,6 +1,6 @@
-"""Durable persistence and deterministic replay (Commit 31).
+"""Durable persistence and deterministic replay.
 
-Commit 30 made TPLLM live. This makes it durable, and the whole design
+The runtime makes LLTPM live. This makes it durable, and the whole design
 turns on one distinction:
 
     the journal is the durable historical record of organizational state
@@ -18,7 +18,7 @@ anything above this layer.
 Three guarantees hold regardless of backend. History is append-only and
 hash-chained, so accidental mutation and truncation are loud rather than
 silent. Replay never touches the outside world, so rebuilding the past
-cannot repeat its consequences. And reproducing what TPLLM concluded
+cannot repeat its consequences. And reproducing what LLTPM concluded
 then is kept distinct from what it would conclude now, because those are
 different questions.
 

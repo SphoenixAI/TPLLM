@@ -1,9 +1,10 @@
-"""Organizational decision authority policy (Commit 22).
+"""Organizational decision authority policy.
 
-Commit 21 let the agent recommend. This decides who may turn a
+The recommendation layer lets the agent recommend. This decides who
+may turn a
 recommendation into a conclusive organizational decision.
 
-This is a separate authority domain from Commit 7's calibration
+This is a separate authority domain from calibration
 governance — organizational project decisions are not calibration rule
 application, and ``is_application_eligible`` is deliberately not
 reused.
@@ -125,7 +126,7 @@ class OrganizationalDecisionAuthorityPolicy(BaseModel):
 
 
 class OrganizationalAutonomyState(BaseModel):
-    """Organizational kill switch, separate from Commit 9's calibration
+    """Organizational kill switch, separate from the calibration
     kill switch. Checked before everything else."""
     enabled: bool = True
     kill_switch_engaged: bool = False

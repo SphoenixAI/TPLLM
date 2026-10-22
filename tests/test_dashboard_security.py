@@ -1,6 +1,6 @@
-"""Dashboard security tests (Commit 44).
+"""Dashboard security tests.
 
-Commit 42's audit listed the dashboard's HTML as unreviewed, and the
+The release audit listed the dashboard's HTML as unreviewed, and the
 review found a real cross-site scripting hole. The dashboard is a static
 page that fetches JSON and renders it client-side with `innerHTML` and
 template literals, so every interpolated value was a DOM XSS sink — and
@@ -33,7 +33,7 @@ import pytest
 
 from lltpm.dashboard import _DASHBOARD_HTML
 
-#: Payloads from the Commit 44 brief plus the attribute-context ones the
+#: Payloads from the security review plus the attribute-context ones the
 #: brief's list does not cover.
 PAYLOADS = (
     "<script>alert(1)</script>",

@@ -1,4 +1,4 @@
-"""Identity graph read model (Commit 19).
+"""Identity graph read model.
 
 A projection of canonical entities, external identities, and IDENTIFIES
 edges from resolution results. Read model only — it never mutates

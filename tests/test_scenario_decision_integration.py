@@ -1,4 +1,4 @@
-"""Tests for Commit 27 — the full scenario-aware pipeline, including the
+"""The full scenario-aware pipeline, including the
 mandatory Option B canonical case and the autonomy integration."""
 
 from __future__ import annotations
@@ -322,7 +322,7 @@ class TestAutonomyIntegration:
             recommendation=recommendation, policy=policy(),
         )
         assert eligible is True
-        assert "Commit 22 policy still decides authority" in reason
+        assert "the authority policy still decides authority" in reason
 
     def test_weak_scenario_model_blocks_autonomous_action(self):
         recommendation = self._recommendation()

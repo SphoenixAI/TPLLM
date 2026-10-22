@@ -1,4 +1,4 @@
-"""Tests for Commit 19 — the resolution engine's safety behavior."""
+"""The resolution engine's safety behavior."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Scenario lattice models (Commit 24).
+"""Scenario lattice models.
 
 Organizational futures do not proceed along a single line. Several paths
 may reach the same outcome — dependency delivered, or delayed then

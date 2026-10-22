@@ -1,4 +1,4 @@
-"""Tests for outreach routing and personalized briefings (Commit 41).
+"""Tests for outreach routing and personalized briefings.
 
 The responsiveness grade this module used to assert — HIGHLY_RESPONSIVE
 through UNRELIABLE — is gone, along with the response rate and
@@ -56,7 +56,7 @@ def test_outreach_recommendation():
     assert rec["typical_response_hours"] == 2.0
     assert rec["observations"] == 1
     # Note: preferred_channel is not learned from the channel a reply
-    # arrived on — pre-existing behaviour, unrelated to Commit 41.
+    # arrived on — pre-existing behaviour, unrelated to the grading removal.
     assert rec["best_channel"] in {"SLACK", "GCHAT"}
 
 

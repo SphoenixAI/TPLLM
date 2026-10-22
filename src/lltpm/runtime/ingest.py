@@ -1,4 +1,4 @@
-"""Runtime ingest: normalize, deduplicate, order (Commit 30).
+"""Runtime ingest: normalize, deduplicate, order.
 
 Real integrations do not deliver events in the order things happened. A
 meeting webhook can land ten minutes after the approval it preceded, and
@@ -6,7 +6,7 @@ a system that trusted arrival order would helpfully move an approved
 decision back to pending.
 
 The rule here is one sentence: **arrival order is not temporal
-authority**. Ordering uses Commit 23's bitemporal semantics — reality
+authority**. Ordering uses the temporal layer's bitemporal semantics — reality
 time first, knowledge time only to break ties — and a late event is
 never dismissed as irrelevant merely for being late. It may still change
 what the organization understands about *why* something happened, even
@@ -49,7 +49,7 @@ def envelope_to_runtime_event(
     *,
     causal_event_id: str | None = None,
 ) -> RuntimeEvidenceEvent:
-    """Wrap a Commit 18 envelope for the orchestration path.
+    """Wrap an evidence envelope for the orchestration path.
 
     The envelope is not replaced — it remains the record of what a tool
     said. This adds only what scheduling needs: what the event is about,

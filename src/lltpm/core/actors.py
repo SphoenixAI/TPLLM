@@ -1,4 +1,4 @@
-"""Core actor contract (Commit 20).
+"""Core actor contract.
 
 The minimum shape of "who" that both intelligence and coordination need.
 Neither domain owns this concept, so it lives in core.

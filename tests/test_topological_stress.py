@@ -1,6 +1,6 @@
-"""Tests for Commit 6 — Topological Stress Testing & Lateral Transfer Suite.
+"""Topological Stress Testing & Lateral Transfer Suite.
 
-Calibration proposals that passed Commit 5 regression testing are stress-tested
+Calibration proposals that passed regression testing are stress-tested
 for lateral transfer, topological fuzzing, and synthetic edge cases. The
 strongest outcome is ``PROMOTABLE_SCOPED_RULE`` — never auto-applied.
 """

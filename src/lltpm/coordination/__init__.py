@@ -196,7 +196,7 @@ from lltpm.coordination.workstreams import (
 )
 
 __all__ = [
-    # Commit 27 — scenario-aware decision optimization
+    # scenario-aware decision optimization
     "CounterfactualOverreachError",
     "DecisionOptionCounterfactual",
     "DecisionPosture",
@@ -230,7 +230,7 @@ __all__ = [
     "resolve_posture_weights",
     "scenario_recommendation_is_autonomy_eligible",
     "score_option_for_posture",
-    # Commit 22 — decision authority and bounded autonomy
+    # decision authority and bounded autonomy
     "AGENT_AUTHORITY_ACTOR_ID",
     "DECISION_ORIGIN_AUTONOMOUS",
     "NEVER_AUTONOMOUS_MARKERS",
@@ -265,7 +265,7 @@ __all__ = [
     "is_never_autonomous_category",
     "risk_at_most",
     "schedule_autonomous_review",
-    # Commit 21 — agent decision recommendations
+    # agent decision recommendations
     "AgentDecisionRecommendation",
     "AgentRecommendationStatus",
     "DECISION_ORIGIN_HUMAN_MODIFIED_AGENT",
@@ -291,7 +291,7 @@ __all__ = [
     "render_panel_sections",
     "score_decision_option",
     "select_agent_recommendation",
-    # Commit 15 — meetings, capsules, routing, packets
+    # meetings, capsules, routing, packets
     "ActionRoutingPlan",
     "ContextPacket",
     "DecisionCapsule",
@@ -311,7 +311,7 @@ __all__ = [
     "detect_material_changes",
     "determine_discussion_need",
     "identify_routing_candidates",
-    # Commit 14 — organizational memory
+    # organizational memory
     "ActionRequest",
     "ActionRequestStatus",
     "ActionRequestType",

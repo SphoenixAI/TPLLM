@@ -1,4 +1,4 @@
-"""Decide now, or learn first (Commit 27).
+"""Decide now, or learn first.
 
 A decision system that can only choose between options is incomplete.
 The third move — resolving the question that makes the choice obvious —
@@ -6,8 +6,9 @@ is frequently the best one, and it is invisible to any scorer that only
 ranks options against each other.
 
 This module compares the value of the information still missing against
-the cost of waiting for it, and emits Commit 13-compatible research
-targets rather than inventing a second research subsystem.
+the cost of waiting for it, and emits research targets the
+self-research subsystem already consumes rather than inventing a
+second one.
 """
 
 from __future__ import annotations
@@ -39,7 +40,7 @@ class DecisionTimingAssessment(BaseModel):
 
 
 class DecisionResearchNeed(BaseModel):
-    """A Commit 13-compatible research target produced by a
+    """A research target self-research can consume, produced by a
     RESEARCH_FIRST timing decision."""
     unknown_id: str
     question: str
@@ -170,7 +171,7 @@ def build_decision_research_needs(
     information_values: list[InformationValueEstimate],
     decision_question: str,
 ) -> list[DecisionResearchNeed]:
-    """Convert a RESEARCH_FIRST verdict into Commit 13 research targets.
+    """Convert a RESEARCH_FIRST verdict into self-research targets.
 
     Returns nothing when the recommendation is to decide now — the
     system does not manufacture research it does not need.

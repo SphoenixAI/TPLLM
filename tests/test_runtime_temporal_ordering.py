@@ -1,4 +1,4 @@
-"""Tests for Commit 30 — arrival order is not temporal authority.
+"""Arrival order is not temporal authority.
 
 The canonical case, straight from the field:
 

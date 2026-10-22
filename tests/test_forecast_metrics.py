@@ -1,4 +1,4 @@
-"""Tests for Commit 26 — forecast quality metrics and baselines."""
+"""Forecast quality metrics and baselines."""
 
 from __future__ import annotations
 
@@ -266,7 +266,7 @@ class TestOrganizationalValue:
 
 
 class TestBrierDecomposition:
-    """Commit 39 — Murphy's three-term decomposition.
+    """Murphy's three-term decomposition.
 
     A single Brier score hides the failure that matters most here: a
     forecaster that always predicts the base rate is perfectly

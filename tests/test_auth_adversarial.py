@@ -1,6 +1,6 @@
-"""Adversarial tests against the authentication that exists (Commit 44).
+"""Adversarial tests against the authentication that exists.
 
-Commit 42's audit left authentication unreviewed. The brief for this one
+The release audit left authentication unreviewed. The brief for this one
 was explicit: attack the implementation rather than redesign it. So
 these tests forge, expire, replay, retype and re-sign tokens, and they
 check the RBAC decisions against roles that should not have them.

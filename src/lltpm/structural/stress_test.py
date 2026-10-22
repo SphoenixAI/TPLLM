@@ -1,6 +1,6 @@
 """Topological stress testing — lateral transfer, fuzzing, synthetic edge cases.
 
-Takes ``CalibrationProposal`` objects that passed Commit 5 regression testing
+Takes ``CalibrationProposal`` objects that passed regression testing
 and stress-tests them for robustness:
 
     1. Lateral transfer — does the proposal generalize to structurally similar
@@ -255,7 +255,7 @@ class OverfitWarning(BaseModel):
 
 
 class StressTestedEvidenceBundle(BaseModel):
-    """Extends the Commit 5 evidence bundle with stress-test results."""
+    """Extends the regression evidence bundle with stress-test results."""
     id: str = ""
     calibration_proposal_id: str = ""
     base_evidence_bundle_id: str | None = None

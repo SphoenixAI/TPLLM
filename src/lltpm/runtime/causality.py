@@ -1,4 +1,4 @@
-"""Causal change tracking and notification compression (Commit 30).
+"""Causal change tracking and notification compression.
 
 One incident in Platform Architecture can move a KPI, two scenarios, a
 portfolio bottleneck, a project recommendation, and a portfolio priority.
@@ -47,7 +47,7 @@ def build_causal_change(
     """Record one change with the chain that produced it.
 
     ``dependency_edges`` names the path the invalidation actually
-    travelled, so "why did TPLLM recompute this?" has a structural
+    travelled, so "why did LLTPM recompute this?" has a structural
     answer rather than a plausible story.
     """
     edges: list[str] = []

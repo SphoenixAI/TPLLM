@@ -1,4 +1,4 @@
-"""Integration registry and legacy-adapter wrapping (Commit 18).
+"""Integration registry and legacy-adapter wrapping.
 
 Existing integrations (Slack, Jira, GitHub, calendar, …) keep their
 OAuth flows and clients; WrappedToolAdapter puts them behind the

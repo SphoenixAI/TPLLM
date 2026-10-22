@@ -1,4 +1,4 @@
-"""Tests for the Flight Data Recorder (Commit 3).
+"""Tests for the Flight Data Recorder.
 
 Covers human decision capture, override reason parsing, outcome
 measurement, discrepancy detection, calibration hypothesis generation,

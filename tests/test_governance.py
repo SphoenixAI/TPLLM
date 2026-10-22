@@ -1,4 +1,4 @@
-"""Tests for Commit 7 — Calibration Governance: Gated, Time-Boxed, Tiered Promotion.
+"""Calibration Governance: Gated, Time-Boxed, Tiered Promotion.
 
 Formal approval boundary between a stress-tested calibration proposal and the
 right to ever apply it. Human gate is kept. Reviewer fatigue and approval

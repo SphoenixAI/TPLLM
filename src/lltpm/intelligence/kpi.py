@@ -1,4 +1,4 @@
-"""KPI intelligence core models (Commit 16).
+"""KPI intelligence core models.
 
 A KPI is not just a number on a dashboard. The model understands what a
 KPI means, why it matters, its target, unit, observation window,

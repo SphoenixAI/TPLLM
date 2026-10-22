@@ -1,4 +1,4 @@
-"""KPI stewardship (Commit 16).
+"""KPI stewardship.
 
 Models the state of the KPI *response* — acknowledged, investigating,
 remediating, waiting on a dependency, validating recovery — with

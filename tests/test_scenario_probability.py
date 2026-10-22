@@ -1,4 +1,4 @@
-"""Tests for Commit 24 — probability, correlation handling, and
+"""Probability, correlation handling, and
 outcome aggregation without double-counting."""
 
 from __future__ import annotations

@@ -1,4 +1,4 @@
-"""Tests for Commit 24 — lattice generation, pruning, and tail mass."""
+"""Lattice generation, pruning, and tail mass."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 """Resolution patterns — how similar coordination problems were resolved
-(Commit 17).
+.
 
 Patterns are extracted from completed traces via a protocol (no
 hardwired LLM), carry observed success/failure counts, and stay

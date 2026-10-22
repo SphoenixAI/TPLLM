@@ -1,4 +1,4 @@
-"""Adapter and store protocols (Commit 18).
+"""Adapter and store protocols.
 
 Domain intelligence stays vendor-neutral: tools implement these
 protocols, existing integrations are wrapped behind them, and no heavy
@@ -75,7 +75,7 @@ class ProjectionStore(Protocol):
 
 
 class QueryAdapterEvidenceSearchProvider:
-    """Wraps a ToolQueryAdapter as a Commit 13 EvidenceSearchProvider so
+    """Wraps a ToolQueryAdapter as an ``EvidenceSearchProvider`` so
     self-research can search the tool ecosystem directly."""
 
     def __init__(self, *, adapter: ToolQueryAdapter, stage):

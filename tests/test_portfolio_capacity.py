@@ -1,4 +1,4 @@
-"""Tests for Commit 28 — capacity, bottlenecks, and the canonical
+"""Capacity, bottlenecks, and the canonical
 four-approval case."""
 
 from __future__ import annotations

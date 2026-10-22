@@ -248,10 +248,10 @@ __all__ = [
     "CalibrationHypothesis", "CalibrationHypothesisStatus",
     "CalibrationHypothesisType", "FeedbackKPISummary",
     "generate_calibration_hypothesis", "summarize_feedback_kpis",
-    # Replay (Commit 4)
+    # Replay
     "ReplayComparison", "build_replay_comparison",
     "get_option_id", "get_predicted_reduction",
-    # Inverse solver (Commit 4)
+    # Inverse solver
     "DEFAULT_LOCAL_SEARCH_RADIUS", "DEFAULT_MAX_CANDIDATE_EDITS",
     "CandidateEditStatus", "CandidateEditType", "CandidateGraphEdit",
     "ContradictionCheckResult", "HardConstraint", "InverseSolverResult",
@@ -262,20 +262,20 @@ __all__ = [
     "generate_edge_weight_candidates", "generate_missing_edge_candidates",
     "generate_override_reason_candidates", "mismatch_type_from_candidate",
     "run_local_inverse_solver", "simulate_rank_shift",
-    # Calibration Proposals (Commit 5)
+    # Calibration Proposals
     "CalibrationEvidenceBundle", "CalibrationProposal", "CalibrationProposalType",
     "CalibrationTestCase", "CalibrationTestCaseStatus", "CalibrationTestCaseType",
     "EvidenceBundleRecommendation", "HistoricalValidationImpact",
     "ProposalStatus", "RegressionCaseClassification", "RegressionCaseResult",
     "RegressionReport", "RegressionTestedProposalBundle",
     "create_calibration_proposal_from_hypothesis", "map_hypothesis_type_to_proposal_type",
-    # Regression engine (Commit 5)
+    # Regression engine
     "build_historical_validation_impact", "build_regression_tested_proposal",
     "bundle_calibration_evidence", "classify_regression_case",
     "run_regression_test", "simulate_proposal_on_case",
-    # Calibration test cases (Commit 5)
+    # Calibration test cases
     "generate_calibration_test_cases", "run_calibration_test_case",
-    # Topological stress testing (Commit 6)
+    # Topological stress testing
     "FuzzCaseResult", "FuzzMutationRecord", "FuzzMutationType",
     "FuzzResilienceReport", "LateralTransferCaseResult", "LateralTransferReport",
     "OverfitWarning", "ProposalScopeSignature",
@@ -287,7 +287,7 @@ __all__ = [
     "identify_lateral_transfer_cases", "run_lateral_transfer_test",
     "run_synthetic_edge_case_test", "run_topological_fuzzing_test",
     "run_topological_stress_test_suite", "weighted_available_score",
-    # Calibration governance (Commit 7)
+    # Calibration governance
     "ApprovalExpiryMode", "ApprovalValidity",
     "BlastRadiusBand", "BlastRadiusAssessment",
     "CalibrationApprovalRecord", "CalibrationReviewDecision",

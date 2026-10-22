@@ -1,4 +1,4 @@
-"""Fixtures for Commit 31 persistence tests.
+"""Fixtures for persistence tests.
 
 Builds the synthetic organization the acceptance test uses: four
 projects, one shared Platform bottleneck, KPI observations, an agent

@@ -1,4 +1,4 @@
-"""Interaction effects and preventive coordination actions (Commit 25).
+"""Interaction effects and preventive coordination actions.
 
 Risks compound. A capacity-constrained approval team plus a lost-context
 request plus unclear authority delays far more than any one factor

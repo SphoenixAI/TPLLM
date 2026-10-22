@@ -5,7 +5,7 @@ Uses historical patterns from:
 - Scope change frequency (creep detection)
 - Delegation load (how much concurrent work is assigned to one point)
 
-**What was removed in Commit 41, and why.** This engine also generated
+**What was removed, and why.** This engine also generated
 quarterly employee evaluations — responsiveness, reliability and
 collaboration letter grades — and two of its five risk models predicted
 individuals rather than structure:

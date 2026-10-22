@@ -1,4 +1,4 @@
-"""Tests for Commit 30 — runtime vocabulary and fingerprints.
+"""Runtime vocabulary and fingerprints.
 
 The models are where several invariants are made unrepresentable rather
 than merely discouraged: an event received before it happened, a

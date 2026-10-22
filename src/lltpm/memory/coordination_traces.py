@@ -1,6 +1,6 @@
-"""Procedural coordination memory — observable event traces (Commit 17).
+"""Procedural coordination memory — observable event traces.
 
-TPLLM remembers *how* organizational problems were resolved: problem
+LLTPM remembers *how* organizational problems were resolved: problem
 detected → context assembled → ask routed → decision requested →
 decision made → action taken → outcome observed. These are explicit,
 observable procedural events with evidence — never hidden model

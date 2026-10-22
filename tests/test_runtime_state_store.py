@@ -1,4 +1,4 @@
-"""Tests for Commit 31 — the rebuildable projection store.
+"""The rebuildable projection store.
 
 Everything here is a cache. The one thing that must survive a crash is
 atomic revision promotion: a crash before the pointer moves leaves the
@@ -283,7 +283,7 @@ class TestArtifactStore:
             "recommendation", "rec-1", "revision-1",
         )
         assert august.payload == {"option": "opt-b"}, (
-            "what TPLLM recommended in August has one true answer, and a "
+            "what LLTPM recommended in August has one true answer, and a "
             "better engine later does not change it"
         )
 

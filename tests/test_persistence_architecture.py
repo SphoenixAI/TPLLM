@@ -1,4 +1,4 @@
-"""Tests for Commit 31 — persistence boundaries and product guardrails.
+"""Persistence boundaries and product guardrails.
 
 Two things are being defended.
 

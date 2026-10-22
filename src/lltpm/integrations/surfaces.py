@@ -1,4 +1,4 @@
-"""Tool-native surfaces (Commit 18).
+"""Tool-native surfaces.
 
 Vendor-neutral payloads rendered into whatever tool the team already
 uses (Slack, Teams, Jira, Linear, Notion, email, dashboard) via

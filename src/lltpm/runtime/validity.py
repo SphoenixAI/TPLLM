@@ -1,5 +1,5 @@
 """Recommendation and artifact validity, and the autonomy guard
-(Commit 30).
+.
 
 A recommendation is an answer to a question asked of a particular state
 of the world. When that state moves, the answer may no longer be an
@@ -15,7 +15,7 @@ The sharpest case is the race:
 At T2 the recommendation is an artifact of a world that no longer
 exists. ``guarded_autonomous_finalization`` closes that window by doing
 validation and finalization in one call, in a fixed fail-closed order:
-kill switch, required artifacts, staleness, Commit 22 authority,
+kill switch, required artifacts, staleness, decision authority,
 scenario confidence — and only then the decision.
 
 Nothing here widens authority. Every check can only refuse.
@@ -284,10 +284,10 @@ def guarded_autonomous_finalization(
     1. the kill switch, before anything else
     2. the artifacts the decision depends on actually exist
     3. the recommendation still describes the current state
-    4. Commit 22 authority, re-checked against this moment
+    4. decision authority, re-checked against this moment
     5. scenario confidence, when scenario analysis drove the choice
 
-    Returns the result and, only on success, the Commit 22 finalization
+    Returns the result and, only on success, the finalization
     tuple.
     """
     recommendation_id = str(getattr(recommendation, "id", "unknown"))
@@ -364,7 +364,7 @@ def guarded_autonomous_finalization(
             requires_fresh=True,
         )
 
-    # 4. Commit 22 decides authority; this layer only asks again.
+    # 4. The authority policy decides; this layer only asks again.
     assessment = can_agent_finalize_decision(
         recommendation=recommendation,
         capsule=capsule,

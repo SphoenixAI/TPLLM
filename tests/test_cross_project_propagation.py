@@ -1,4 +1,4 @@
-"""Tests for Commit 29 — how one project's delay reaches another.
+"""How one project's delay reaches another.
 
 The arithmetic rules under test: two routes through the same shared
 resource are one mechanism and counted once, and genuinely distinct
@@ -235,7 +235,7 @@ class TestTransmissionIsStructural:
 
 
 class TestNoLeakTerm:
-    """Commit 39 — a documented departure from the canonical noisy-OR.
+    """A documented departure from the canonical noisy-OR.
 
     The Bayesian-network form usually carries a leak: a standing
     probability that the effect happens even when every modelled cause

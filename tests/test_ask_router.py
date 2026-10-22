@@ -1,4 +1,4 @@
-"""Tests for Commit 15 — ask routing and the no-pointless-ping guardrail."""
+"""Ask routing and the no-pointless-ping guardrail."""
 
 from __future__ import annotations
 

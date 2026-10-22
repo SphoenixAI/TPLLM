@@ -1,4 +1,4 @@
-"""AI quality measurement (Commit 13).
+"""AI quality measurement.
 
 Measures the AI's own behavior — evidence coverage, unsupported claims,
 unnecessary or repeated questions, self-resolution, contradiction

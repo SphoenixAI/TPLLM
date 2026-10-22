@@ -1,4 +1,4 @@
-"""Shared fixtures for identity-layer tests (Commit 19)."""
+"""Shared fixtures for identity-layer tests."""
 
 from __future__ import annotations
 

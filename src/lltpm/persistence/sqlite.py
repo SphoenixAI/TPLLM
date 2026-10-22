@@ -1,7 +1,7 @@
-"""SQLite reference persistence (Commit 31).
+"""SQLite reference persistence.
 
 The open-source default: one local file, standard-library `sqlite3`, no
-cloud account, no broker, no daemon. A user backs TPLLM up by copying a
+cloud account, no broker, no daemon. A user backs LLTPM up by copying a
 single database file.
 
 Everything durable is stored as JSON text in TEXT columns rather than

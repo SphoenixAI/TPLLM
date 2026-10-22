@@ -1,6 +1,6 @@
-"""Attention routing and runtime surfaces (Commit 30).
+"""Attention routing and runtime surfaces.
 
-The last question in the pipeline is the one that decides whether TPLLM
+The last question in the pipeline is the one that decides whether LLTPM
 is useful or exhausting: does anyone need to hear about this?
 
 The default answer is no. ``SILENT`` and ``UPDATE_INTERNAL_STATE`` are

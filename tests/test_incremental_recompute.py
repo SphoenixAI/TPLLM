@@ -1,4 +1,4 @@
-"""Tests for Commit 30 — scoped, coalesced, incremental recomputation.
+"""Scoped, coalesced, incremental recomputation.
 
 The failure mode under test throughout: a single event triggering a
 full-organization rebuild, or one shared incident triggering fourteen

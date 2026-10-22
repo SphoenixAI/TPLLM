@@ -1,4 +1,4 @@
-"""Tests for Commit 25 — miscommunication risk detection."""
+"""Miscommunication risk detection."""
 
 from __future__ import annotations
 
@@ -269,7 +269,7 @@ class TestRiskModelInvariants:
 
 
 class TestSupersededDecisionsAreNamedNotAssumed:
-    """Commit 40 — the `superseded_decision_ids` parameter was dead.
+    """The `superseded_decision_ids` parameter was dead.
 
     It was accepted, turned into a set, and never read, while the
     explanation told every reader that the stale recipients "reflect a

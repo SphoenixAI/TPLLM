@@ -1,13 +1,13 @@
-"""Where the no-worker-scoring invariant holds (Commits 40–41).
+"""Where the no-worker-scoring invariant holds.
 
-Commit 40 found that the documented guarantee was scoped wrongly: the
+An audit found that the documented guarantee was scoped wrongly: the
 existing guardrails enumerated runtime modules by hand, so they covered
 the layered stack and said nothing about the original TPM surface,
 which graded individuals. It inventoried five classes rather than
 resolving them, because deleting a shipped feature is its owner's
 decision.
 
-Commit 41 is that decision, made: the grading surface is gone.
+That decision was made: the grading surface is gone.
 ``PerformanceGrade``, ``PersonMetrics``, ``QuarterlyEvaluation``,
 ``ResponsivenessGrade``, ``PersonTrend`` and
 ``AttendeeInfo.engagement_score`` were removed, along with the two agent
@@ -63,7 +63,7 @@ LAYERED_STACK = (
     "advisory",
 )
 
-#: Classes that measure a person. Commit 41 emptied this. It stays here
+#: Classes that measure a person. This list was emptied. It stays here
 #: as the thing the test asserts remains empty — an exception list with
 #: no mechanism to keep it empty is a comment.
 PERSON_MEASUREMENT_EXCEPTIONS: dict[tuple[str, str], str] = {}
@@ -85,7 +85,7 @@ MEASURES_THE_WORK_NOT_THE_WORKER: dict[tuple[str, str], str] = {
     ("models/calendar.py", "AttendeeInfo"): (
         "preferred_hours is a working-hours window used to find a slot. "
         "engagement_score, which did rate the attendee — and made a "
-        "prompt replier a *required* attendee — was removed in Commit 41."
+        "prompt replier a *required* attendee — was removed."
     ),
     ("models/engagement.py", "EngagementProfile"): (
         "The borderline case, kept deliberately. avg/median_response_hours "
@@ -225,7 +225,7 @@ class TestTheLayeredStackIsClean:
         )
 
     def test_the_new_integration_path_is_clean(self, flagged):
-        """Commit 37's normalizers carry an author's handle so identity
+        """The normalizers carry an author's handle so identity
         resolution can work on it. Carrying a handle is not measuring
         the person it names."""
         offenders = [
@@ -266,8 +266,8 @@ class TestTheLegacySurfaceIsEnumerated:
         """The invariant, now as one statement about the whole system."""
         assert PERSON_MEASUREMENT_EXCEPTIONS == {}, (
             f"{sorted(PERSON_MEASUREMENT_EXCEPTIONS)} measure a person. "
-            f"Commit 41 emptied this list; adding to it needs the "
-            f"argument that Commit 41 made in the other direction."
+            f"this list was emptied deliberately; adding to it needs "
+            f"the argument that emptied it, in the other direction."
         )
 
     @pytest.mark.parametrize(

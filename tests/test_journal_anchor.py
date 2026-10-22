@@ -1,4 +1,4 @@
-"""Tests for Commit 39 — the retained anchor.
+"""The retained anchor.
 
 Reading Haber and Stornetta's 1990 timestamping paper against this
 codebase turned up a gap between what the journal does and what the

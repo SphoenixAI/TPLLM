@@ -2,10 +2,10 @@
 
 This is the ONLY layer in the system permitted to mutate: it registers a
 governed-approved calibration as *active*, so it actually changes which
-intervention is chosen, not merely decorates the payload (Commit 8). With
+intervention is chosen, not merely decorates the payload. With
 mutation comes the heaviest safety machinery in the whole arc:
 
-    1. The single green light. Application requires Commit 7's
+    1. The single green light. Application requires governance's
        ``is_application_eligible()`` — never a looser copy.
     2. Kill switch. A manual halt stops all autonomous application
        immediately; manual override always wins.
@@ -17,7 +17,7 @@ mutation comes the heaviest safety machinery in the whole arc:
 What this layer must NOT do: it never edits the live ranker's source
 (``tradeoff_score``), and it never grants governance authority — it does
 not call ``transition_status``, ``issue_approval``, or ``renew_approval``.
-Authority is granted only at human re-review (Commit 7). The single
+Authority is granted only at human re-review. The single
 autonomous authority change allowed anywhere — auto-revert — only ever
 *removes* an active calibration, never grants one (monitor.py).
 """
@@ -191,7 +191,7 @@ def can_apply(
     """Compose every gate. Returns (allowed, block_reason, explanation).
 
     Order: kill switch (manual override wins) → single green light →
-    autonomy budget → already-active. The single green light is Commit 7's
+    autonomy budget → already-active. The single green light is governance's
     ``is_application_eligible`` reused verbatim, never reimplemented looser.
     """
     if kill_switch.state == KillSwitchState.ENGAGED:
@@ -206,7 +206,7 @@ def can_apply(
         current_decision_count=current_decision_count,
     ):
         return False, BlockReason.NOT_APPLICATION_ELIGIBLE, (
-            "Approval is not application-eligible (Commit 7 single green light)."
+            "Approval is not application-eligible (no single green light)."
         )
 
     if already_active:

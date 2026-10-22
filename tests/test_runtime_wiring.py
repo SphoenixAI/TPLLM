@@ -1,16 +1,16 @@
-"""Tests for Commit 32 — the stack actually runs in the product.
+"""The stack actually runs in the product.
 
 Before this, ``recompute_artifact`` had no production implementation:
 the orchestrator was proven against test doubles and connected to no
-real engine. These tests drive Commit 11's understanding, Commit 16's
-KPI health, Commit 12's readiness, Commit 23's temporal reconstruction,
-Commit 24's scenario lattice and Commits 28–29's portfolio simulation
+real engine. These tests drive real project understanding, KPI health,
+launch readiness, temporal reconstruction, the scenario lattice and
+portfolio simulation
 through the live path and assert the real thing happened.
 
 The other half is refusal. A service that invented a capacity figure,
 or scored readiness against no declared launch, would produce numbers
 with nothing behind them — so each missing input is a loud failure, and
-Commit 30's executor turns that into a revision that does not publish.
+The executor turns that into a revision that does not publish.
 """
 
 from __future__ import annotations
@@ -617,7 +617,7 @@ class TestTemporalEventMapping:
         assert event.occurred_at == at(-2)
         assert event.known_at == at(8), (
             "a 09:58 meeting delivered at 10:08 keeps both times; "
-            "collapsing them would destroy Commit 23's whole premise"
+            "collapsing them would destroy the bitemporal premise"
         )
 
     def test_the_knowledge_lag_is_measurable(self):
@@ -773,7 +773,7 @@ class TestDeterminism:
 
 
 class TestReplayWithRealEngines:
-    """The Commit 31 claim, now with engines instead of doubles."""
+    """The replay-equivalence claim, now with engines instead of doubles."""
 
     def _rebuild(self):
         persistence, projection, _ = seeded_organization()

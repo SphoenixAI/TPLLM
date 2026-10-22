@@ -5,7 +5,7 @@ payload. If this code disappeared, the ranker would behave identically.
 
 This module never mutates governance state, live ranking logic, or authority.
 It does not call ``transition_status``, ``issue_approval``, ``renew_approval``,
-or any Commit 7 authority mutator.
+or any authority mutator.
 """
 
 from __future__ import annotations
@@ -122,7 +122,7 @@ def is_advisory_eligible(
 ) -> bool:
     """Advisory eligibility: governance validity + scope.
 
-    Reuses Commit 7 validity primitive. Passing this does NOT imply
+    Reuses the governance validity primitive. Passing this does NOT imply
     ``is_application_eligible``.
     """
     if record.status != GovernanceStatus.APPROVED:

@@ -1,4 +1,4 @@
-"""Tests for Commit 36 — tailing the journal as records land.
+"""Tailing the journal as records land.
 
 A durable history that can only be read after the fact leaves "is
 anything reaching the journal right now?" unanswerable. These tests pin

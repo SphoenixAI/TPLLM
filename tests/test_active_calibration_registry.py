@@ -1,4 +1,4 @@
-"""Tests for Commit 10 — Active Calibration Registry & Ranker Consult Point.
+"""Active Calibration Registry & Ranker Consult Point.
 
 The ranker remains pure: it consults governed active calibration records
 through a bounded, scope-checked, reversible registry. Governance remains
@@ -41,7 +41,7 @@ def _active_record(
     proposed_delta: float = -0.10,
     **extra,
 ) -> SimpleNamespace:
-    """Duck-typed registered record: Commit 9 identity + proposal metadata."""
+    """Duck-typed registered record: identity + proposal metadata."""
     return SimpleNamespace(
         id=record_id,
         calibration_proposal_id=proposal_id,
@@ -160,7 +160,7 @@ class TestRegister:
         assert registry.active_records == {}  # original untouched
 
     def test_register_commit9_record(self):
-        # The real Commit 9 control-plane model registers by its id.
+        # The real control-plane model registers by its id.
         record = ActiveCalibrationRecord(
             id="active-c9", proposal_id="p-app", status=ApplicationStatus.ACTIVE,
         )

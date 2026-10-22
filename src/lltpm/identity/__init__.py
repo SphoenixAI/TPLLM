@@ -1,7 +1,7 @@
-"""Canonical identity layer (Commit 19).
+"""Canonical identity layer.
 
 Connects identities aggressively enough to reconstruct organizational
-reality, but conservatively enough that TPLLM never invents who
+reality, but conservatively enough that LLTPM never invents who
 somebody is. Identity answers WHO; the relationship ontology answers IN
 WHAT CAPACITY — the two are never collapsed.
 

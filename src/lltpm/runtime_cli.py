@@ -1,4 +1,4 @@
-"""The ``lltpm runtime`` command group (Commit 32).
+"""The ``lltpm runtime`` command group.
 
 Until now the organizational-reasoning stack had no entry point. The
 engines ran, the journal was durable, and nothing a user could type

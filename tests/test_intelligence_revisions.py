@@ -1,4 +1,4 @@
-"""Tests for Commit 30 — revision coherence.
+"""Revision coherence.
 
 The bug this file exists to prevent has no exception and no crash: a KPI
 from revision 51 shown beside a scenario from revision 49, under one

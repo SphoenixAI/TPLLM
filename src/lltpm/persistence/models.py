@@ -1,6 +1,6 @@
-"""Durable persistence models (Commit 31).
+"""Durable persistence models.
 
-Commit 30 made TPLLM live. This layer makes it durable, and the
+The runtime makes LLTPM live. This layer makes it durable, and the
 distinction that organizes everything here is:
 
     the journal is the durable historical record of organizational state
@@ -29,7 +29,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
 
-# Deliberately duplicated from Commit 18 rather than imported: this
+# Deliberately duplicated from integrations rather than imported: this
 # package depends on no other first-party package, so a storage backend
 # can never drag a domain along with it. The rule itself is the same —
 # credentials do not belong in evidence, and they certainly do not
@@ -244,7 +244,7 @@ _SECRET_VALUE_MARKERS = (
 def assert_no_secret_material(payload: dict[str, Any]) -> None:
     """Refuse obvious credential material anywhere in a payload.
 
-    Commit 18 keeps tokens out of evidence; the journal is the place
+    Envelopes keep tokens out of evidence; the journal is the place
     where a leak would be permanent, so the same rule is enforced here
     at the model level rather than by convention.
     """
@@ -459,7 +459,7 @@ class RuntimeRevisionRecord(BaseModel):
 class IntelligenceArtifactRecord(BaseModel):
     """A cached derived artifact.
 
-    Historically published agent output is kept because "what did TPLLM
+    Historically published agent output is kept because "what did LLTPM
     recommend on August 18?" and "what would today's engine recommend
     from August 18's evidence?" are different questions, and only the
     first one has a fixed answer.

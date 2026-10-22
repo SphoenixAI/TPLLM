@@ -1,4 +1,4 @@
-"""Transparent scenario probability (Commit 24).
+"""Transparent scenario probability.
 
 Two rules dominate this module:
 

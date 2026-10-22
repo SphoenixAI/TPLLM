@@ -1,4 +1,4 @@
-"""Baseline comparison and organizational value metrics (Commit 26).
+"""Baseline comparison and organizational value metrics.
 
 A scenario model must demonstrate incremental value over trivially
 simple predictors, otherwise its complexity is unjustified.

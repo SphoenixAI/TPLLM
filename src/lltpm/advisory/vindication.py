@@ -64,7 +64,7 @@ class VindicationRecord(BaseModel):
 
 
 class GovernanceEvidenceEntry(BaseModel):
-    """Written to the Commit 7 journal. Evidence, not authority change."""
+    """Written to the governance journal. Evidence, not authority change."""
     proposal_id: str = ""
     decision_id: str = ""
     direction: EvidenceDirection = EvidenceDirection.NO_SIGNAL
@@ -132,7 +132,7 @@ def resolve_vindication(
     decision_outcome: DecisionOutcomeLog,
     now: datetime | None = None,
 ) -> tuple[VindicationRecord, GovernanceEvidenceEntry]:
-    """Resolve a vindication from the Commit 3 outcome log.
+    """Resolve a vindication from the decision outcome log.
 
     Writes directional evidence; never mutates governance state, status,
     confidence, or authority.

@@ -1,4 +1,4 @@
-"""Core domain contracts (Commit 20).
+"""Core domain contracts.
 
 Shared semantic shapes that two or more peer domains need and that no
 single peer domain owns. Core contains contracts only — never domain

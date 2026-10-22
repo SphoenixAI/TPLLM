@@ -1,11 +1,11 @@
 # Security audit
 
-Commit 42's release audit listed what it had *not* covered. This closes
+The release audit listed what it had *not* covered. This closes
 those gaps, re-run against the tree that includes the Slack and Jira
 integrations. `docs/threat-model.md` states the boundary; this records
 what was tested, what it found, and what is still uncovered.
 
-Audited at `0.41.0`, after Commit 43.
+Audited at `0.41.0`, with the Slack and Jira integrations in the tree.
 
 Nothing here uses the word "secure" as a state. Each row says what was
 checked and what the result means.
@@ -117,7 +117,7 @@ redacted in both.
 
 ### 1.6 Development files shipped in the sdist — fixed
 
-Commit 42 inspected the wheel only. The sdist is built from a different
+The release audit inspected the wheel only. The sdist is built from a different
 file set and carried `.secrets-triage.json`, CI config and the
 deployment artefacts. Excluded. `.env.example` still ships, on purpose:
 it is a template, and the test now looks for a real `.env` rather than
@@ -189,7 +189,7 @@ own dependencies.
 
 ## 4. What is still not covered
 
-Carried forward from Commit 42, plus what this review added.
+Carried forward from the release audit, plus what this review added.
 
 - **No provider reached live except GitHub.** Slack and Jira webhook
   verification has never run against a real delivery.

@@ -1,4 +1,4 @@
-"""Tests for Commit 32 — the CLI surface and offline baselines.
+"""The CLI surface and offline baselines.
 
 Before this there was no command a user could type that reached the
 orchestrator or the journal. These tests drive the real `lltpm runtime`
@@ -374,7 +374,7 @@ class TestSnapshotCommand:
     def test_a_snapshot_at_head_reconstructs_without_mismatches(
         self, runner, seeded,
     ):
-        """The Commit 31 baseline bug: a snapshot covering everything
+        """The baseline snapshot bug: a snapshot covering everything
         left the reconstruction empty and reported false mismatches."""
         runner.invoke(
             runtime_cli,
@@ -425,7 +425,7 @@ class TestBaselineProvidersAreLabelled:
         assert "baseline" in BASELINE_RECOMMENDATION_METHOD
 
     def test_a_baseline_manifest_is_not_equivalent_to_a_model_one(self):
-        """Commit 31's compatibility check must refuse to call baseline
+        """The compatibility check must refuse to call baseline
         output and model output the same thing."""
         from lltpm.persistence import build_manifest, manifests_compatible
 
@@ -721,7 +721,7 @@ class TestExportCommand:
         assert result.exit_code == 2
 
 
-# ── Commit 36: logging and following ─────────────────────────────────
+# ── Logging and following ────────────────────────────────────────────
 
 
 def _all_output(result) -> str:
@@ -945,7 +945,7 @@ class TestJournalFollow:
 
 
 class TestAnchorCommand:
-    """Commit 39: the retained anchor.
+    """The retained anchor.
 
     Hash chaining catches an in-place edit. It cannot catch a history
     rewritten wholesale, because every link in a rewritten chain

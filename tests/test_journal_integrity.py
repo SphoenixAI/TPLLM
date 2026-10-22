@@ -1,4 +1,4 @@
-"""Tests for Commit 31 — corruption is loud, never quietly repaired.
+"""Corruption is loud, never quietly repaired.
 
 A durable history stored in a file someone can open with `sqlite3` will
 eventually be opened with `sqlite3`. The realistic failures are an

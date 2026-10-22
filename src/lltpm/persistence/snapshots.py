@@ -1,4 +1,4 @@
-"""Runtime snapshots (Commit 31).
+"""Runtime snapshots.
 
 Replaying from record one is correct and, eventually, slow. Snapshots
 fix that without changing what is authoritative: a snapshot is a

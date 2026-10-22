@@ -1,4 +1,4 @@
-"""Release-readiness checks (Commit 42).
+"""Release-readiness checks.
 
 An audit done once is a snapshot; the things it checked drift back. These
 are the parts of the open-source release audit that can be asserted, so
@@ -353,7 +353,7 @@ class TestDocumentedClaims:
 def sdist_names(tmp_path_factory) -> list[str]:
     """Every path inside a built source distribution.
 
-    Commit 42 inspected the wheel only. An sdist is built from a
+    The release audit inspected the wheel only. An sdist is built from a
     different file set — it includes what the wheel excludes — so a
     database, a `.env` or a developer cache can ship in one and not the
     other, and the sdist is what a `pip install` from source uses.
@@ -420,3 +420,150 @@ class TestTheSdistContents:
         assert len(sdist_names) < 900, (
             f"{len(sdist_names)} entries; check what was added"
         )
+
+
+# ── Public presentation ──────────────────────────────────────────────
+
+
+class TestNoInternalScaffolding:
+    """This repository is public, and a reader has no commit numbering.
+
+    The code was built over a long numbered commit arc, and the numbers
+    had leaked into 268 docstrings and comments in shipped source:
+    "Application requires Commit 7's single green light", "the Commit 24
+    lattice". Internally those were precise. Publicly they point at
+    nothing — the public history has hashes — so each one was replaced
+    with the name of the thing the number stood for. These tests keep
+    them from coming back one convenient reference at a time.
+    """
+
+    #: Files that must be able to quote what they forbid: this one
+    #: states the rules, `test_integration_contracts.py` exercises the
+    #: redaction enforcing one of them, and a changelog entry about
+    #: removing a string has to name the string. Same reasoning as the
+    #: credential scan excluding `tests/` — but named paths rather than
+    #: a glob, because the fixtures that actually leaked are in `tests/`
+    #: too and stay checked.
+    SELF = "tests/test_release_readiness.py"
+    QUOTES_WHAT_IT_FORBIDS = {
+        SELF,
+        "tests/test_integration_contracts.py",
+        "CHANGELOG.md",
+    }
+
+    #: Paths where a commit reference would be about *this* repository's
+    #: own history rather than internal scaffolding, and so is fine.
+    SCAFFOLDING_EXEMPT = QUOTES_WHAT_IT_FORBIDS | {".github/workflows/ci.yml"}
+
+    def test_no_commit_numbers_in_tracked_files(self, tracked_files):
+        pattern = re.compile(r"Commits? \d+")
+        offenders = []
+        for name in tracked_files:
+            if name in self.SCAFFOLDING_EXEMPT:
+                continue
+            path = _ROOT / name
+            if path.suffix not in {".py", ".md", ".toml", ".yml", ".sh"}:
+                continue
+            try:
+                text = path.read_text()
+            except (OSError, UnicodeDecodeError):
+                continue
+            for number, line in enumerate(text.splitlines(), 1):
+                if pattern.search(line):
+                    offenders.append(f"{name}:{number}: {line.strip()}")
+        assert offenders == [], (
+            "internal commit numbering is meaningless to a reader of the "
+            f"public repository; name the thing instead: {offenders[:5]}"
+        )
+
+    def test_the_product_name_is_spelled_one_way(self, tracked_files):
+        """`TPLLM` was a transposition of LLTPM that reached 25 places,
+        including the agent's own `display_name` in decision records —
+        so durable history recorded the wrong product name."""
+        offenders = [
+            name for name in tracked_files
+            if name not in self.QUOTES_WHAT_IT_FORBIDS
+            and (_ROOT / name).is_file()
+            and (_ROOT / name).suffix in {".py", ".md", ".toml", ".yml", ".sh"}
+            and "TPLLM" in (_ROOT / name).read_text(errors="ignore")
+        ]
+        assert offenders == [], f"'TPLLM' should be 'LLTPM': {offenders}"
+
+    def test_no_assistant_session_links_are_committed(self, tracked_files):
+        """A session URL is a private link into somebody's account.
+
+        It is not a credential, which is exactly why it survives a
+        secret scan — so it gets its own check.
+        """
+        pattern = re.compile(r"claude\.ai/(?:code/)?session[_/]")
+        offenders = []
+        for name in tracked_files:
+            if name in self.QUOTES_WHAT_IT_FORBIDS:
+                continue
+            path = _ROOT / name
+            if not path.is_file():
+                continue
+            try:
+                text = path.read_text()
+            except (OSError, UnicodeDecodeError):
+                continue
+            if pattern.search(text):
+                offenders.append(name)
+        assert offenders == [], (
+            f"private assistant session links are committed: {offenders}"
+        )
+
+    def test_the_engineering_handbook_is_where_the_readme_says(self):
+        handbook = _ROOT / "docs" / "engineering-handbook.md"
+        assert handbook.exists(), (
+            "the README and docs/assistant-development-guide.md both point at this file"
+        )
+        text = handbook.read_text()
+        assert "Architectural invariants" in text
+        assert "Development conventions" in text
+
+
+class TestLocalStateCannotBeCommitted:
+    """The documentation tells a reader to create files in the working
+    directory — `lltpm.db`, `run.jsonl`, `sbom.json`. The journal is the
+    organization's durable record, so an ignore rule that misses it
+    turns following the README into publishing your own history."""
+
+    @pytest.fixture(scope="class")
+    @staticmethod
+    def ignored():
+        def check(*names: str) -> list[str]:
+            result = subprocess.run(
+                ["git", "check-ignore", "--no-index", *names],
+                cwd=_ROOT, capture_output=True, text=True,
+            )
+            if result.returncode not in (0, 1):
+                pytest.skip("git check-ignore unavailable")
+            matched = set(result.stdout.split())
+            return [n for n in names if n not in matched]
+        return check
+
+    def test_databases_and_local_output_are_ignored(self, ignored):
+        missed = ignored(
+            "lltpm.db", "lltpm.sqlite", "run.jsonl", "sbom.json",
+            ".env", ".env.local", ".lltpm/config.json", "history.json",
+            ".DS_Store", ".coverage",
+        )
+        assert missed == [], f"not covered by .gitignore: {missed}"
+
+    def test_the_env_template_still_ships(self, ignored, tracked_files):
+        """`.env.*` has to be ignored without ignoring the template that
+        tells a user which variables exist."""
+        assert ignored(".env.example") == [".env.example"], (
+            ".env.example is the committed template and must not be ignored"
+        )
+        assert ".env.example" in tracked_files
+
+    def test_no_database_or_env_file_is_tracked(self, tracked_files):
+        bad = [
+            name for name in tracked_files
+            if name == ".env"
+            or name.startswith(".env.") and name != ".env.example"
+            or name.endswith((".db", ".sqlite", ".sqlite3"))
+        ]
+        assert bad == [], f"local state is committed: {bad}"

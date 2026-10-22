@@ -1,4 +1,4 @@
-"""Entity resolution engine (Commit 19).
+"""Entity resolution engine.
 
 external identities → candidate matches → evidence-backed resolution →
 canonical entity — never string-similarity → merge-everything.

@@ -1,4 +1,4 @@
-"""Tests for Commit 30 — what deserves attention.
+"""What deserves attention.
 
 Two symmetric failures. Surfacing P(slip) 0.431 → 0.433 trains people to
 ignore the system. Suppressing P(>7-day slip) 0.12 → 0.31 because its

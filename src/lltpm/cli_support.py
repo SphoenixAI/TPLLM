@@ -1,4 +1,4 @@
-"""Shared plumbing for the command groups (Commit 38).
+"""Shared plumbing for the command groups.
 
 Two command groups now open the same database, stamp the same
 reproducibility manifest and configure the same logging. Duplicating any

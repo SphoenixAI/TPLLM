@@ -1,6 +1,6 @@
-"""Tests for Commit 29 — the portfolio scenario lattice.
+"""The portfolio scenario lattice.
 
-Reuses the Commit 24 invariants at portfolio scale: terminal outcomes do
+Reuses the lattice invariants at portfolio scale: terminal outcomes do
 not expand, pruned mass is preserved, and convergent paths are counted
 once each rather than once per parent.
 """
@@ -212,7 +212,7 @@ class TestLatticeStructure:
 
 
 class TestTerminalOutcomesDoNotExpand:
-    """Commit 24 invariant, re-asserted at portfolio scale."""
+    """Lattice invariant, re-asserted at portfolio scale."""
 
     def test_no_terminal_state_has_an_outgoing_transition(self):
         lattice = _lattice()

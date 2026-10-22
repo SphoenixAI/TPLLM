@@ -1,4 +1,4 @@
-"""Tests for Commit 9 — Bounded Autonomous Application & Auto-Revert (rung three).
+"""Bounded Autonomous Application & Auto-Revert (rung three).
 
 The only layer permitted to mutate. A governed-approved calibration becomes
 active and actually changes which intervention is chosen — guarded by the

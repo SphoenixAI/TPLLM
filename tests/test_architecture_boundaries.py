@@ -1,4 +1,4 @@
-"""Architecture boundary regression tests (Commit 20).
+"""Architecture boundary regression tests.
 
 Builds a first-party import graph by AST and asserts the layering that
 the codebase intends:
@@ -151,7 +151,7 @@ class TestTemporalIsFoundational:
 
 
 class TestPortfolioComposesScenarioPrimitives:
-    """Commit 29 widened this boundary deliberately.
+    """Portfolio scenarios widened this boundary deliberately.
 
     Portfolio futures are built from the same horizon and tail-mass
     primitives as project futures, so ``portfolio -> scenarios`` is a
@@ -197,11 +197,11 @@ class TestIdentityIsIsolated:
 
 class TestNoForbiddenCycles:
     def test_coordination_intelligence_cycle_is_gone(self, graph):
-        # The Commit 20 inversion: intelligence must not depend back on
+        # The core-contracts inversion: intelligence must not depend back on
         # coordination. The one-directional edge remains legal.
         assert "coordination" not in graph["intelligence"], (
             "intelligence must not import coordination — that recreates "
-            "the cycle Commit 20 removed."
+            "the cycle core contracts removed."
         )
         assert ("coordination", "intelligence") not in [
             tuple(sorted(c)) for c in find_package_cycles(graph)
@@ -215,7 +215,7 @@ class TestNoForbiddenCycles:
 
 
 class TestRuntimeIsOrchestrationOnly:
-    """Commit 30 added the live orchestrator at the top of the graph.
+    """The live orchestrator sits at the top of the graph.
 
     ``runtime`` composes the domains beneath it; nothing composes
     ``runtime``. An orchestration layer that domains imported back would
@@ -251,7 +251,7 @@ class TestRuntimeIsOrchestrationOnly:
 
 
 class TestPersistenceIsAPort:
-    """Commit 31 put durable storage at the bottom, behind protocols.
+    """Durable storage sits at the bottom, behind protocols.
 
     ``persistence`` imports no first-party package at all, so a storage
     backend can never drag a domain along with it, and the runtime is the
@@ -285,7 +285,7 @@ class TestPersistenceIsAPort:
 
 
 class TestObservabilityIsApplicationInfrastructure:
-    """Commit 36 added logging without adding a dependency.
+    """Logging was added without adding a dependency.
 
     Call sites throughout the codebase emit through the standard
     library; this package only formats and configures, and only an

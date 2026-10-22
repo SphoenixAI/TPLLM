@@ -6,7 +6,7 @@ one-click options, and how long a reply typically takes so a plan can
 allow for it. Response latency is a routing and scheduling fact of the
 same kind as "this approval queue takes three days".
 
-**What was removed in Commit 41, and why.** This module used to compute
+**What was removed, and why.** This module used to compute
 a ``ResponsivenessGrade`` — HIGHLY_RESPONSIVE, RESPONSIVE, SLOW,
 UNRELIABLE — from a per-person response rate and ignored-message count,
 and the outreach recommendation built on it escalated: "Bob has a 30%

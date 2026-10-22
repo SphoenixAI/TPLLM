@@ -1,12 +1,12 @@
 """Human evaluation of agent recommendations, and the decision surface
-(Commit 21).
+.
 
 Humans validate, modify, reject, or defer. A validation feeds the
-normal Commit 14 ``OrganizationalDecisionRecord`` — no competing
+normal ``OrganizationalDecisionRecord`` — no competing
 decision type is created. A rejection is recorded, never treated as
-proof the agent was wrong (Commit 8's philosophy), and it never mutates
+proof the agent was wrong (deliberately), and it never mutates
 agent authority or policy. A deferral names the missing evidence and
-can generate a Commit 13 research gap.
+can generate a self-research gap.
 """
 
 from __future__ import annotations
@@ -51,7 +51,7 @@ def finalize_human_validated_decision(
     capsule: DecisionCapsule,
     now: datetime | None = None,
 ) -> OrganizationalDecisionRecord:
-    """Turn a human VALIDATE or MODIFY into a conclusive Commit 14
+    """Turn a human VALIDATE or MODIFY into a conclusive organizational
     decision record. This is the default path."""
     if evaluation.action not in (
         DecisionEvaluationAction.VALIDATE,
@@ -122,7 +122,7 @@ def finalize_human_validated_decision(
 
 class DeferredDecisionResearchNeed(BaseModel):
     """A deferral names what evidence would unblock the decision, so
-    Commit 13 self-research can pursue it."""
+    self-research can pursue it."""
     recommendation_id: str
     project_id: str
     question: str
@@ -243,7 +243,7 @@ def build_decision_intelligence_panel(
 
 
 def render_panel_sections(panel: DecisionIntelligencePanel) -> list[dict]:
-    """Vendor-neutral sections for a Commit 18 tool surface."""
+    """Vendor-neutral sections for a tool surface."""
     sections: list[dict] = [
         {"title": "Decision", "body": panel.capsule.decision_question},
         {"title": "Current state", "body": panel.capsule.current_state},

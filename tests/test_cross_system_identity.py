@@ -1,6 +1,6 @@
-"""Tests for Commit 19 — cross-system identity: the Priya bridge, the
+"""Cross-system identity: the Priya bridge, the
 Alex Chen ambiguity, KPI collisions, and the layer bridges into
-Commits 14/15/17/18."""
+coordination, capsules, memory and envelopes."""
 
 from __future__ import annotations
 
@@ -304,7 +304,7 @@ class TestSourceDeletion:
         )
 
 
-# ── Bridges into Commits 14 / 15 / 17 / 18 ───────────────────────────
+# ── Bridges into coordination, capsules, memory and envelopes ───────
 
 class TestLayerBridges:
     def test_envelope_actor_converts_to_external_identity(self):
@@ -375,7 +375,7 @@ class TestLayerBridges:
         )
         assert bridged.canonical_entity_id == "person_priya_rao"
         assert bridged.resolution_status == EntityResolutionStatus.RESOLVED
-        # The Commit 14 actor is preserved unchanged — capacities intact.
+        # The original actor is preserved unchanged — capacities intact.
         assert bridged.actor.role == "Platform Architecture Lead"
         assert bridged.actor.actor_id == "priya"
 
@@ -449,7 +449,7 @@ class TestLayerBridges:
             kpi_states=[],
             structural_signals=[],
         )
-        # Commit 17's invariant holds: structure only, no identity.
+        # The memory invariant holds: structure only, no identity.
         for token in ("person_priya_rao", "priya", "xid-"):
             assert token not in signature.lower()
 

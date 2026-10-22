@@ -1,4 +1,4 @@
-"""Tests for Commit 22 — the append-only decision ledger, the symmetric
+"""The append-only decision ledger, the symmetric
 evaluation matrix, and both end-to-end spec scenarios."""
 
 from __future__ import annotations

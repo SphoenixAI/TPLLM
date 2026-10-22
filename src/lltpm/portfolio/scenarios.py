@@ -1,10 +1,10 @@
-"""Cross-project scenario states and lattice (Commit 29).
+"""Cross-project scenario states and lattice.
 
-Commit 24 asked "what futures does *this* project have?". This module
+The scenario lattice asks "what futures does *this* project have?". This module
 asks the portfolio question: what futures does the organization have,
 given that several projects draw on the same constrained resources?
 
-The construction reuses Commit 24's invariants rather than restating
+The construction reuses the lattice's invariants rather than restating
 them loosely:
 
 - a state carrying an outcome label is terminal and never expands
@@ -418,7 +418,7 @@ def build_portfolio_lattice(
 
         for parent, cumulative, outcomes in frontier:
             if parent.is_terminal:
-                # Commit 24 invariant: a terminal outcome does not expand.
+                # Lattice invariant: a terminal outcome does not expand.
                 carried.append((parent, cumulative, outcomes))
                 continue
 

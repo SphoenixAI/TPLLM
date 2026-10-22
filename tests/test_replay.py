@@ -1,4 +1,4 @@
-"""Tests for Commit 31 — replay from durable history.
+"""Replay from durable history.
 
 Including the defining acceptance test: delete every derived artifact,
 replay the journal, and get semantically equivalent organizational

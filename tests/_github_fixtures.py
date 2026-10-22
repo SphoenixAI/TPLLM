@@ -1,4 +1,4 @@
-"""Shared access to the recorded GitHub fixtures (Commit 37).
+"""Shared access to the recorded GitHub fixtures.
 
 Not a test module. Both the normalizer tests and the contract tests read
 the same recordings, and both need to know which files are real

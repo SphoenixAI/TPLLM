@@ -1,4 +1,4 @@
-"""Decision lineage tracing (Commit 23).
+"""Decision lineage tracing.
 
 Answers "why is this the authoritative decision right now?" by walking
 the supersession and reopen chain rather than trusting a single flag.

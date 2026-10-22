@@ -1,4 +1,4 @@
-"""Evidence-backed project understanding engine (Commit 11).
+"""Evidence-backed project understanding engine.
 
 Turns ontology/meeting/chat/doc/ticket/code evidence into a durable,
 technical, evidence-backed understanding of every project: what it is, why
@@ -1058,7 +1058,7 @@ def build_project_architecture_map(
     claims: list[UnderstandingClaim],
 ) -> ProjectArchitectureMap:
     """A semantic architecture view built from claims — never the live
-    structural graph from Commit 2, and never mutating it."""
+    structural graph, and never mutating it."""
     component_claims = [
         c
         for c in claims

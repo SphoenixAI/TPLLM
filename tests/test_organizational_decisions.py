@@ -1,4 +1,4 @@
-"""Tests for Commit 14 — latest conclusive decision beats latest message."""
+"""Latest conclusive decision beats latest message."""
 
 from __future__ import annotations
 

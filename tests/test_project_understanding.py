@@ -1,4 +1,4 @@
-"""Tests for Commit 11 — Evidence-Backed Project Understanding Engine.
+"""Evidence-Backed Project Understanding Engine.
 
 Every substantive claim is evidence-bound; unknown is a first-class
 state; conflicts survive summarization; freshness matters; technical

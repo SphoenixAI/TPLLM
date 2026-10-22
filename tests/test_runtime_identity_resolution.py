@@ -1,16 +1,16 @@
-"""Tests for Commit 33 — canonical identity on the ingest path.
+"""Canonical identity on the ingest path.
 
-The Commit 30 target flow lists canonical identity resolution between
+The runtime's target flow lists canonical identity resolution between
 temporal ordering and the ontology update. It was the one step with no
 implementation on the live path, and the omission is load-bearing:
-Commit 28's premise is that four projects waiting on the same approval
+The portfolio premise is that four projects waiting on the same approval
 authority should see one shared bottleneck, which only works if
 "Platform Architecture" and "platform-arch" resolve to the same node.
 
-These tests drive the real Commit 19 resolver. Two things they assert
+These tests drive the real resolver. Two things they assert
 that look like failures and are not: a person matched only by name stays
 a candidate rather than being linked, and an unfamiliar name resolves to
-nothing. Both are the conservatism Commit 19 was built for — merging two
+nothing. Both are the conservatism the resolver was built for — merging two
 colleagues who share a surname is a far worse outcome than leaving an
 identity unlinked and saying so.
 """
@@ -169,7 +169,7 @@ class TestSharedResourcesReachOneCanonicalNode:
         )
 
     def test_curated_aliases_are_what_resolve_not_name_resemblance(self):
-        """Commit 19 scores an explicit alias high and a mere name
+        """The resolver scores an explicit alias high and a mere name
         resemblance low. An alias is a human statement that two names
         mean one thing; a similar-looking string is not."""
         _, outcome = resolve_envelope_identities(

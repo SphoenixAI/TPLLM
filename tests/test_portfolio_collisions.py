@@ -1,4 +1,4 @@
-"""Tests for Commit 28 — collision windows across projects."""
+"""Collision windows across projects."""
 
 from __future__ import annotations
 

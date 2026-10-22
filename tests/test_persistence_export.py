@@ -1,6 +1,6 @@
-"""Tests for Commit 35 — inspectable export of durable history.
+"""Inspectable export of durable history.
 
-Commit 31 stored JSON rather than pickle specifically so this would be
+The journal stores JSON rather than pickle specifically so this would be
 possible later. The tests here check the three things that make an
 export worth more than a `SELECT *`: it carries its own integrity
 verdict, it is honest about gaps, and it cannot change anything.

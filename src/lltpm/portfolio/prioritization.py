@@ -1,4 +1,4 @@
-"""Portfolio prioritization and leverage (Commit 28).
+"""Portfolio prioritization and leverage.
 
 When a shared resource cannot serve everyone, something must wait. The
 non-negotiable rule here is that nothing is displaced invisibly: every

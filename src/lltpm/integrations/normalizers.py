@@ -1,4 +1,4 @@
-"""Source normalizers — the anti-corruption layer (Commit 37).
+"""Source normalizers — the anti-corruption layer.
 
 Every adapter in this package returned its own shapes: ``PRSummary``,
 ``BuildStatus``, ``SlackMessage``. The journal and the orchestrator

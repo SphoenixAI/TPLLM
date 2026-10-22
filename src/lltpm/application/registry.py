@@ -1,6 +1,6 @@
 """Active calibration registry — the runtime consult layer.
 
-Commit 9 created the control plane: governed eligibility → bounded
+The control plane provides: governed eligibility → bounded
 application → ``ActiveCalibrationRecord`` → reversibility snapshot →
 append-only ledger → auto-revert. It deliberately stopped before wiring
 application into the ranker.
@@ -12,7 +12,7 @@ calibration that applies? The registry answers either "no adjustment" or
 
 The registry never grants, renews, or escalates governance authority, never
 creates or clears calibration proposals, and never mutates governance
-records. It reads active records that Commit 9 already applied, checks
+records. It reads active records the control plane already applied, checks
 scope conservatively (no scope means no runtime authority), bounds every
 adjustment per-record and in total, and emits immutable traces so
 downstream evidence can always see what changed.
@@ -127,7 +127,7 @@ class ActiveCalibrationRegistry(BaseModel):
     """Holds active calibration records and consults them.
 
     Records are stored duck-typed (``object``) so the registry stays
-    decoupled from the Commit 9 control-plane model — it reads records,
+    decoupled from the control-plane model — it reads records,
     it never creates their authority.
     """
     status: ActiveRegistryStatus = ActiveRegistryStatus.ACTIVE
@@ -461,7 +461,7 @@ def register_active_calibration(
     registry: ActiveCalibrationRegistry,
     record: object,
 ) -> ActiveCalibrationRegistry:
-    """Register a record the Commit 9 control plane already applied.
+    """Register a record the control plane already applied.
 
     Creates no authority — it only makes an existing record consultable.
     """

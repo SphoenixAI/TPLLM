@@ -1,6 +1,6 @@
-"""The live organizational intelligence orchestrator (Commit 30).
+"""The live organizational intelligence orchestrator.
 
-This is the layer that makes the rest of TPLLM behave like one system
+This is the layer that makes the rest of LLTPM behave like one system
 rather than a shelf of engines. It answers, for every incoming event:
 
     What changed? What does that invalidate? What must be recomputed, in

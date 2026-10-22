@@ -1,6 +1,6 @@
-"""The durability seam between the runtime and the journal (Commit 31).
+"""The durability seam between the runtime and the journal.
 
-Commit 30's orchestration pass is untouched. This module wraps it, and
+The orchestration pass is untouched. This module wraps it, and
 the wrapping is where the ordering guarantees live.
 
 **Journal first.** A durable change is appended before the runtime
@@ -256,7 +256,7 @@ def append_agent_recommendation(
 ) -> JournalRecord:
     """Preserve what the agent actually recommended, when it did.
 
-    "What did TPLLM recommend on August 18?" and "what would today's
+    "What did LLTPM recommend on August 18?" and "what would today's
     engine recommend from August 18's evidence?" are different
     questions. Only the first has a fixed answer, and this is where it
     is kept.
@@ -926,7 +926,7 @@ class ReconstructionOutcome(BaseModel):
 class RuntimeJournalReconstructor:
     """Rebuilds runtime projections from durable history.
 
-    Deliberately drives the same Commit 30 orchestrator that produced
+    Deliberately drives the same orchestrator that produced
     the original state, over the same journalled evidence, with a
     deterministic clock and the side-effect fence engaged. A separate
     reconstruction path would only ever prove that two pieces of code

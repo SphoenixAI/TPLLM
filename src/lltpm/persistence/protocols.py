@@ -1,6 +1,6 @@
-"""Persistence ports (Commit 31).
+"""Persistence ports.
 
-Every storage concern in TPLLM sits behind one of these. The reference
+Every storage concern in LLTPM sits behind one of these. The reference
 implementation is SQLite and the in-memory stores used by tests, but
 nothing above this layer knows that — which is what keeps a local
 open-source deployment (one file, no cloud account) and a future hosted
@@ -8,7 +8,7 @@ backend from being different codebases.
 
 Note on naming: ``RuntimeStateStore`` here is the storage *port*.
 ``lltpm.runtime.RuntimeStateStore`` is the in-memory projection object
-Commit 30 passes through an orchestration pass. Different layers,
+the runtime passes through an orchestration pass. Different layers,
 different jobs; the runtime adapts between them at its own seam.
 """
 
@@ -165,7 +165,7 @@ class IntelligenceArtifactStore(Protocol):
     """A cache of derived artifacts. Not the journal.
 
     Historically published agent output is kept here so that "what did
-    TPLLM recommend on August 18?" stays answerable even after the
+    LLTPM recommend on August 18?" stays answerable even after the
     engine improves.
     """
 
@@ -231,7 +231,7 @@ class JournalPayloadMigrator(Protocol):
 
 @runtime_checkable
 class OutboundPort(Protocol):
-    """Anything that can touch the world outside TPLLM.
+    """Anything that can touch the world outside LLTPM.
 
     Every implementation takes an execution context so a replay can be
     refused at the boundary rather than trusted not to happen.

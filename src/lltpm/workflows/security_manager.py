@@ -240,7 +240,7 @@ class SecurityManager:
         anything that validated a bearer credential without checking the
         type accepted one as an access token and extended a thirty-minute
         window to a week. The dashboard's auth dependency did exactly
-        that until Commit 44. Making the restrictive answer the default
+        that until it was fixed. Making the restrictive answer the default
         means a future caller is safe without having to know this, which
         a second method named `validate_access_token` would not achieve —
         nothing would stop the next caller reaching for the old name.

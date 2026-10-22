@@ -1,4 +1,4 @@
-"""Tests for Commit 24 — the six reasoning directions, risk ranking,
+"""The six reasoning directions, risk ranking,
 sensitivity, value of information, and coverage."""
 
 from __future__ import annotations

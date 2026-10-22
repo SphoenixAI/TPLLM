@@ -1,4 +1,4 @@
-"""Tests for Commit 21 — criteria construction, scoring, and the
+"""Criteria construction, scoring, and the
 selection engine's abstention behavior."""
 
 from __future__ import annotations

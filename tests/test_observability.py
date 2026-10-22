@@ -1,4 +1,4 @@
-"""Tests for Commit 36 — operational logging.
+"""Operational logging.
 
 Three things are being protected here, and only the first is about
 formatting.

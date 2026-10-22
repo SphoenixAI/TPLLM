@@ -1,4 +1,4 @@
-"""Optionality and recoverability (Commit 27).
+"""Optionality and recoverability.
 
 Optionality asks how many viable futures an option leaves open. An
 option that forecloses alternatives is more expensive than its immediate
@@ -8,7 +8,7 @@ what it learns next.
 Recoverability asks a narrower question: when this option leads somewhere
 bad, can the organization climb back out?
 
-Both are computed from the Commit 24 lattice, so they are grounded in
+Both are computed from the scenario lattice, so they are grounded in
 modeled paths rather than asserted.
 """
 

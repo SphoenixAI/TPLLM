@@ -1,4 +1,4 @@
-"""Tests for Commit 29 — shared uncertainty stays shared.
+"""Shared uncertainty stays shared.
 
 The failure this file exists to prevent: sampling "Platform saturates"
 once for A, once for B, and once for C. Three draws would make three

@@ -1,4 +1,4 @@
-"""Schema and reproducibility versioning (Commit 31).
+"""Schema and reproducibility versioning.
 
 Reproducibility is a claim about code, not only about data. Replaying
 August's evidence under September's scenario scoring may legitimately
@@ -155,7 +155,7 @@ def assert_supported_database_schema(version: int) -> None:
 def assert_supported_event_type(event_type: str) -> JournalEventType:
     """Resolve a stored event type, refusing anything unknown.
 
-    A future TPLLM may journal transitions this build has never heard
+    A future LLTPM may journal transitions this build has never heard
     of. Ignoring one would mean replaying an organization missing a
     decision it actually made.
     """

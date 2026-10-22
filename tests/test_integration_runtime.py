@@ -1,4 +1,4 @@
-"""Tests for Commit 18 — event-driven runtime: idempotency, scoped
+"""Event-driven runtime: idempotency, scoped
 refresh, interpretation guardrails, serverless shape."""
 
 from __future__ import annotations

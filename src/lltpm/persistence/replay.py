@@ -1,4 +1,4 @@
-"""Deterministic replay and recovery (Commit 31).
+"""Deterministic replay and recovery.
 
 The acceptance test for this whole commit is one sentence: delete every
 derived artifact, replay the journal, and get semantically equivalent
@@ -18,7 +18,7 @@ names the position. A truncated journal is reported as incomplete
 history, not padded. A snapshot that fails verification is discarded in
 favour of an older valid one, or the journal from the beginning.
 
-**Replay cannot pretend.** Reproducing what TPLLM concluded in August
+**Replay cannot pretend.** Reproducing what LLTPM concluded in August
 and re-evaluating August's evidence under today's engine are different
 questions with different answers. The manifest decides which one is
 being asked, and ``REEVALUATE_WITH_CURRENT`` may never overwrite

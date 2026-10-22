@@ -1,4 +1,4 @@
-"""Self-research & clarification gate (Commit 13).
+"""Self-research & clarification gate.
 
 Before asking engineers basic questions, the AI must: detect what it
 does not understand, search existing ontology evidence and internal
@@ -287,7 +287,7 @@ def detect_understanding_gaps(
     understanding: ProjectUnderstandingSnapshot,
     readiness: LaunchReadinessSnapshot | None = None,
 ) -> list[UnderstandingGap]:
-    """Map Commit 11 unknowns (and low-confidence readiness dimensions)
+    """Map understanding unknowns (and low-confidence readiness dimensions)
     into researchable gaps with impact scores."""
     gaps: list[UnderstandingGap] = []
 

@@ -1,4 +1,4 @@
-"""Tests for Commit 19 — explicit, auditable, reversible entity merges."""
+"""Explicit, auditable, reversible entity merges."""
 
 from __future__ import annotations
 

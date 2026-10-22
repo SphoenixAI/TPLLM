@@ -1,7 +1,7 @@
-"""Historical scenario replay (Commit 26).
+"""Historical scenario replay.
 
 Every replayed prediction is generated from the state reconstructed at
-that moment (Commit 23), so a historical forecast can never be scored
+that moment, so a historical forecast can never be scored
 using information that only became known later.
 
 The leakage guard here is not advisory — it raises.

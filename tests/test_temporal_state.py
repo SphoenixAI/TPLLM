@@ -1,4 +1,4 @@
-"""Tests for Commit 23 — bitemporal semantics and state reconstruction."""
+"""Bitemporal semantics and state reconstruction."""
 
 from __future__ import annotations
 

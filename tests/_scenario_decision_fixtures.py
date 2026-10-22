@@ -1,4 +1,4 @@
-"""Fixtures for Commit 27 scenario-aware decision tests.
+"""Fixtures for scenario-aware decision tests.
 
 Builds two option lattices with deliberately contrasting future
 distributions so the Option B canonical case is exercised end to end.

@@ -1,4 +1,4 @@
-"""Tests for Commit 22 — authority policy, risk classification, and
+"""Authority policy, risk classification, and
 autonomous eligibility gating."""
 
 from __future__ import annotations

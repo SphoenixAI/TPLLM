@@ -1,4 +1,4 @@
-"""Tests for Commit 24 — lattice structure, convergence, and honest
+"""Lattice structure, convergence, and honest
 probability accounting."""
 
 from __future__ import annotations

@@ -1,4 +1,4 @@
-"""Tests for Commit 31 — replay never touches the outside world.
+"""Replay never touches the outside world.
 
 This is the non-negotiable replay invariant. Rebuilding history must not
 re-send a Slack message, re-file a ticket, re-email anyone, or

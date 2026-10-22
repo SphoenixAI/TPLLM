@@ -138,7 +138,7 @@ def build_rereview_evidence(
 ) -> dict:
     """Assemble two-sided evidence for the next governance re-review.
 
-    This feeds the Commit 7 renewal dossier. Contains vindicated count,
+    This feeds the governance renewal dossier. Contains vindicated count,
     cry-wolf count, cry-wolf rate, pending/unresolved, and the recent
     evidence entries. This is what a human reads to decide renewal.
     """

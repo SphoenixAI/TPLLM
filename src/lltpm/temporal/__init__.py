@@ -1,4 +1,4 @@
-"""Temporal truth layer (Commit 23).
+"""Temporal truth layer.
 
 Reconstructs exactly what was known at an arbitrary point in time, so a
 forecast can never accidentally use information that became known later.

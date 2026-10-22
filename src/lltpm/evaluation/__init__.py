@@ -1,4 +1,4 @@
-"""Forecast evaluation and calibration (Commit 26).
+"""Forecast evaluation and calibration.
 
 Makes the scenario probabilities empirically defensible: replay history
 without leakage, measure calibration and sharpness separately from

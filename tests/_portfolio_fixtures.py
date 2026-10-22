@@ -1,4 +1,4 @@
-"""Fixtures for Commit 28 portfolio tests.
+"""Fixtures for portfolio tests.
 
 Models the spec's canonical situation: four projects, one Platform
 Architecture approval queue with room for about two decisions before
@@ -147,7 +147,7 @@ def four_project_graph_inputs():
 
 
 class FakeIdentityRegistry:
-    """Duck-typed stand-in for the Commit 19 registry, so cross-project
+    """Duck-typed stand-in for the identity registry, so cross-project
     aliases resolve onto one canonical node."""
 
     def __init__(self, entities: dict):

@@ -163,7 +163,7 @@ from lltpm.intelligence.project_understanding import (
 )
 
 __all__ = [
-    # KPI intelligence (Commit 16)
+    # KPI intelligence
     "DeterministicKPIClaimExtractor",
     "KPIClaim",
     "KPIClaimExtractor",
@@ -194,7 +194,7 @@ __all__ = [
     "reconcile_kpi_claims",
     "resolve_kpi_by_name",
     "set_kpi_target",
-    # AI quality (Commit 13)
+    # AI quality
     "AIQualityMetrics",
     "AIQualityReport",
     "TechnicalDepthAssessment",
@@ -203,7 +203,7 @@ __all__ = [
     "build_ai_quality_report",
     "can_emit_project_claim",
     "compute_ai_quality_metrics",
-    # Self-research (Commit 13)
+    # Self-research
     "AIQualityRiskFlag",
     "AIQualityRiskType",
     "ClarificationNecessity",
@@ -228,7 +228,7 @@ __all__ = [
     "is_repeated_question",
     "plan_research_queries",
     "reconcile_research_evidence",
-    # Launch readiness (Commit 12)
+    # Launch readiness
     "EvidenceFreshnessBand",
     "GoalEstimate",
     "HeuristicLaunchReadinessPredictor",
@@ -259,7 +259,7 @@ __all__ = [
     "identify_launch_blockers",
     "score_readiness_dimension",
     "validate_launch_training_example",
-    # Project understanding (Commit 11)
+    # Project understanding
     "ArchitectureComponent",
     "ArchitectureRelation",
     "ArchitectureRelationType",

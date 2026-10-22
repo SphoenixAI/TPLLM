@@ -1,4 +1,4 @@
-"""Tests for the risk prediction engine (Commit 41).
+"""Tests for the risk prediction engine.
 
 Half this file used to test a quarterly employee evaluation —
 responsiveness, reliability and collaboration letter grades — and one
@@ -166,7 +166,7 @@ def test_predictions_persist():
 
 
 class TestThePersonGradingSurfaceIsGone:
-    """Commit 41 removed it. A deletion nothing guards comes back."""
+    """It was removed. A deletion nothing guards comes back."""
 
     def test_no_performance_grade_model_exists(self):
         import lltpm.models.prediction as prediction

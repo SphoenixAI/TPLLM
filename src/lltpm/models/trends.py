@@ -1,6 +1,6 @@
 """Trend models — where a program is heading, not who is slipping.
 
-**What was removed in Commit 41, and why.** This module held
+**What was removed, and why.** This module held
 ``PersonTrend``: per-person response rate and response hours over 7 and
 30 days with an ``is_degrading`` flag, which the trend report rendered
 as "Engagement Alerts" naming individuals, and which the program's

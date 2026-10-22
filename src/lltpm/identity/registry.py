@@ -1,4 +1,4 @@
-"""Canonical entity registry and bridges (Commit 19).
+"""Canonical entity registry and bridges.
 
 Copy-on-write registry of canonical entities, external identities, and
 explicit aliases, plus the bridges that let existing layers use
@@ -6,8 +6,8 @@ canonical identity without being rewritten:
 
 - envelope → external identities (duck-typed; integrations stay above
   identity in the dependency graph)
-- OrganizationalActorRef → canonical entity (Commit 14 models untouched)
-- DecisionCapsule actors → canonical entities (Commit 15 untouched;
+- OrganizationalActorRef → canonical entity (the original models untouched)
+- DecisionCapsule actors → canonical entities (the capsule untouched;
   factual content never changes)
 """
 
@@ -252,7 +252,7 @@ def detect_identity_conflicts(
 def extract_external_identities_from_envelope(
     envelope: object,
 ) -> list[ExternalEntityIdentity]:
-    """Feed Commit 18 EvidenceEnvelopes into the identity layer without
+    """Feed ``EvidenceEnvelope``s into the identity layer without
     a dependency reversal: the envelope is read duck-typed."""
     identities: list[ExternalEntityIdentity] = []
     source_system = str(getattr(envelope, "source_system", "unknown"))
@@ -338,7 +338,7 @@ def canonicalize_actor_ref(
     policy: EntityResolutionPolicy | None = None,
     observed_at: datetime | None = None,
 ) -> CanonicalOrganizationalActorRef:
-    """Resolve a Commit 14 ``OrganizationalActorRef`` against the
+    """Resolve an ``OrganizationalActorRef`` against the
     canonical registry. The actor is read duck-typed so the identity
     layer stays low-level (it imports no higher layer), and the actor
     itself is preserved untouched — the bridge only adds WHO; capacities
@@ -373,7 +373,7 @@ def canonicalize_actor_ref(
 
 
 class ResolvedCapsuleActors(BaseModel):
-    """Resolution alongside a Commit 15 capsule — never inside it. The
+    """Resolution alongside a decision capsule — never inside it. The
     capsule's factual content is untouched."""
     capsule_id: str
     requested_by: CanonicalOrganizationalActorRef

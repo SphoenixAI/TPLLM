@@ -1,4 +1,4 @@
-"""Portfolio topology models (Commit 28).
+"""Portfolio topology models.
 
 Project-level intelligence can report three separate problems when there
 is really one. Four projects each waiting on the same approval authority
@@ -95,7 +95,7 @@ class PortfolioEdge(BaseModel):
 
 
 class PortfolioGraphSnapshot(BaseModel):
-    """A projection across projects. The Commit 2 structural graph is
+    """A projection across projects. The structural graph is
     never mutated to build this."""
     id: str
     as_of: datetime

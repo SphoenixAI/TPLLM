@@ -1,4 +1,4 @@
-"""Tests for Commit 23 — temporal queries and change explanation."""
+"""Temporal queries and change explanation."""
 
 from __future__ import annotations
 

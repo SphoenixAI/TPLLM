@@ -1,4 +1,4 @@
-"""Explicit, auditable, reversible entity merges (Commit 19).
+"""Explicit, auditable, reversible entity merges.
 
 Two canonical entities are never silently merged. A merge is proposed,
 gated (PERSON merges are never automatic without strong verified

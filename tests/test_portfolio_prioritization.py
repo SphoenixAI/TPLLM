@@ -1,4 +1,4 @@
-"""Tests for Commit 28 — prioritization, displacement cost, and the
+"""Prioritization, displacement cost, and the
 invariant that nothing is displaced invisibly."""
 
 from __future__ import annotations

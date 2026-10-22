@@ -1,4 +1,4 @@
-"""Tests for Commit 30 — does this recommendation still hold?
+"""Does this recommendation still hold?
 
 The two failure modes are symmetric and both bad. Treating every new
 piece of evidence as invalidating throws away sound reasoning and asks

@@ -1,4 +1,4 @@
-"""Tests for Commit 23 — decision lineage, multi-hop supersession, and
+"""Decision lineage, multi-hop supersession, and
 cycle rejection."""
 
 from __future__ import annotations

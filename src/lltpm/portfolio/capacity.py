@@ -1,4 +1,4 @@
-"""Organizational capacity and bottleneck detection (Commit 28).
+"""Organizational capacity and bottleneck detection.
 
 Four projects each waiting on the same approval will each report being
 blocked. This module adds up the demand against the capacity and names

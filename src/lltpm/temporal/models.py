@@ -1,4 +1,4 @@
-"""Temporal truth models (Commit 23).
+"""Temporal truth models.
 
 Before predicting alternate futures, the system must reconstruct exactly
 what was known at an arbitrary point in time — never accidentally using

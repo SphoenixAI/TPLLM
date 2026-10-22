@@ -1,4 +1,4 @@
-"""KPI claim reconciliation (Commit 16).
+"""KPI claim reconciliation.
 
 Source priority: direct metric source → authoritative analytics record
 → formal project target → conclusive decision → meeting statement →

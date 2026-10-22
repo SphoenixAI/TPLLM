@@ -1,4 +1,4 @@
-"""Tests for Commit 27 — regret, optionality, and recoverability."""
+"""Regret, optionality, and recoverability."""
 
 from __future__ import annotations
 

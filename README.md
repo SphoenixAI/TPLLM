@@ -592,9 +592,9 @@ buried in a passing suite: the architecture boundaries, release
 readiness, the security and secret-scanning pass, and an offline
 quickstart that executes the commands this README promises.
 
-[`docs/assistant-development-guide.md`](docs/assistant-development-guide.md) is the engineering handbook — conventions,
-wiring state, and which invariant each test file defends. Read it before
-moving an import between packages.
+[`docs/engineering-handbook.md`](docs/engineering-handbook.md) covers
+conventions, wiring state, and which invariant each test file defends.
+Read it before moving an import between packages.
 
 ---
 
@@ -615,6 +615,9 @@ moving an import between packages.
   the authentication findings, and what is still uncovered.
 - [`docs/release-audit.md`](docs/release-audit.md) — what shipped, every
   dependency's licence, and which public claims were checked.
+- [`docs/engineering-handbook.md`](docs/engineering-handbook.md) — the
+  layering rules, every architectural invariant, and the test file
+  that defends each one.
 - [`SECURITY.md`](SECURITY.md) — reporting route.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) and
   [`CHANGELOG.md`](CHANGELOG.md).

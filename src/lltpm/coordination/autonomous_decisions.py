@@ -1,4 +1,4 @@
-"""Bounded autonomous organizational decisions (Commit 22).
+"""Bounded autonomous organizational decisions.
 
 When — and only when — an explicit policy authorizes it, the agent may
 turn its own recommendation into a conclusive organizational decision.
@@ -38,7 +38,7 @@ class AgentAuthorityRef(BaseModel):
     """The agent acting under delegated organizational policy. Rendered
     distinctly from any human authority."""
     agent_id: str = AGENT_AUTHORITY_ACTOR_ID
-    display_name: str = "TPLLM"
+    display_name: str = "LLTPM"
     authority_policy_id: str
     authority_scope: str
 

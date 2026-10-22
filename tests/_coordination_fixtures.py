@@ -1,4 +1,4 @@
-"""Shared fixtures for coordination-layer tests (Commits 14-15)."""
+"""Shared fixtures for coordination-layer tests."""
 
 from __future__ import annotations
 

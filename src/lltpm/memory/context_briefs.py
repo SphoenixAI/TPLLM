@@ -1,4 +1,4 @@
-"""Audience-aware context compression (Commit 17).
+"""Audience-aware context compression.
 
 The same underlying ontology produces different compression for an
 engineer, a pod lead, a director, or an executive — emphasis and level

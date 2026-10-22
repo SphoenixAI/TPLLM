@@ -1,4 +1,4 @@
-"""Organizational memory models (Commit 14).
+"""Organizational memory models.
 
 Durable, evidence-backed organizational state: workstreams, objectives,
 key dates, commitments, decisions, positions, asks, authority, and team

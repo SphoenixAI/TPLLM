@@ -1,6 +1,6 @@
-"""Fixtures for Commit 29 cross-project scenario tests.
+"""Fixtures for cross-project scenario tests.
 
-Extends the Commit 28 canonical situation — four projects, one Platform
+Extends the canonical portfolio situation — four projects, one Platform
 Architecture approval queue with room for about two decisions before
 Friday — with the shared uncertainties those projects genuinely have in
 common.
@@ -127,7 +127,7 @@ def portfolio_state(
 
 
 def weighted_allocation(state: PortfolioSimulationState | None = None):
-    """The Commit 28 order: serve whoever is most expensive to displace."""
+    """The portfolio order: serve whoever is most expensive to displace."""
     state = state or portfolio_state()
     return allocation_from_capacity(state=state, resource_id=PLATFORM)
 

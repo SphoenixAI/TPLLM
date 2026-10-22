@@ -1,4 +1,4 @@
-"""Tests for Commit 12 — Predictive Launch Readiness Scorecard.
+"""Predictive Launch Readiness Scorecard.
 
 Readiness is computed from evidence, not task counts; readiness and
 confidence stay separate; blockers affect score and forecast; the

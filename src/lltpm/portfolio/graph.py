@@ -1,6 +1,6 @@
-"""Portfolio graph construction (Commit 28).
+"""Portfolio graph construction.
 
-Builds the cross-project projection. Canonical identity (Commit 19) is
+Builds the cross-project projection. Canonical identity is
 what makes this work: "Platform Architecture" in project A and
 "platform-arch" in project C must resolve to the same node, or the
 shared bottleneck stays invisible.

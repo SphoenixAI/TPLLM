@@ -1,4 +1,4 @@
-"""Tests for Commit 29 — comparing allocations and reporting regret.
+"""Comparing allocations and reporting regret.
 
 The rule this file defends: a portfolio recommendation must state the
 displaced impact. Choosing to delay a project is sometimes right;

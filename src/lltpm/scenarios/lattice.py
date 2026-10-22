@@ -1,4 +1,4 @@
-"""Lattice inspection helpers (Commit 24)."""
+"""Lattice inspection helpers."""
 
 from __future__ import annotations
 

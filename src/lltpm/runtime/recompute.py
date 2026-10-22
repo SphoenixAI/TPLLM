@@ -1,4 +1,4 @@
-"""Coalesced incremental recomputation (Commit 30).
+"""Coalesced incremental recomputation.
 
 The naive live system is: event arrives, rerun everything, send a
 notification. It is correct and unusable — one shared incident touching

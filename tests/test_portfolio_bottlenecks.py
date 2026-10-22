@@ -1,4 +1,4 @@
-"""Tests for Commit 28 — bottleneck ranking, leverage, and the queries
+"""Bottleneck ranking, leverage, and the queries
 that only become answerable across projects."""
 
 from __future__ import annotations

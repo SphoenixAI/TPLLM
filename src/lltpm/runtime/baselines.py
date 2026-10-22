@@ -1,7 +1,7 @@
-"""Deterministic baseline providers (Commit 32).
+"""Deterministic baseline providers.
 
 Two of the engines take a Protocol with no shipping implementation:
-claim extraction (Commit 11) and scenario candidate generation (Commit
+claim extraction and scenario candidate generation (Commit
 24). In production those are LLM-backed. Without something in their
 place the system cannot run at all, which would make the open-source
 quickstart "configure an API key, then hope".
@@ -10,7 +10,7 @@ These are deliberate baselines, and they are labelled as baselines
 everywhere it matters. ``BASELINE_SCENARIO_METHOD`` and
 ``BASELINE_RECOMMENDATION_METHOD`` go into the reproducibility manifest,
 so an artifact derived from a baseline is distinguishable from one
-derived by a real model — and Commit 31's compatibility check will
+derived by a real model — and the persistence layer's compatibility check will
 refuse to call them equivalent. That distinction is the point: a
 keyword match over evidence text is a useful floor and a poor imitation
 of reading, and nothing here should let the two be confused.
@@ -123,7 +123,7 @@ class StructuralScenarioGenerator:
     structural — it comes from real dependency state rather than
     invention — but it is also the floor. It does not model recovery
     routes, lateral interactions, or compound failure, so a lattice from
-    this generator is narrower than the modelled space Commit 24 can
+    this generator is narrower than the modelled space the lattice can
     represent.
 
     Probabilities are a flat prior with low confidence, which keeps the

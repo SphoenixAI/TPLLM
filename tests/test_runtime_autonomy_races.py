@@ -1,4 +1,4 @@
-"""Tests for Commit 30 — the recommendation/execution race.
+"""The recommendation/execution race.
 
     T0  the agent recommends Option B; policy says it may act
     T1  a critical KPI fails
@@ -8,7 +8,7 @@ At T2 the recommendation answers a question about a world that no longer
 exists. Everything here checks that it cannot execute anyway, and that
 the refusals happen in the right order — the kill switch outranks
 staleness, staleness outranks authority, and nothing ever widens what
-Commit 22 already decided.
+the authority policy already decided.
 """
 
 from __future__ import annotations
@@ -90,7 +90,7 @@ class TestTheHappyPath:
 
 
 class TestTheStaleRace:
-    """The canonical Commit 30 safety case."""
+    """The canonical runtime safety case."""
 
     def test_a_material_event_between_t0_and_t2_blocks_execution(self):
         result, finalization = _attempt(current_decision_context=T1_CONTEXT)
@@ -225,7 +225,7 @@ class TestAuthorityIsRecheckedNotAssumed:
 
     def test_the_guard_never_widens_authority(self):
         # Every branch of the guard can only refuse; there is no path that
-        # produces eligibility Commit 22 did not already grant.
+        # produces eligibility the authority policy did not grant.
         import ast
         import inspect
 
@@ -241,7 +241,7 @@ class TestAuthorityIsRecheckedNotAssumed:
         ]
         assert assignments == [], (
             "the runtime must never assign autonomous eligibility; only "
-            "Commit 22's policy decides it"
+            "the authority policy decides it"
         )
 
 

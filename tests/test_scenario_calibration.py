@@ -1,4 +1,4 @@
-"""Tests for Commit 26 — calibration, sample thresholds, per-family
+"""Calibration, sample thresholds, per-family
 segmentation, and the authority guard."""
 
 from __future__ import annotations

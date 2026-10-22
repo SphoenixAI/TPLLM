@@ -1,4 +1,4 @@
-"""Exception-driven meeting intelligence (Commit 15).
+"""Exception-driven meeting intelligence.
 
 Meetings are for material change, contradiction, decisions, blockers,
 cross-team dependencies, KPI breaches, and scope changes — never for

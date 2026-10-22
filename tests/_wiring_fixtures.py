@@ -1,9 +1,9 @@
-"""Fixtures for Commit 32 — real engines behind the live runtime.
+"""Fixtures driving the real engines behind the live runtime.
 
 Deliberately uses the *real* engines, not test doubles. The whole point
-of this commit is that the orchestrator drives Commit 11's
-understanding, Commit 23's temporal reconstruction, Commit 24's scenario
-lattice, and Commits 28–29's portfolio simulation — so a fixture that
+here is that the orchestrator drives real project understanding,
+temporal reconstruction, the scenario lattice and portfolio
+simulation — so a fixture that
 stubbed those out would prove nothing.
 
 The two Protocols with no shipping implementation (claim extraction and

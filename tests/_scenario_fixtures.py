@@ -1,4 +1,4 @@
-"""Shared fixtures for scenario tests (Commit 24).
+"""Shared fixtures for scenario tests.
 
 Builds the spec's contract-approval scenario: approval may land, be
 delayed, or be rejected; a delay may be worked around, scope-reduced, or

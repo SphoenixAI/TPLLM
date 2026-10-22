@@ -1,4 +1,4 @@
-"""Append-only organizational decision ledger (Commit 22).
+"""Append-only organizational decision ledger.
 
 Every step from recommendation to outcome is recorded so the four
 symmetric evaluation cases can be compared honestly later:

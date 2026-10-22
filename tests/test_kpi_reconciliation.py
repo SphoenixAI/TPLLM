@@ -1,4 +1,4 @@
-"""Tests for Commit 16 — KPI claim reconciliation priority."""
+"""KPI claim reconciliation priority."""
 
 from __future__ import annotations
 

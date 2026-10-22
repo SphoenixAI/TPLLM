@@ -1,4 +1,4 @@
-"""Tests for Commit 29 — simulating the portfolio under an allocation.
+"""Simulating the portfolio under an allocation.
 
 The invariants under test:
 
@@ -59,7 +59,7 @@ def _simulate(state=None, allocation=None, **kwargs):
 
 
 class TestSharedUncertaintyMovesProjectsTogether:
-    """The central invariant of Commit 29."""
+    """The central invariant of portfolio simulation."""
 
     def test_every_shared_factor_moved_all_its_projects_together(self):
         result = _simulate()

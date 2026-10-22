@@ -1,4 +1,4 @@
-"""Miscommunication risk detection (Commit 25).
+"""Miscommunication risk detection.
 
 Detects structural coordination hazards: divergent team beliefs, stale
 decision propagation, authority ambiguity, KPI definition mismatch,

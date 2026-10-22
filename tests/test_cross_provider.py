@@ -1,4 +1,4 @@
-"""Cross-provider tests (Commit 43).
+"""Cross-provider tests.
 
 Each provider lane proved its own translation in isolation. These are
 the tests neither lane could write: what happens when one workstream is
@@ -489,7 +489,7 @@ class TestCrossProviderIdentity:
 
 
 class TestNoWorkerScoringAcrossProviders:
-    """Commit 41's invariant, checked against a mixed corpus full of
+    """The measurement-scope invariant, checked against a mixed corpus full of
     authors, assignees, reviewers and commenters — the richest input
     anybody has for accidentally scoring somebody."""
 

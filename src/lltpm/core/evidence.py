@@ -1,7 +1,7 @@
-"""Core evidence contract (Commit 20).
+"""Core evidence contract.
 
 The provenance shape every domain agrees on. The rich evidence model
-(``ProjectEvidence``, Commit 11) stays owned by intelligence; this is
+(``ProjectEvidence``) stays owned by intelligence; this is
 only the contract peers exchange.
 """
 

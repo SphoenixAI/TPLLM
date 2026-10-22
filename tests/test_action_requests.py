@@ -1,4 +1,4 @@
-"""Tests for Commit 14 — action request helpers."""
+"""Action request helpers."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Shared fixtures for KPI tests (Commit 16)."""
+"""Shared fixtures for KPI tests."""
 
 from __future__ import annotations
 

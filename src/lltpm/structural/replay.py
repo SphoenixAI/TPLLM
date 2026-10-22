@@ -61,7 +61,7 @@ def get_predicted_reduction(option: object) -> float | None:
 class ReplayComparison(BaseModel):
     """Agent top option vs human-selected option vs observed outcome.
 
-    ``observed_risk_change`` uses the Commit 3 convention: positive means
+    ``observed_risk_change`` uses the outcome-log convention: positive means
     structural risk *decreased* (improvement), negative means it increased.
     ``human_option_outperformed_expectation`` is True when the observed
     reduction beat what the agent predicted for the human's chosen option —

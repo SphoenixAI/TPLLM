@@ -4,7 +4,7 @@ Historical pattern analysis for milestone slips, scope growth, dependency
 cascades and allocation load — early warning before a problem becomes a
 blocker.
 
-**What was removed in Commit 41, and why.** This module also held
+**What was removed, and why.** This module also held
 ``PersonMetrics``, ``PerformanceGrade`` and ``QuarterlyEvaluation``: a
 per-person performance review with responsiveness, reliability,
 collaboration and overall letter grades, a ``collaboration_score``
@@ -41,8 +41,8 @@ class RiskSignalType(str, Enum):
     ``RESPONSE_DEGRADATION`` ("person getting slower"),
     ``ENGAGEMENT_DROP`` ("engagement score declining"),
     ``COMMITMENT_MISS`` ("commitments not being met") and
-    ``BLOCKER_PATTERN`` (who recurrently blocked things) were removed in
-    Commit 41. Each named an individual as the risk.
+    ``BLOCKER_PATTERN`` (who recurrently blocked things) were removed.
+    Each named an individual as the risk.
     """
     MILESTONE_SLIP = "milestone_slip"       # historical pattern of slips
     SCOPE_CREEP = "scope_creep"             # increasing scope changes

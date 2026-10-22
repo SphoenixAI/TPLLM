@@ -1,4 +1,4 @@
-"""Live runtime models (Commit 30).
+"""Live runtime models.
 
 The orchestration layer's vocabulary: what an artifact is, what a
 revision is, what changed, whether it mattered, and whether a human
@@ -81,8 +81,8 @@ SAFETY_CRITICAL_ARTIFACT_TYPES = frozenset({
 # ── Runtime events ───────────────────────────────────────────────────
 
 
-# Classes of thing that describe a *plan*, not an observation. Commit 23
-# keeps history and prediction apart: a scheduled freeze is a commitment,
+# Classes of thing that describe a *plan*, not an observation. The temporal
+# layer keeps history and prediction apart: a scheduled freeze is a commitment,
 # not an observed temporal fact, and only becomes one when it happens.
 PLANNED_EVENT_CLASSES = frozenset({
     "planned_milestone",
@@ -710,7 +710,7 @@ class RuntimePolicy(BaseModel):
 class RuntimeMetrics(BaseModel):
     """Operational counters for the runtime itself.
 
-    Every counter here measures TPLLM's own behaviour — how much work it
+    Every counter here measures LLTPM's own behaviour — how much work it
     absorbed, how much it coalesced, how often it stayed quiet. None of
     them measures a person.
     """

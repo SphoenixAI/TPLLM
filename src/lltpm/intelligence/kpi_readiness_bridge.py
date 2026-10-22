@@ -1,7 +1,7 @@
-"""KPI → launch readiness bridge (Commit 16).
+"""KPI → launch readiness bridge.
 
 KPIs influence launch readiness only as ReadinessEvidenceContributions
-— preserving Commit 12's evidence-based scoring. This module never
+— preserving launch readiness's evidence-based scoring. This module never
 mutates a scorecard or a score.
 """
 

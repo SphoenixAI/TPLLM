@@ -1,4 +1,4 @@
-"""Core cross-domain views and protocols (Commit 20).
+"""Core cross-domain views and protocols.
 
 Read-only contracts that let a peer domain consume another's state
 without importing its concrete models. ``ReadinessView`` is a Protocol

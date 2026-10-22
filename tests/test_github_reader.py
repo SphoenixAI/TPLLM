@@ -1,4 +1,4 @@
-"""Tests for Commit 38 — reading GitHub behind a port.
+"""Reading GitHub behind a port.
 
 The reader exists so that the offline suite and the live check drive the
 same code. What is pinned here is therefore mostly about what the reader

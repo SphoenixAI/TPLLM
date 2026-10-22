@@ -1,4 +1,4 @@
-"""Tests for Commit 25 — interaction effects, preventive actions, and
+"""Interaction effects, preventive actions, and
 the no-needless-meeting rule."""
 
 from __future__ import annotations

@@ -14,7 +14,7 @@ from lltpm.integrations.voice_integration import VoiceIntegration
 from lltpm.integrations.gdrive_integration import GoogleDriveIntegration
 from lltpm.integrations.notion_integration import NotionIntegration
 
-# Commit 18 — tool-native integration runtime (vendor-neutral layer)
+# tool-native integration runtime (vendor-neutral layer)
 from lltpm.integrations.envelopes import (
     SECRET_TEXT_PLACEHOLDER,
     EvidenceEnvelope,
@@ -25,7 +25,7 @@ from lltpm.integrations.envelopes import (
     redact_secret_text,
     sanitize_metadata,
 )
-# Commit 43 — the provider registry and the Slack and Jira providers
+# the provider registry and the Slack and Jira providers
 from lltpm.integrations.providers import (
     PROVIDERS,
     ProviderCapability,
@@ -40,7 +40,7 @@ from lltpm.integrations.contracts import (
     PROVENANCE_VALUES,
 )
 
-# Commit 37 — the anti-corruption layer: provider payloads -> envelopes
+# the anti-corruption layer: provider payloads -> envelopes
 from lltpm.integrations.normalizers import (
     CONTENT_EXCERPT_LIMIT,
     DEFAULT_BLOCKING_LABELS,
@@ -99,7 +99,7 @@ from lltpm.integrations.surfaces import (
 
 __all__ = [
     "Integration", "IntegrationError",
-    # Commit 18 — runtime layer
+    # runtime layer
     "ArtifactPointer",
     "EvidenceEnvelope",
     "EvidenceReferenceStore",

@@ -1,4 +1,4 @@
-"""Tests for Commit 21 — recommendation models and their invariants."""
+"""Recommendation models and their invariants."""
 
 from __future__ import annotations
 

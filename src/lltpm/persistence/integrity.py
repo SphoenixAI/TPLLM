@@ -1,4 +1,4 @@
-"""Journal and snapshot integrity (Commit 31).
+"""Journal and snapshot integrity.
 
 The hash chain here is not a blockchain and does not pretend to be. It
 solves a much more ordinary problem: a durable history stored in a file

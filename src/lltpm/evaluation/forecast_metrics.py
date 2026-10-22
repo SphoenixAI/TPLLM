@@ -1,4 +1,4 @@
-"""Forecast quality metrics (Commit 26).
+"""Forecast quality metrics.
 
 Accuracy alone is not quality. A model that predicts 0.51 for everything
 can be accurate and useless, so sharpness and calibration are measured

@@ -1,7 +1,7 @@
-"""Core lightweight references (Commit 20).
+"""Core lightweight references.
 
 Contracts only — never duplicates of the rich domain models. A
-``ProjectEvidence`` (Commit 11) is owned by intelligence;
+``ProjectEvidence`` is owned by intelligence;
 ``EvidenceReferenceView`` here is just the pointer shape peer domains
 pass to each other.
 """

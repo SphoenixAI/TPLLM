@@ -1,4 +1,4 @@
-"""Tests for Commit 26 — leak-free historical replay."""
+"""Leak-free historical replay."""
 
 from __future__ import annotations
 

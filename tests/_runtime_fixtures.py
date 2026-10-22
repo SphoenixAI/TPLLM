@@ -1,4 +1,4 @@
-"""Fixtures for Commit 30 runtime tests.
+"""Fixtures for runtime tests.
 
 Models the spec's canonical organization:
 
@@ -334,7 +334,7 @@ def context_fingerprint(context: DecisionContext) -> str:
 
 
 def eligible_recommendation(caps=None):
-    """A high-confidence recommendation the Commit 22 policy accepts."""
+    """A high-confidence recommendation the authority policy accepts."""
     return select_agent_recommendation(
         capsule=caps or capsule(),
         assessments=[
@@ -387,7 +387,7 @@ def baseline_authority_assessment(recommendation=None, caps=None):
 
 
 class FakeScenarioRecommendation:
-    """Minimal stand-in matching what the Commit 27 gate reads."""
+    """Minimal stand-in matching what the scenario gate reads."""
 
     def __init__(
         self,

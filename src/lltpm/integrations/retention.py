@@ -1,6 +1,6 @@
-"""Data minimization and retention (Commit 18).
+"""Data minimization and retention.
 
-TPLLM preferentially persists normalized claims, ontology relations,
+LLTPM preferentially persists normalized claims, ontology relations,
 evidence references, source pointers, timestamps, and confidence — not
 full copies of every source system. The source artifact stays in its
 system of record; we keep a pointer and a content hash.

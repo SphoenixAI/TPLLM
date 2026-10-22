@@ -1,11 +1,11 @@
-"""Canonical identity resolution on the ingest path (Commit 33).
+"""Canonical identity resolution on the ingest path.
 
-The Commit 30 target flow has an explicit step between temporal
+The runtime's target flow has an explicit step between temporal
 ordering and the ontology update: canonical identity resolution. It was
 the one step with no implementation on the live path, and its absence
 matters more than it sounds.
 
-Commit 28's whole premise is that four projects waiting on the same
+The portfolio premise is that four projects waiting on the same
 approval authority should see one shared bottleneck rather than four
 unrelated blockers. That only works if "Platform Architecture" in one
 project and "platform-arch" in another resolve to the same canonical
@@ -14,13 +14,13 @@ notice the thing it exists to notice.
 
 Two commitments shape this module.
 
-**Resolution decisions are durable.** Commit 31 lists canonical identity
+**Resolution decisions are durable.** Persistence lists canonical identity
 decisions among the things that must survive a crash, so a resolved
 link is journalled as IDENTITY_LINKED before anything derives from it.
 Replay then reconstructs the same identity graph without re-running
 resolution against source systems that may be gone.
 
-**Ambiguity is preserved, not guessed.** Commit 19 returns AMBIGUOUS and
+**Ambiguity is preserved, not guessed.** The resolver returns AMBIGUOUS and
 CANDIDATE for a reason: resolving a person by display name alone is how
 two colleagues with the same surname become one. Only RESOLVED links are
 written, and the rest are reported so a human can settle them.
@@ -273,8 +273,8 @@ def canonical_ids_for_envelope(
     same authority differently come back with the same canonical id.
 
     Deliberately an exact-string lookup over linked identities, curated
-    aliases, and canonical names — not a resolution decision. Commit 19
-    resolves probabilistically and scores a mere name resemblance low on
+    aliases, and canonical names — not a resolution decision. The
+    registry resolves probabilistically and scores a name resemblance low on
     purpose; this helper answers "is this string a known name for a known
     entity", creates no durable link, and never merges anything.
     """

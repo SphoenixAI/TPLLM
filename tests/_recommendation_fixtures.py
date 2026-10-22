@@ -1,4 +1,4 @@
-"""Shared fixtures for Commit 21/22 decision-recommendation tests."""
+"""Shared fixtures for decision-recommendation tests."""
 
 from __future__ import annotations
 

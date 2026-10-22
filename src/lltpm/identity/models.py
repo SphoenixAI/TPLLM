@@ -1,6 +1,6 @@
-"""Canonical identity models (Commit 19).
+"""Canonical identity models.
 
-The canonical identity layer lets TPLLM understand when the same real
+The canonical identity layer lets LLTPM understand when the same real
 organizational entity appears under different names, IDs, handles, and
 aliases across tools — without ever inventing who somebody is.
 
@@ -320,7 +320,7 @@ def build_external_identity_id(
 # ── Organizational actor bridge model ────────────────────────────────
 
 class CanonicalOrganizationalActorRef(BaseModel):
-    """Bridge wrapper: an existing Commit 14 actor reference plus its
+    """Bridge wrapper: an existing organizational actor reference plus its
     canonical resolution — the original actor is preserved untouched."""
     actor: Any
     canonical_entity_id: str | None = None

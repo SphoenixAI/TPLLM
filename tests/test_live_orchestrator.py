@@ -1,4 +1,4 @@
-"""End-to-end tests for Commit 30 — the live orchestration pass.
+"""End-to-end tests of the live orchestration pass.
 
 The canonical organization:
 
@@ -703,7 +703,7 @@ class TestNoEmployeeSurveillance:
         for field in RuntimeMetrics.model_fields:
             for term in ("employee", "person", "user", "worker", "hours"):
                 assert term not in field, (
-                    f"runtime metric '{field}' must measure TPLLM, not "
+                    f"runtime metric '{field}' must measure LLTPM, not "
                     f"people"
                 )
 

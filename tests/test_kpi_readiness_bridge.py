@@ -1,4 +1,4 @@
-"""Tests for Commit 16 — KPI → launch readiness bridge."""
+"""KPI → launch readiness bridge."""
 
 from __future__ import annotations
 

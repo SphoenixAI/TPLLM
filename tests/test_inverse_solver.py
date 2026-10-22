@@ -1,4 +1,4 @@
-"""Tests for Commit 4 — Counterfactual Replay + Local Inverse Solver.
+"""Counterfactual Replay + Local Inverse Solver.
 
 A human override that worked out is treated as a counterexample that
 generates ranked, contradiction-checked topological mismatch *hypotheses* —

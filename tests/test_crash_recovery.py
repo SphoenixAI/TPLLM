@@ -1,4 +1,4 @@
-"""Tests for Commit 31 — surviving a crash.
+"""Surviving a crash.
 
 The canonical case: revision 100 is current, a new event starts
 producing revision 101, and the process dies after the journal append

@@ -1,4 +1,4 @@
-"""Recorded provider contracts (Commit 37).
+"""Recorded provider contracts.
 
 Testing an integration against a live third-party API gives you a suite
 that needs credentials, needs network, and fails for reasons that have
@@ -35,6 +35,7 @@ from __future__ import annotations
 import hashlib
 import json
 import pathlib
+import re
 from enum import Enum
 from typing import Any
 
@@ -500,6 +501,39 @@ _PSEUDONYMIZED_ID_KEYS = frozenset({"node_id"})
 #: a real account id and is rewritten too.
 _USER_MARKER_KEY = "login"
 
+#: Private links that identify a working session rather than a public
+#: resource, matched anywhere in free text.
+#:
+#: Everything else here is removed by *name* — the recorder states the
+#: real handle or repository it is replacing, and `unscrubbed_paths`
+#: verifies that exact value is gone. That rule is deliberate and it is
+#: also why this category slipped past: a pull request body written by a
+#: tool carries a link to the session that wrote it, and the recorder
+#: has no way to know that string exists. Three committed fixtures
+#: disclosed one. A credential scanner cannot catch it either, because a
+#: session URL is not a credential.
+#:
+#: So this one category is pattern-based, with the trade-off stated:
+#: a pattern can only remove a shape somebody anticipated, and the
+#: fixtures are reviewed before they are committed for that reason.
+_PRIVATE_SESSION_URLS = (
+    re.compile(r"https?://(?:www\.)?claude\.ai/\S*session[_/][A-Za-z0-9_-]+"),
+    re.compile(r"https?://chatgpt\.com/(?:c|share)/[A-Za-z0-9-]+"),
+    re.compile(r"https?://\S*\.?cursor\.(?:sh|com)/\S*session\S*"),
+)
+
+#: What a redacted session link becomes. Keeps the body's shape — the
+#: normalizers excerpt body text, so removing the line entirely would
+#: change the length a contract test measures.
+SESSION_URL_PLACEHOLDER = "[session link removed]"
+
+
+def redact_private_session_urls(text: str) -> str:
+    """Replace links that identify a working session with a placeholder."""
+    for pattern in _PRIVATE_SESSION_URLS:
+        text = pattern.sub(SESSION_URL_PLACEHOLDER, text)
+    return text
+
 
 def _alias_for(value: str, *, prefix: str) -> str:
     digest = hashlib.sha256(value.encode()).hexdigest()
@@ -574,7 +608,7 @@ def scrub_github_payload(
         for needle in sorted(replacements, key=len, reverse=True):
             if needle in text:
                 text = text.replace(needle, replacements[needle])
-        return text
+        return redact_private_session_urls(text)
 
     def walk(node: Any, *, parent_key: str = "", in_user: bool = False) -> Any:
         if isinstance(node, dict):
@@ -643,6 +677,13 @@ def unscrubbed_paths(payload: Any, *, forbidden: set[str]) -> list[str]:
             for index, value in enumerate(node):
                 walk(value, f"{path}[{index}]")
         elif isinstance(node, str):
+            # Checked before the named needles, because this is the one
+            # category the recorder cannot name: it never knew the
+            # string was there.
+            for pattern in _PRIVATE_SESSION_URLS:
+                if pattern.search(node):
+                    offenders.append(f"{path} (private session link)")
+                    return
             for needle in needles:
                 if needle in node:
                     offenders.append(f"{path} (contains '{needle}')")

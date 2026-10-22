@@ -1,4 +1,4 @@
-"""Tests for Commit 18 — tool-native surfaces and the no-noise policy."""
+"""Tool-native surfaces and the no-noise policy."""
 
 from __future__ import annotations
 

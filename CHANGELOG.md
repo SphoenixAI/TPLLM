@@ -1,7 +1,6 @@
 # Changelog
 
-Notable changes, newest first. Versions follow the commit arc the
-project is built in: `0.41.0` is the state after Commit 41.
+Notable changes, newest first.
 
 Each entry says what changed and, where it matters, what was wrong
 before. Several entries record the removal of something that shipped —
@@ -9,7 +8,38 @@ those are the ones worth reading.
 
 ## Unreleased
 
-Commits 43–45. The release-candidate pass folds these into a version.
+Folded into a version by the release-candidate pass.
+
+### Public-release cleanup
+
+- **Private session links were committed in three recorded fixtures.**
+  A pull request body written by a tool carries a link to the session
+  that wrote it, and the GitHub fixtures were recorded from this
+  project's own pull requests. A session URL is not a credential, so the
+  secret scan passed it; the fixture scrubber removes values *by name*
+  and nobody can name a string they did not know was there. The
+  scrubber now also redacts this one category by pattern, with the
+  trade-off stated, `integrations record` refuses a fixture that still
+  discloses one, and a release test checks every tracked file.
+- **Internal commit numbering is gone from the public surface.** The
+  project was built over a numbered commit arc and the numbers had
+  reached 268 docstrings and comments in shipped source — "Application
+  requires Commit 7's single green light", "the Commit 24 lattice".
+  Precise internally, meaningless to a reader of a repository whose
+  history has hashes. Each was replaced with the name of the thing the
+  number stood for, and a test keeps them from returning.
+- **The product name was misspelled `TPLLM` in 25 places**, including
+  the agent's own `display_name` on decision records — so durable
+  history recorded a product that does not exist.
+- **`docs/assistant-development-guide.md` became
+  [`docs/engineering-handbook.md`](docs/engineering-handbook.md)**, a
+  contributor document rather than a set of instructions to an
+  assistant, with a short `docs/assistant-development-guide.md` pointing at it.
+- **`.gitignore` did not cover the files the documentation tells you to
+  create.** `lltpm.db`, `run.jsonl`, `sbom.json` and `.env` were all
+  committable. The journal is an organization's durable record, so
+  following the quickstart could have meant publishing it. Tested with
+  `git check-ignore`, including that `.env.example` still ships.
 
 ### Added
 
@@ -19,7 +49,7 @@ Commits 43–45. The release-candidate pass folds these into a version.
   a fact. Reactions, DMs and bot messages are declined with a stated
   reason instead of ingested as something they are not. GET-only reader,
   rate-limit aware, HMAC-SHA256 signature verification over the raw body
-  with a replay window. (Commit 43)
+  with a replay window.
 - **Jira as an evidence source.** REST v3 with token pagination.
   Transitions come from the changelog and are never inferred from a
   snapshot; `statusCategory.key` is read in preference to the display
@@ -28,7 +58,7 @@ Commits 43–45. The release-candidate pass folds these into a version.
   outright because they are hours-per-person by construction.
   `JIRA_WEBHOOK_LIFECYCLE` records that Cloud dynamic webhooks expire
   after 30 days, so a future receiver cannot quietly let registrations
-  lapse. (Commit 43)
+  lapse.
 - **A provider registry** (`integrations/providers.py`). One descriptor
   per source declares its capabilities, scope shape and normalizer entry
   point, and both CLI groups dispatch through it — a fourth provider is
@@ -46,11 +76,11 @@ Commits 43–45. The release-candidate pass folds these into a version.
   computed this and the command discarded it, so the useful half of the
   work was reachable only from Python. `--no-explain` reduces it to the
   counts; a test asserts that choice changes no durable state.
-  (Commit 45)
+ 
 - **Security headers** on every dashboard response, with the CSP's
   limits stated rather than implied: the page's script is inline, so the
   policy does not mitigate XSS and the escaping is the control.
-  (Commit 44)
+ 
 - **`docs/threat-model.md`** — what the system withstands, what it does
   not, and the configurations that are explicitly unsupported, including
   that multi-tenancy is absent rather than partial.
@@ -68,7 +98,7 @@ Commits 43–45. The release-candidate pass folds these into a version.
 
 - **Colliding envelope ids.** `make_envelope` derived the id from the
   first sixteen characters of the idempotency key, which was a digest
-  until Commit 37 allowed readable keys — after which eight envelopes
+  until normalizers were allowed readable keys — after which eight envelopes
   shared two ids. No test caught it because the journal deduplicates on
   the key rather than the id. The id is now a digest of the whole key.
 - **A refresh token was accepted as an access token.** `dashboard.py`
@@ -91,8 +121,8 @@ Commits 43–45. The release-candidate pass folds these into a version.
   request body was redacted. The weaker rule was in the likelier place.
 - **Atlassian `ATATT` tokens were unrecognised** by both layers, which
   Jira made a realistic paste into append-only history.
-- **Development files shipped in the sdist.** Commit 42 inspected only
-  the wheel; the sdist is built from a different file set and carried
+- **Development files shipped in the sdist.** The release audit
+  inspected only the wheel; the sdist is built from a different file set and carried
   the triage file, CI config and deployment artefacts.
 - Evidence-derived text printed to the terminal is escaped: a Jira
   summary of `[red]URGENT[/red]` prints as itself rather than being
@@ -107,7 +137,7 @@ Commits 43–45. The release-candidate pass folds these into a version.
   the architecture and its invariants. CI asserts the quoted claims
   still hold — that the output names which evidence moved it, that a
   probability move never travels without its confidence, and that
-  reality time is the time of the fact. (Commit 45)
+  reality time is the time of the fact.
 - **The dashboard's authentication surface is now stated accurately.**
   The project advertised "FastAPI with JWT authentication": true of the
   machinery, false of the surface, where 25 of 28 routes enforce no
@@ -136,7 +166,7 @@ The release that the open-source audit was done against.
   handoff depth and organizational topology — and the structural reading
   is the more capable one: a team that looks slow because four projects
   share one approval authority is a finding about the approval
-  authority. A letter grade destroys it. (Commit 41)
+  authority. A letter grade destroys it.
 - Four `RiskSignalType` members that named an individual as the risk:
   `RESPONSE_DEGRADATION`, `ENGAGEMENT_DROP`, `COMMITMENT_MISS`,
   `BLOCKER_PATTERN`.
@@ -158,7 +188,7 @@ The release that the open-source audit was done against.
 - **`lltpm integrations`** — the path from a provider's API to durable
   evidence: `sources`, `normalize`, `ingest`, `verify`, `record`.
   Read-only against the provider by construction; a test asserts the
-  only HTTP verb the reader can name is GET. (Commits 37–38)
+  only HTTP verb the reader can name is GET.
 - **The anti-corruption layer** (`integrations/normalizers.py`). Before
   it, no adapter produced an `EvidenceEnvelope`, so no real integration
   data could reach any engine. Keys on the provider's own event id,
@@ -174,13 +204,13 @@ The release that the open-source audit was done against.
 - **Operational logging** (`observability/`): JSON-lines and human
   formatters, format-time credential redaction, a closed structured-field
   vocabulary. Libraries emit through the standard library and configure
-  nothing. (Commit 36)
+  nothing.
 - **`lltpm runtime journal --follow`** — tail the journal as records
   land; read-only, no broker, no daemon.
 - **`lltpm runtime anchor`** and `verify --anchor`. Hash chaining makes
   an in-place edit detectable; it cannot detect a history rewritten
   wholesale, because every link in a rewritten chain recomputes.
-  Verification now says which of the two it checked. (Commit 39)
+  Verification now says which of the two it checked.
 - **Murphy's Brier decomposition** — reliability, resolution and
   uncertainty reported separately, which catches the forecaster that
   always predicts the base rate: perfect calibration, zero resolution,
@@ -225,8 +255,9 @@ The release that the open-source audit was done against.
 ### Documentation
 
 - The no-worker-scoring guarantee was stated for the whole system while
-  the guardrails only covered part of it. Commit 40 measured the gap and
-  inventoried what broke the claim; Commit 41 removed it. The invariant
+  the guardrails only covered part of it. An audit measured the gap and
+  inventoried what broke the claim, and the next release removed it. The
+  invariant
   is now one statement, and `tests/test_person_measurement_scope.py`
   asserts it everywhere.
 - Packaging metadata for a public release: authors, keywords,
@@ -236,22 +267,22 @@ The release that the open-source audit was done against.
 
 - Append-only hash-chained event journal, SQLite reference backend,
   snapshots, and replay that reconstructs intelligence from history
-  without touching any external system. (Commit 31)
+  without touching any external system.
 - `lltpm runtime` — the organizational stack becomes reachable from the
-  command line, offline, with no API key. (Commit 33)
+  command line, offline, with no API key.
 - Canonical identity resolution on the ingest path: an explicit alias
   resolves, a name resemblance does not, and an ambiguous match is left
-  for a person to settle. (Commit 34)
+  for a person to settle.
 - The real engines wired behind the live orchestrator, with
   `lltpm runtime coverage` reporting honestly which artifact types run a
   dedicated engine and which are thinner derived projections.
-  (Commit 32)
+ 
 - MIT licence, CI across Python 3.11–3.13, and history export.
-  (Commit 35)
+ 
 
 ## 0.30.0 and earlier — the organizational-reasoning stack
 
-Built over Commits 1–30: bitemporal truth, project understanding, KPI
+Bitemporal truth, project understanding, KPI
 intelligence, launch readiness, decision capsules and authority policy,
 bounded autonomy, the probabilistic scenario lattice, organizational
 interaction and miscommunication modelling, portfolio topology and

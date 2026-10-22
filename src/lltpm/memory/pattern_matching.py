@@ -1,4 +1,4 @@
-"""Structural problem signatures and pattern matching (Commit 17).
+"""Structural problem signatures and pattern matching.
 
 Signatures emphasize dependency shape, authority gaps, expertise gaps,
 cross-team boundaries, decision type, and KPI relation — never who the

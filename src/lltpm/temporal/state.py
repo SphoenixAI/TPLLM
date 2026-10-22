@@ -1,4 +1,4 @@
-"""Historical state reconstruction (Commit 23).
+"""Historical state reconstruction.
 
 Rebuilds what the organization knew at an arbitrary ``as_of``, excluding
 everything learned afterward. Every scenario forecast roots here, so a

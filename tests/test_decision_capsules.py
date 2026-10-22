@@ -1,4 +1,4 @@
-"""Tests for Commit 15 — decision capsules and context packets."""
+"""Decision capsules and context packets."""
 
 from __future__ import annotations
 

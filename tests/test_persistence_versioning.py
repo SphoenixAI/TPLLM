@@ -1,4 +1,4 @@
-"""Tests for Commit 31 — versioning, migration, and honest reproduction.
+"""Versioning, migration, and honest reproduction.
 
 Replaying August's evidence under September's scenario scoring may
 legitimately produce a different recommendation. Calling that

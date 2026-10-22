@@ -1,4 +1,4 @@
-"""Tests for Commit 16 — KPI stewardship (response state, not people)."""
+"""KPI stewardship (response state, not people)."""
 
 from __future__ import annotations
 

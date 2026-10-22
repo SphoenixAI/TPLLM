@@ -1,4 +1,4 @@
-"""The append-only event journal (Commit 31).
+"""The append-only event journal.
 
 Small on purpose. The journal needs to append, read, deduplicate,
 verify, and nothing else — an organization's durable history does not

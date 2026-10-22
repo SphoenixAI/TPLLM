@@ -1,7 +1,7 @@
 """Risk prediction tools.
 
-Commit 41 removed `generate_evaluation` and `get_evaluation` from this
-module. They let the agent produce a per-person quarterly performance
+An earlier release removed `generate_evaluation` and `get_evaluation`
+from this module. They let the agent produce a per-person quarterly performance
 review — responsiveness, reliability and collaboration letter grades,
 computed in part from how often someone "was the blocker" — and they
 were the only place the model could be asked to grade a colleague.

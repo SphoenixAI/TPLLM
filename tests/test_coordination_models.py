@@ -1,4 +1,4 @@
-"""Tests for Commit 14 — coordination models and their invariants."""
+"""Coordination models and their invariants."""
 
 from __future__ import annotations
 

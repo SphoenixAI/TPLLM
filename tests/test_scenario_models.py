@@ -1,4 +1,4 @@
-"""Tests for Commit 24 — scenario model invariants."""
+"""Scenario model invariants."""
 
 from __future__ import annotations
 

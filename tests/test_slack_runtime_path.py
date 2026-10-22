@@ -1,6 +1,6 @@
 """Normalized Slack evidence reaching durable history.
 
-The gap this closes for Slack is the one Commit 37 closed for GitHub:
+The gap this closes for Slack is the one the normalizers closed for GitHub:
 before a normalizer existed, real chat data could reach the Claude tool
 loop and could not reach a single engine. What is asserted here is the
 whole path — documented payload → ``EvidenceEnvelope`` →

@@ -1,4 +1,4 @@
-"""Tests for Commit 15 — exception-driven meetings."""
+"""Exception-driven meetings."""
 
 from __future__ import annotations
 

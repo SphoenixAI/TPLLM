@@ -1,6 +1,6 @@
-"""Predictive launch readiness scorecard (Commit 12).
+"""Predictive launch readiness scorecard.
 
-Consumes the Commit 11 ProjectUnderstandingSnapshot plus ontology and
+Consumes the ``ProjectUnderstandingSnapshot`` plus ontology and
 structural signals to produce dimension-level readiness, overall
 readiness, confidence, blockers, trend, on-time probability, and
 goal-completion estimates — every score traceable to evidence.

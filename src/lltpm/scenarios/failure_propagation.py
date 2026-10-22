@@ -1,4 +1,4 @@
-"""Interaction failure propagation (Commit 25).
+"""Interaction failure propagation.
 
 Traces how a coordination failure travels through the organization:
 

@@ -1,5 +1,5 @@
 """Evidence envelopes — the normalized form every tool event takes
-(Commit 18).
+.
 
 All tools (Slack, meetings, tickets, GitHub, metrics) normalize into
 EvidenceEnvelope. Envelopes carry provenance and pointers back to the
@@ -50,7 +50,7 @@ _SECRET_TEXT_PATTERNS = (
     re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}"),
     re.compile(r"\bsk-[A-Za-z0-9_-]{16,}"),
     re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
-    # Atlassian API tokens. Added in Commit 44: adding Jira made a
+    # Atlassian API tokens. Added alongside Jira, which made a
     # token pasted into a ticket description a realistic way for a
     # credential to reach append-only history, and this pattern was
     # the one the GitHub and Slack work had no reason to include.
@@ -188,7 +188,7 @@ def make_envelope(
     return EvidenceEnvelope(
         # Hashed, not sliced. This was `key[:16]`, which was fine while
         # every key was a sha256 digest — and became a collision the
-        # moment Commit 37 let a normalizer supply a readable key, since
+        # moment a normalizer was allowed to supply a readable key, since
         # the first sixteen characters of
         # `github:pull_request:NODE-…` are the same for every pull
         # request. Eight envelopes shared two ids. The id reaches the
@@ -234,7 +234,7 @@ def envelope_to_project_evidence(
     *,
     project_id: str,
 ) -> ProjectEvidence | None:
-    """Convert an envelope into Commit 11 ProjectEvidence. Envelopes
+    """Convert an envelope into ``ProjectEvidence``. Envelopes
     without content contribute pointers only, not evidence text."""
     if not envelope.content:
         return None

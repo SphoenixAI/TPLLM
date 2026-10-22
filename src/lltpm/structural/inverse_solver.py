@@ -139,7 +139,7 @@ class ContradictionCheckResult(BaseModel):
 
 
 class TopologicalMismatch(BaseModel):
-    """The key Commit 4 artifact: a ranked, contradiction-checked hypothesis
+    """The key artifact: a ranked, contradiction-checked hypothesis
     that a small local edit would have re-ranked the human's choice higher.
 
     ``status`` always defaults to ``"hypothesis"`` — never auto-applied.
@@ -270,7 +270,7 @@ def generate_edge_weight_candidates(
     return candidates
 
 
-# Map the deterministic OverrideReason enum (Commit 3) onto candidate edits.
+# Map the deterministic OverrideReason enum onto candidate edits.
 def generate_override_reason_candidates(
     *,
     human_decision_record: HumanDecisionRecord,
@@ -756,7 +756,7 @@ def run_local_inverse_solver(
     return result
 
 
-# ── Bridge to the calibration layer (Commit 3) ──────────────────────
+# ── Bridge to the calibration layer ──────────────────────
 
 _MISMATCH_TO_CALIBRATION: dict[TopologicalMismatchType, tuple[CalibrationHypothesisType, str]] = {
     TopologicalMismatchType.MISSING_EDGE: (

@@ -1,4 +1,4 @@
-"""Tests for Commit 16 — deterministic KPI claim extraction from
+"""Deterministic KPI claim extraction from
 meeting transcripts (the spec's activation example)."""
 
 from __future__ import annotations

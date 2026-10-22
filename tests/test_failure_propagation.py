@@ -1,4 +1,4 @@
-"""Tests for Commit 25 — failure propagation from coordination failure
+"""Failure propagation from coordination failure
 to downstream technical and schedule exposure."""
 
 from __future__ import annotations

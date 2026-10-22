@@ -269,7 +269,7 @@ class TestEngagementTrendFlow:
         assert "Alice" in result or "engagement" in result.lower()
 
         # 3. Record another reply. There is deliberately no way to
-        # record a non-response: Commit 41 removed it, because counting
+        # record a non-response: it was removed, because counting
         # unanswered requests against someone is how a latency estimate
         # becomes a reliability score.
         self.registry.execute("record_engagement", {

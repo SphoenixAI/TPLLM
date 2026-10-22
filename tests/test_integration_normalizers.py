@@ -1,4 +1,4 @@
-"""Tests for Commit 37 — the anti-corruption layer.
+"""The anti-corruption layer.
 
 These run against payloads recorded from the live GitHub API, so what
 they pin is the behaviour on real shapes rather than on a mock written
@@ -910,7 +910,7 @@ class TestRealPayloadsReachTheJournal:
 
 
 class TestEnvelopeIdentityIsUnique:
-    """A regression found by the Slack lane, introduced by Commit 37.
+    """A regression found by the Slack lane, introduced with the normalizers.
 
     `make_envelope` built its id as `env-{key[:16]}`. That was safe
     while every key was a sha256 digest, and became a collision the

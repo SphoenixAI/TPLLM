@@ -1,4 +1,4 @@
-"""Intelligence dependency graph (Commit 30).
+"""Intelligence dependency graph.
 
 The orchestrator's central question is not "what happened?" but "what
 does what happened invalidate?". This module answers it structurally.

@@ -1,4 +1,4 @@
-"""Reading GitHub, behind a port (Commit 38).
+"""Reading GitHub, behind a port.
 
 Two implementations and one protocol, because the two halves of a
 self-initializing fake need the same interface: one talks to the live

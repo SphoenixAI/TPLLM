@@ -1,4 +1,4 @@
-"""Tests for Commit 31 — append-only journal semantics.
+"""Append-only journal semantics.
 
 Append, read, deduplicate, detect a race, verify. Nothing else. The
 guarantees are what matter, and they are identical for the in-memory
@@ -386,7 +386,7 @@ class TestChainVerification:
 
 
 class TestRedeliveryIsNotAConflict:
-    """A Commit 32 fix to Commit 31 behaviour.
+    """A fix to journal behaviour.
 
     The same webhook arriving twice is the normal case idempotency exists
     for, but the duplicate-content check compared whole payloads —

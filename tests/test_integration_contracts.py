@@ -1,4 +1,4 @@
-"""Tests for Commit 37 — recorded provider contracts.
+"""Recorded provider contracts.
 
 Two failure modes bound this design, and a test suite has to sit between
 them. Testing an integration against the live API needs credentials and
@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import copy
 import json
+import pathlib
 
 import pytest
 
@@ -29,10 +30,12 @@ from lltpm.integrations.contracts import (
     GITHUB_ISSUE_FIELDS,
     GITHUB_PULL_REQUEST_FIELDS,
     GITHUB_REVIEW_FIELDS,
+    SESSION_URL_PLACEHOLDER,
     PayloadContract,
     check_contract,
     collect_github_logins,
     extract_contract,
+    redact_private_session_urls,
     resolve_path,
     scrub_github_payload,
     type_name,
@@ -497,3 +500,84 @@ class TestTheContractCoversWhatIsRead:
             f"GITHUB_PULL_REQUEST_FIELDS, so a provider change to them "
             f"would not be caught by the contract check"
         )
+
+
+class TestPrivateSessionLinks:
+    """A pull request body written by a tool links to the session that
+    wrote it, and three committed fixtures disclosed one.
+
+    This is the category the recorder is structurally unable to catch.
+    Everything else is removed by name — the recorder states the handle
+    or repository it is replacing and `unscrubbed_paths` verifies that
+    exact string is gone — but nobody can name a string they did not
+    know was in the payload. A credential scanner misses it too, because
+    a session URL is not a credential. So it is pattern-based, and these
+    tests pin the shapes.
+    """
+
+    #: Assembled rather than written out. A literal example here is a
+    #: string that a content filter over this repository — including the
+    #: one that cleaned these links out of history — will helpfully
+    #: rewrite, which silently turns every assertion below into
+    #: "the placeholder becomes the placeholder". That happened once.
+    HOST = "cla" + "ude.ai"
+    CHAT_HOST = "chat" + "gpt.com"
+
+    def _session_url(self, suffix: str = "01ABCdef") -> str:
+        return f"https://{self.HOST}/code/ses" + f"sion_{suffix}"
+
+    def test_a_claude_session_link_is_redacted(self):
+        body = f"Fixes the thing.\n\n{self._session_url()}"
+        assert redact_private_session_urls(body) == (
+            f"Fixes the thing.\n\n{SESSION_URL_PLACEHOLDER}"
+        )
+
+    def test_the_surrounding_text_survives(self):
+        """The normalizers excerpt body text, so dropping the whole line
+        would change what a contract test measures."""
+        body = f"before {self._session_url('01ABC')} after"
+        assert redact_private_session_urls(body) == (
+            f"before {SESSION_URL_PLACEHOLDER} after"
+        )
+
+    def test_other_assistant_session_shapes_are_redacted(self):
+        for url in (
+            f"https://{self.CHAT_HOST}/c/abc-123",
+            f"https://{self.CHAT_HOST}/share/abc-123",
+            self._session_url("X"),
+        ):
+            assert url not in redact_private_session_urls(f"see {url}"), url
+
+    def test_an_ordinary_url_is_left_alone(self):
+        body = f"See https://github.com/acme/atlas/pull/7 and https://{self.HOST}"
+        assert redact_private_session_urls(body) == body
+
+    def test_scrubbing_a_payload_removes_it(self):
+        payload = [{
+            "node_id": "PR_abc",
+            "title": "Fix the shell detection",
+            "body": f"Done.\n\n{self._session_url()}",
+            "user": {"login": "someone", "id": 1},
+        }]
+        scrubbed = scrub_github_payload(
+            payload, repository_alias="acme/atlas-service",
+        )
+        assert self.HOST not in str(scrubbed)
+        assert SESSION_URL_PLACEHOLDER in scrubbed[0]["body"]
+
+    def test_recording_refuses_a_payload_that_still_discloses_one(self):
+        """`unscrubbed_paths` is what `integrations record` consults
+        before writing a fixture."""
+        payload = {"body": self._session_url()}
+        offenders = unscrubbed_paths(payload, forbidden=set())
+        assert offenders == ["body (private session link)"]
+
+    def test_no_committed_fixture_discloses_one(self):
+        root = pathlib.Path(__file__).resolve().parent / "fixtures"
+        offenders = []
+        for path in sorted(root.rglob("*.json")):
+            found = unscrubbed_paths(
+                json.loads(path.read_text()), forbidden=set(),
+            )
+            offenders += [f"{path.name}: {o}" for o in found]
+        assert offenders == [], offenders

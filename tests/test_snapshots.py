@@ -1,4 +1,4 @@
-"""Tests for Commit 31 — snapshots as accelerators, never as truth.
+"""Snapshots as accelerators, never as truth.
 
 A snapshot that fails its hash is discarded rather than used carefully.
 Losing an accelerator costs time; trusting a corrupt one costs
@@ -263,7 +263,7 @@ class TestRejectionReporting:
 
 
 class TestSnapshotBaselineSeedsReconstruction:
-    """A Commit 32 fix to Commit 31 behaviour.
+    """A fix to snapshot behaviour.
 
     ``RuntimeJournalReconstructor.apply_records`` ignored the snapshot
     baseline entirely and always started from an empty projection. A

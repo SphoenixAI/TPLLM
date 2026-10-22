@@ -1,4 +1,4 @@
-"""Portfolio allocation comparison and regret (Commit 29).
+"""Portfolio allocation comparison and regret.
 
 Choosing who gets the contended resource is a portfolio decision, not a
 project decision. This module compares candidate allocations by their

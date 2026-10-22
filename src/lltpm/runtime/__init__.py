@@ -1,4 +1,4 @@
-"""Live organizational intelligence orchestrator (Commit 30).
+"""Live organizational intelligence orchestrator.
 
 Everything below this layer answers a question about the organization.
 This layer decides *when those questions get asked again*, and whether

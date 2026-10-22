@@ -1,4 +1,4 @@
-"""Temporal queries (Commit 23).
+"""Temporal queries.
 
 ``what_was_true_at`` and ``what_was_known_at`` deliberately return
 different results — that divergence is the feature, not a bug.

@@ -1,4 +1,4 @@
-"""Seeded Monte Carlo simulation (Commit 24).
+"""Seeded Monte Carlo simulation.
 
 Simulation *supplements* the interpretable lattice; it never replaces
 it. The explicit graph remains the auditable artifact — a simulation

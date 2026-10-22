@@ -1,4 +1,4 @@
-"""Tests for Commit 17 — resolution patterns and matching."""
+"""Resolution patterns and matching."""
 
 from __future__ import annotations
 

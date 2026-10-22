@@ -1,12 +1,51 @@
+# Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*.egg
 *.egg-info/
 dist/
 build/
 .eggs/
+.venv/
+venv/
+
+# Test and type-checker caches
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Local state. `lltpm runtime` writes a SQLite file wherever it is
+# pointed, and the README's quickstart points it at the working
+# directory — so an unwary contributor would otherwise commit their
+# organization's journal.
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
 .lltpm/
 .lltpm-example/
-*.egg
-.venv/
+
+# Credentials. `.env.example` is the committed template; a real `.env`
+# never belongs in the repository.
+.env
+.env.*
+!.env.example
+
+# Command output the documentation tells you to produce. Deliberately
+# named rather than `*.jsonl`, which would silently hide a fixture.
+run.jsonl
+*.log
+sbom.json
+history.json
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db

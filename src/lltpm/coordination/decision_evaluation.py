@@ -1,4 +1,4 @@
-"""Decision evaluation and recommendation selection (Commit 21).
+"""Decision evaluation and recommendation selection.
 
 Criteria are derived from actual context — never a fixed weight table
 applied blindly to every decision. Options violating a supported hard

@@ -1,7 +1,7 @@
-"""Scenario-aware decision optimization (Commit 27).
+"""Scenario-aware decision optimization.
 
-Commit 21 asks "which option looks best on current evidence?".
-Commit 24 asks "what futures are plausible?".
+Agent recommendations ask "which option looks best on current
+evidence?". The scenario lattice asks "what futures are plausible?".
 
 This module composes them to ask the question that actually matters:
 
@@ -11,7 +11,7 @@ An option can score lower right now and still be the better decision
 because it carries less tail risk, stays reversible, and preserves the
 organization's ability to respond to what it learns next.
 
-Commit 21 is not replaced. Its static assessment remains the default
+The static assessment is not replaced. It remains the default
 preference, and scenario analysis must clear an explicit advantage
 margin — and a probability-confidence floor — before overturning it.
 """
@@ -691,12 +691,12 @@ def scenario_recommendation_is_autonomy_eligible(
     recommendation: ScenarioAwareDecisionRecommendation,
     policy: ScenarioDecisionPolicy,
 ) -> tuple[bool, str]:
-    """Extra gate for Commit 22 autonomy.
+    """Extra gate for bounded autonomy.
 
     When scenario analysis materially changed the choice, the underlying
     probability model must itself be trustworthy. A weak model must not
     drive an autonomous decision — and this can only ever *narrow*
-    eligibility; authority scope remains Commit 22's to decide.
+    eligibility; authority scope remains the authority policy's to decide.
     """
     if recommendation.timing.recommended_action != (
         DecisionTimingAction.DECIDE_NOW
@@ -719,5 +719,5 @@ def scenario_recommendation_is_autonomy_eligible(
             )
     return True, (
         "Scenario-aware recommendation is stable enough for autonomous "
-        "consideration; Commit 22 policy still decides authority."
+        "consideration; the authority policy still decides authority."
     )

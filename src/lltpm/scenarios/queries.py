@@ -1,4 +1,4 @@
-"""Scenario queries — the six reasoning directions (Commit 24).
+"""Scenario queries — the six reasoning directions.
 
 Forward, backward, upstream, downstream, lateral, and recovery. A
 forecast that explored only the happy path and the direct failure path
@@ -421,7 +421,7 @@ def estimate_value_of_information(
 ) -> list[InformationValueEstimate]:
     """Which unresolved question would most reduce uncertainty?
 
-    Feeds Commit 13 self-research: the highest-priority unknown becomes
+    Feeds self-research: the highest-priority unknown becomes
     the next research target.
     """
     root = lattice.state(lattice.root_state_id)

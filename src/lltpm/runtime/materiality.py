@@ -1,4 +1,4 @@
-"""Materiality: deciding what deserves a person's attention (Commit 30).
+"""Materiality: deciding what deserves a person's attention.
 
 Every change this system computes is, by construction, correct. Almost
 none of them are worth interrupting anyone about. P(slip) moving from

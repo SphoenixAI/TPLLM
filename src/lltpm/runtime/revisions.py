@@ -1,4 +1,4 @@
-"""Intelligence revisions and the runtime state store (Commit 30).
+"""Intelligence revisions and the runtime state store.
 
 A live system's worst failure mode is not being wrong. It is being
 *partially right and presenting it as whole*: a KPI from the newest

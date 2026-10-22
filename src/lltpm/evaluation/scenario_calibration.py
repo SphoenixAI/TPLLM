@@ -1,6 +1,6 @@
-"""Probability calibration from historical outcomes (Commit 26).
+"""Probability calibration from historical outcomes.
 
-When TPLLM says 70%, does the event occur about 70% of the time?
+When LLTPM says 70%, does the event occur about 70% of the time?
 
 Two rules keep this honest:
 - Tiny samples never earn a calibration correction, and never promote
@@ -11,7 +11,7 @@ Two rules keep this honest:
 
 Calibration adjusts probabilities only. It can never widen agent
 authority, alter a decision policy, or change a risk ceiling — those
-require explicit human policy change (Commits 7-10, 22).
+require explicit human policy change.
 """
 
 from __future__ import annotations

@@ -1,4 +1,4 @@
-"""Tests for Commit 31 — the SQLite reference implementation.
+"""The SQLite reference implementation.
 
 The open-source default: one local file, standard-library sqlite3, no
 cloud account. These tests hold it to exactly the same contract as the

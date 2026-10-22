@@ -1,4 +1,4 @@
-"""Evidence-backed agent decision recommendations (Commit 21).
+"""Evidence-backed agent decision recommendations.
 
 The agent does not merely make it easier for a human to infer a
 decision from evidence — it performs the inference itself and exposes
@@ -92,7 +92,7 @@ class DecisionCriterion(BaseModel):
 
 
 class DecisionOptionAssessment(BaseModel):
-    """A derived assessment of one Commit 15 option. The original
+    """A derived assessment of one decision option. The original
     ``DecisionOption`` is never mutated."""
     option_id: str
     criterion_scores: dict[str, float] = Field(default_factory=dict)

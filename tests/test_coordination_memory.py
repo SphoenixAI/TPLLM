@@ -1,4 +1,4 @@
-"""Tests for Commit 17 — coordination traces, problem signatures, and
+"""Coordination traces, problem signatures, and
 audience-aware context briefs."""
 
 from __future__ import annotations

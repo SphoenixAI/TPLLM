@@ -1,4 +1,4 @@
-"""Tests for Commit 16 — KPI core models and health assessment."""
+"""KPI core models and health assessment."""
 
 from __future__ import annotations
 

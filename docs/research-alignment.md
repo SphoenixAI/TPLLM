@@ -491,18 +491,19 @@ Stated here rather than discovered later.
   sensitive to the difference (§3). The new ingest boundary is already
   explicit about it.
 - **The no-worker-scoring claim was scoped wrongly, and the gap is now
-  closed in the other direction.** Commit 40 found that the README and
-  docs/assistant-development-guide.md stated the system never models individual productivity and
+  closed in the other direction.** An audit found that the README and
+  the engineering handbook stated the system never models individual
+  productivity and
   that source-level tests enforce it, while the guardrails only ever
   covered the layered stack. The original TPM surface contained five
   per-person measurement models, including `QuarterlyEvaluation` — a
   performance review with responsiveness, reliability, collaboration and
   overall letter grades, reachable from the agent through a
-  `generate_evaluation` tool. Commit 40 inventoried them rather than
+  `generate_evaluation` tool. The audit inventoried them rather than
   deleting them, because removing shipped functionality is its owner's
   decision.
 
-  Commit 41 is that decision. The grading surface is gone:
+  That decision was made. The grading surface is gone:
   `PerformanceGrade`, `PersonMetrics`, `QuarterlyEvaluation`,
   `ResponsivenessGrade`, `PersonTrend`,
   `AttendeeInfo.engagement_score`, two agent tools, one dashboard

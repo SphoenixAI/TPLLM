@@ -1,11 +1,11 @@
-"""Runtime projections and the derived artifact cache (Commit 31).
+"""Runtime projections and the derived artifact cache.
 
 Everything in this module is rebuildable. That is not a caveat, it is
 the design: the acceptance test for this commit deletes all of it and
 expects the journal to produce it again.
 
 The one invariant that must hold even across a crash is atomic revision
-promotion. Commit 30 already separates candidate from current; this
+promotion. The runtime already separates candidate from current; this
 layer makes that survive process death. Artifacts are written first, the
 candidate is validated, and only then does the current-revision pointer
 move. A crash before the move leaves the previous revision answering; a
@@ -171,7 +171,7 @@ class InMemoryRuntimeStateStore:
 class InMemoryIntelligenceArtifactStore:
     """Cache of derived artifacts, keyed by type and id.
 
-    Historical agent output lives here on purpose. "What did TPLLM
+    Historical agent output lives here on purpose. "What did LLTPM
     recommend on August 18?" has one true answer, and regenerating it
     under a newer engine would answer a different question.
     """

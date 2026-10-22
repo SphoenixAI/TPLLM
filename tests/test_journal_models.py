@@ -1,4 +1,4 @@
-"""Tests for Commit 31 — journal vocabulary, canonical bytes, hashing.
+"""Journal vocabulary, canonical bytes, hashing.
 
 Everything downstream rests on canonical serialization. If the same
 record can serialize two ways, the hash chain proves nothing and

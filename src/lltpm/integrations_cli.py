@@ -1,8 +1,8 @@
-"""The ``lltpm integrations`` command group (Commit 38).
+"""The ``lltpm integrations`` command group.
 
-Commit 37 built the translation from provider payloads to evidence and
-proved it against recorded responses. Nothing a user could type invoked
-it. These commands are that surface, and they are deliberately four
+The normalizers translate provider payloads into evidence and are
+proven against recorded responses. These commands are the surface that
+reaches them, and they are deliberately four
 different things rather than one:
 
 ``sources``    what can be read, and how trustworthy each contract is.

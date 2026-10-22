@@ -1,4 +1,4 @@
-"""Tests for Commit 38 — the `lltpm integrations` surface.
+"""The `lltpm integrations` surface.
 
 Driven through click's runner with a recorded reader, so the whole path
 — fetch, translate, append, recompute — is exercised with no network and
@@ -82,7 +82,7 @@ class TestSources:
     def test_it_says_what_recorded_means(self, runner):
         result = runner.invoke(integrations_cli, ["sources"])
         assert "evidence that the live API still matches" in result.output
-        # Commit 43 added the third tier, so the listing has to
+        # Slack and Jira added the third tier, so the listing has to
         # distinguish it rather than calling everything unrecorded.
         assert "official docs" in result.output
 

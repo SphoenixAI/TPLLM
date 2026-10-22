@@ -1,4 +1,4 @@
-"""Shared fixtures for temporal tests (Commit 23)."""
+"""Shared fixtures for temporal tests."""
 
 from __future__ import annotations
 

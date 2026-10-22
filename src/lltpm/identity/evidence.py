@@ -1,4 +1,4 @@
-"""Identity resolution evidence (Commit 19).
+"""Identity resolution evidence.
 
 Evidence explains itself, strengths come from configurable defaults
 (never hardcoded in models), negative evidence lowers confidence, and

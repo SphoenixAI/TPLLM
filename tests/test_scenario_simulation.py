@@ -1,4 +1,4 @@
-"""Tests for Commit 24 — seeded Monte Carlo simulation."""
+"""Seeded Monte Carlo simulation."""
 
 from __future__ import annotations
 

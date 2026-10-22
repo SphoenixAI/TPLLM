@@ -1,4 +1,4 @@
-"""Tests for Commit 21 — human evaluation paths, the decision panel,
+"""Human evaluation paths, the decision panel,
 and layer guardrails."""
 
 from __future__ import annotations
@@ -76,7 +76,7 @@ class TestHumanValidation:
             ),
             capsule=caps,
         )
-        # A normal Commit 14 decision — no competing decision type.
+        # A normal organizational decision — no competing decision type.
         assert record.status == OrganizationalDecisionStatus.CONCLUSIVE
         assert record.decision_authority.actor_id == "priya"
         assert record.decided_at == AS_OF

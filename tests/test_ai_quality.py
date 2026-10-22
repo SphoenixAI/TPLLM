@@ -1,4 +1,4 @@
-"""Tests for Commit 13 — AI quality measurement.
+"""AI quality measurement.
 
 The metrics evaluate the AI's own behavior — evidence coverage,
 unsupported claims, question discipline, structural technical depth, and

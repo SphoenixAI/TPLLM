@@ -166,7 +166,7 @@ def test_validate_jwt_refresh_token():
     """A refresh token validates only when a refresh token is what the
     caller asked for.
 
-    Commit 44 made `expect_type="access"` the default: a refresh token
+    The review made `expect_type="access"` the default: a refresh token
     is a valid JWT with a seven-day life, and anything validating a
     bearer credential without checking the type accepted one as an
     access token.

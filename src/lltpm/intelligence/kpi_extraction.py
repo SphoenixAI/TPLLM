@@ -1,4 +1,4 @@
-"""KPI claim extraction from communication evidence (Commit 16).
+"""KPI claim extraction from communication evidence.
 
 A deterministic extractor that recognizes known KPI names/aliases in
 meeting/chat evidence and emits claims: current values, targets with

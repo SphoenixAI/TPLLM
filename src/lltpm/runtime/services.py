@@ -1,14 +1,15 @@
-"""The production IntelligenceServices (Commit 32).
+"""The production IntelligenceServices.
 
-Commit 30 defined the orchestrator's one port — ``recompute_artifact``
-— and Commit 31 made the inputs durable. Neither of them wired a real
-engine to it. The only implementations were test doubles, which meant
-the live path was thoroughly proven and connected to nothing.
+The orchestrator defines one port — ``recompute_artifact`` — and the
+persistence layer makes its inputs durable. Neither wires a real engine
+to it; before this module the only implementations were test doubles,
+which meant the live path was thoroughly proven and connected to
+nothing.
 
 This is the adapter. It dispatches each artifact type to the engine that
-actually owns it: temporal truth to Commit 23, understanding to Commit
-11, KPI health to Commit 16, readiness to Commit 12, scenarios to Commit
-24, portfolio topology and simulation to Commits 28–29.
+actually owns it: temporal truth to ``temporal``, understanding, KPI
+health and launch readiness to ``intelligence``, scenarios to
+``scenarios``, portfolio topology and simulation to ``portfolio``.
 
 Three things it is careful about.
 
@@ -25,7 +26,7 @@ projection pass for a deep one.
 
 **It is deterministic.** Every fingerprint comes from semantic state and
 every simulation seed is derived from it, so the same inputs reconstruct
-the same artifacts — which is what Commit 31's equivalence claim rests
+the same artifacts — which is what the replay equivalence claim rests
 on. Nothing here reads the wall clock; ``as_of`` is always passed in.
 """
 
@@ -289,7 +290,7 @@ class LiveIntelligenceServices:
         return snapshot
 
     def _temporal_state(self, request, revision_id) -> RecomputedArtifact:
-        """Commit 23: fold knowledge-time events into state at as_of."""
+        """Fold knowledge-time events into state at as_of."""
         projects = self._scoped_projects(request)
         fingerprints: list[str] = []
         evidence_ids: list[str] = []
@@ -313,7 +314,7 @@ class LiveIntelligenceServices:
         )
 
     def _project_understanding(self, request, revision_id):
-        """Commit 11: normalize evidence, extract claims, build models."""
+        """Normalize evidence, extract claims, build models."""
         if self.claim_extractor is None:
             raise ArtifactRecomputeError(
                 "No claim extractor is configured; project understanding "
@@ -346,7 +347,7 @@ class LiveIntelligenceServices:
         )
 
     def _kpi_state(self, request, revision_id):
-        """Commit 16: deterministic trend and health per KPI."""
+        """Deterministic trend and health per KPI."""
         wanted = set(request.scope.kpi_ids)
         definitions = [
             d for d in self.kpi_definitions
@@ -405,7 +406,7 @@ class LiveIntelligenceServices:
         )
 
     def _launch_readiness(self, request, revision_id):
-        """Commit 12: score readiness against a declared launch."""
+        """Score readiness against a declared launch."""
         projects = self._scoped_projects(request)
         fingerprints: list[str] = []
         unscored: list[str] = []
@@ -456,7 +457,7 @@ class LiveIntelligenceServices:
         )
 
     def _scenario_lattice(self, request, revision_id):
-        """Commit 24: expand the material scenario space."""
+        """Expand the material scenario space."""
         if self.scenario_generator is None:
             raise ArtifactRecomputeError(
                 "No scenario candidate generator is configured; a forecast "
@@ -531,7 +532,7 @@ class LiveIntelligenceServices:
         )
 
     def _portfolio_graph(self, request, revision_id):
-        """Commit 28: the cross-project topology projection."""
+        """The cross-project topology projection."""
         projects = self._scoped_projects(request) or (
             self.data_source.project_ids()
         )
@@ -553,7 +554,7 @@ class LiveIntelligenceServices:
         )
 
     def _portfolio_bottlenecks(self, request, revision_id):
-        """Commit 28: where shared demand exceeds declared capacity."""
+        """Where shared demand exceeds declared capacity."""
         windows = self.data_source.capacity_windows()
         demands = self.data_source.capacity_demands()
         if not windows:
@@ -607,7 +608,7 @@ class LiveIntelligenceServices:
         )
 
     def _portfolio_scenario(self, request, revision_id):
-        """Commit 29: cross-project simulation under one allocation."""
+        """Cross-project simulation under one allocation."""
         windows = self.data_source.capacity_windows()
         if not windows:
             return self._artifact(
@@ -661,7 +662,7 @@ class LiveIntelligenceServices:
         )
 
     def _portfolio_recommendation(self, request, revision_id):
-        """Commits 28–29: who gets the contended resource, and who pays."""
+        """Who gets the contended resource, and who pays."""
         windows = self.data_source.capacity_windows()
         demands = self.data_source.capacity_demands()
         if not windows:

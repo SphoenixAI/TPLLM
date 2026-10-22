@@ -1,4 +1,4 @@
-"""Tests for Commit 14 — workstream health, board projection, executive
+"""Workstream health, board projection, executive
 brief, and layer guardrails."""
 
 from __future__ import annotations

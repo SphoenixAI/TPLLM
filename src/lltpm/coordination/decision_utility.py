@@ -1,4 +1,4 @@
-"""Decision utility over scenario outcomes (Commit 27).
+"""Decision utility over scenario outcomes.
 
 Utility is deliberately not purely financial. An outcome's utility may
 express objective advancement, launch success, technical risk, customer
@@ -68,7 +68,7 @@ def outcome_distribution(
 ) -> dict[str, float]:
     """Probability of each named outcome across the lattice.
 
-    Uses Commit 24's path aggregation, so convergent paths are summed
+    Uses the lattice's path aggregation, so convergent paths are summed
     without double-counting.
     """
     return {

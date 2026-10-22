@@ -1,4 +1,4 @@
-"""Scenario probability factors derived from real state (Commit 24).
+"""Scenario probability factors derived from real state.
 
 Factors come from the reconstructed temporal state — decision age,
 dependency state, KPI signals, capacity constraints, commitment

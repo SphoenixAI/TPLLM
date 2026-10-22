@@ -1,4 +1,4 @@
-"""Tests for Commit 19 — identity graph read model and point-in-time
+"""Identity graph read model and point-in-time
 resolution."""
 
 from __future__ import annotations

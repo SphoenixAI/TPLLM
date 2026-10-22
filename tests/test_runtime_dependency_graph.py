@@ -1,4 +1,4 @@
-"""Tests for Commit 30 — the intelligence dependency DAG.
+"""The intelligence dependency DAG.
 
 A live system's recompute order is not a detail. If it were undefined, a
 scenario could be built from a KPI that had not been refreshed yet, and

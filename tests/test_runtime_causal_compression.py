@@ -1,4 +1,4 @@
-"""Tests for Commit 30 — one root cause, one explanation.
+"""One root cause, one explanation.
 
 Platform Architecture's approval capacity falls. Five things move: two
 project scenarios, a portfolio bottleneck, a project recommendation, a

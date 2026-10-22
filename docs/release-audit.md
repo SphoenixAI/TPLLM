@@ -8,7 +8,7 @@ Everything here that *can* be asserted is asserted in
 document nobody reruns. This file records the parts that need judgement
 and the results of the checks that need network access.
 
-Audited at version `0.41.0`, after Commit 41.
+Audited at version `0.41.0`.
 
 ---
 
@@ -100,7 +100,7 @@ done
 
 ## 4. Public claims
 
-**Found and fixed:** the README and docs/assistant-development-guide.md both advertised "2850+
+**Found and fixed:** the README and the engineering handbook both advertised "2850+
 tests" against a suite of 3,462. A stated figure the suite has outgrown
 is harmless; one it has never reached is not. The test suite now asserts
 no documented test count exceeds the real one.

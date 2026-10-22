@@ -99,7 +99,7 @@ class SmartCalendarEngine:
         Uses scope relevance — how much this topic actually concerns
         someone — to recommend required vs optional vs just-send-notes.
 
-        Commit 41 removed engagement score from this decision. It made
+        An earlier release removed engagement score from this decision. It made
         a responsive person required and an unresponsive one optional,
         which is attendance by reply speed rather than by relevance.
         """
@@ -292,8 +292,8 @@ class SmartCalendarEngine:
         if relevance_scores:
             score += 0.15 * (sum(relevance_scores) / len(relevance_scores))
 
-        # The engagement term that sat here (10% weight) was removed in
-        # Commit 41. Besides scoring people, it could not have worked:
+        # The engagement term that sat here (10% weight) was removed.
+        # Besides scoring people, it could not have worked:
         # the score was a per-person constant, so it shifted every
         # candidate slot by the same amount and never ranked one above
         # another.

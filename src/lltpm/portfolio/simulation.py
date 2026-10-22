@@ -1,4 +1,4 @@
-"""Cross-project scenario simulation (Commit 29).
+"""Cross-project scenario simulation.
 
 Simulates the portfolio under a specific allocation of a contended
 resource, so a recommendation can be answered with "and here is what
@@ -107,7 +107,7 @@ def allocation_from_capacity(
     capacity_window: OrganizationalCapacityWindow | None = None,
     allocation_id: str | None = None,
 ) -> PortfolioAllocationDecision:
-    """Greedy allocation by the Commit 28 prioritization weight.
+    """Greedy allocation by the portfolio prioritization weight.
 
     Serves the demands that would be most expensive to displace first —
     which favours projects with nowhere else to go, not projects that
@@ -187,7 +187,7 @@ def allocation_from_recommendation(
     recommendation: PortfolioPriorityRecommendation,
     available_units: float,
 ) -> PortfolioAllocationDecision:
-    """Turn a Commit 28 priority recommendation into a simulable
+    """Turn a portfolio priority recommendation into a simulable
     allocation, preserving its order."""
     return allocation_from_order(
         state=state,

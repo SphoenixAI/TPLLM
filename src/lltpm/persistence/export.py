@@ -1,6 +1,6 @@
-"""Inspectable export of durable history (Commit 35).
+"""Inspectable export of durable history.
 
-Commit 31 deliberately deferred this and said why: durable payloads are
+The persistence layer deferred this and said why: durable payloads are
 JSON rather than pickle precisely so that a user could one day export
 their journal, decisions, recommendations and evidence provenance
 without reverse-engineering a schema. This is that export.
@@ -190,7 +190,7 @@ def export_evidence_provenance(
 ) -> list[EvidenceProvenance]:
     """Where every piece of evidence came from.
 
-    The provenance trail Commit 31 promised: enough to audit what the
+    The provenance trail the journal promised: enough to audit what the
     organization concluded and from what, without the source systems
     being reachable.
     """

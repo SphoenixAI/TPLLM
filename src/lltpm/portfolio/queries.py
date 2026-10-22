@@ -1,4 +1,4 @@
-"""Portfolio queries (Commit 28).
+"""Portfolio queries.
 
 The questions that only become answerable once projects are viewed
 together: what is the biggest shared bottleneck, which projects compete

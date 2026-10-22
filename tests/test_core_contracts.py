@@ -1,4 +1,4 @@
-"""Tests for Commit 20 — core domain contracts."""
+"""Core domain contracts."""
 
 from __future__ import annotations
 
@@ -60,7 +60,7 @@ class TestActorReference:
             relation_types=[ActorRelationType.MAY_APPROVE],
             evidence_ids=["ev-1"],
         )
-        # Still an OrganizationalActorRef with all Commit 14 fields...
+        # Still an OrganizationalActorRef with all its original fields...
         assert actor.relation_types == [ActorRelationType.MAY_APPROVE]
         assert actor.evidence_ids == ["ev-1"]
         # ...and now also satisfies the core contract.

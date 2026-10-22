@@ -19,8 +19,8 @@ executables. On some systems `pip` is bound to a different interpreter
 than `python`, which installs the dependencies where the tests cannot
 see them — a confusing hour we have already spent for you.
 
-The test suite is large (3000+) and fast (under 20 seconds). Run all of
-it before opening a PR.
+The test suite is large and fast — a few thousand tests in under a
+minute. Run all of it before opening a PR.
 
 ## The invariants
 

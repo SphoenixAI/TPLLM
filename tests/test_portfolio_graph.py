@@ -1,4 +1,4 @@
-"""Tests for Commit 28 — the cross-project topology graph."""
+"""The cross-project topology graph."""
 
 from __future__ import annotations
 

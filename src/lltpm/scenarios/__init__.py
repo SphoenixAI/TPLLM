@@ -1,4 +1,4 @@
-"""Probabilistic scenario lattice (Commit 24).
+"""Probabilistic scenario lattice.
 
 Models multiple plausible futures, multiple causes for the same future,
 and multiple ways the organization can recover — reasoning forward,
@@ -117,7 +117,7 @@ from lltpm.scenarios.simulation import (
 )
 
 __all__ = [
-    # Commit 25 — interaction and miscommunication modeling
+    # interaction and miscommunication modeling
     "INTERVENTION_COSTS",
     "LOST_CONTEXT_DEPTH_THRESHOLD",
     "CoordinationPreventiveAction",
@@ -145,7 +145,7 @@ __all__ = [
     "recommend_preventive_actions",
     "recommends_meeting",
     "summarize_propagation",
-    # Commit 24 — scenario lattice
+    # scenario lattice
     "HIGH_IMPACT_PRESERVATION_THRESHOLD",
     "InformationValueEstimate",
     "LatticeIntegrityReport",

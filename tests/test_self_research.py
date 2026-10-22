@@ -1,4 +1,4 @@
-"""Tests for Commit 13 — Self-research & clarification gate.
+"""Self-research & clarification gate.
 
 Internal evidence is searched before humans; research is evidence-bound;
 conflicts stay contested; questions are precise, necessary, and never

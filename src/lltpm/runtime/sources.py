@@ -1,5 +1,5 @@
 """Domain inputs for the live runtime, read from durable history
-(Commit 32).
+.
 
 The orchestrator schedules recomputation; the engines underneath it need
 actual organizational inputs — source records to extract claims from,
@@ -11,13 +11,13 @@ and from nothing else.
 This module supplies them from the journal, which is the right source
 for a specific reason: the journal already *is* the durable record of
 what the organization learned, so a data source reading it inherits
-Commit 31's guarantees for free. Reconstruction needs no live Slack, no
+the journal's guarantees for free. Reconstruction needs no live Slack, no
 reachable Jira, and no second copy of the evidence — and a projection
 rebuilt from the journal reads exactly what the live pass read.
 
 The genuinely new piece here is the evidence-to-temporal-event mapping.
-Commit 23 defines bitemporal truth and Commit 31 stores normalized
-evidence, but nothing connected them: ``reconstruct_project_state``
+The temporal layer defines bitemporal truth and persistence stores
+normalized evidence, but nothing connected them: ``reconstruct_project_state``
 wants ``TemporalEvent``s and the journal holds ``DurableEvidenceRecord``s.
 That mapping is below, and it is careful about the one thing that
 matters — ``occurred_at`` is reality time and ``known_at`` is knowledge
@@ -110,7 +110,7 @@ def evidence_to_temporal_event(
     The bitemporal split is the whole point: ``occurred_at`` is when the
     thing was true and ``known_at`` is when the organization learned it.
     A 09:58 meeting delivered at 10:08 keeps both, which is what lets
-    Commit 23 reconstruct what was known at 10:00 without leaking what
+    reconstruction recover what was known at 10:00 without leaking what
     arrived later.
 
     Returns ``None`` for evidence that belongs to another project, so a
@@ -268,7 +268,7 @@ class JournalBackedDataSource:
     Everything here derives from ``EVIDENCE_ACCEPTED`` and the
     transition records beside it, so the inputs a replay sees are
     identical to the inputs the live pass saw. That identity is what
-    makes Commit 31's equivalence claim meaningful rather than a
+    makes the replay equivalence claim meaningful rather than a
     comparison between two different pipelines.
     """
 
@@ -325,7 +325,7 @@ class JournalBackedDataSource:
     ) -> list[EvidenceEnvelope]:
         """Evidence back in envelope form.
 
-        Reuses Commit 31's reconstruction rather than a second decoder,
+        Reuses the journal's own reconstruction rather than a second decoder,
         so there is exactly one definition of what a durable record
         means.
         """
@@ -367,7 +367,7 @@ class JournalBackedDataSource:
         """Observed history for one project, in both time dimensions.
 
         Evidence and transition records are both folded in, ordered by
-        reality time. Ordering here is a convenience; Commit 23 filters
+        reality time. Ordering here is a convenience; reconstruction filters
         by knowledge time itself, so a late arrival cannot change what
         an earlier reconstruction knew.
         """

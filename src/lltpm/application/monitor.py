@@ -5,7 +5,7 @@ monitored. This module hosts the single autonomous action permitted
 anywhere in the system: **auto-revert**. It is safe by construction because
 it only ever moves in the removal direction — it deactivates an active
 calibration on regression. It never grants authority, never promotes, never
-hardens, never escalates. Granting always requires a human (Commit 7).
+hardens, never escalates. Granting always requires a human.
 
 The regression threshold that decides "is this regressing?" is a governed
 parameter, bounded and sourced from the approval — the system cannot curate
@@ -127,7 +127,7 @@ def record_application_outcome(
     window: ApplicationOutcomeWindow,
     decision_outcome: DecisionOutcomeLog,
 ) -> ApplicationOutcomeWindow:
-    """Fold one Commit 3 outcome into the monitoring window. Deterministic."""
+    """Fold one decision outcome into the monitoring window. Deterministic."""
     outcome_type = decision_outcome.outcome_type
 
     if outcome_type in _REGRESSION_OUTCOMES:

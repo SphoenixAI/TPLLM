@@ -1,4 +1,4 @@
-"""Shared scenario factors across projects (Commit 29).
+"""Shared scenario factors across projects.
 
 If A, B, and C all depend on Platform approval capacity, that is *one*
 uncertainty, not three. Sampling it three times would manufacture

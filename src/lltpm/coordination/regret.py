@@ -1,4 +1,4 @@
-"""Decision regret (Commit 27).
+"""Decision regret.
 
 Regret asks a different question than expected value:
 

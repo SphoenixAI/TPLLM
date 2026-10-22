@@ -1,4 +1,4 @@
-"""Tests for Commit 18 — evidence envelopes, wrapping, retention, and
+"""Evidence envelopes, wrapping, retention, and
 security guardrails."""
 
 from __future__ import annotations

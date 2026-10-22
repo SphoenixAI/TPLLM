@@ -37,7 +37,7 @@ class CalibrationHypothesisType(str, Enum):
     MISSING_CONTEXT_SIGNAL = "missing_context_signal"
     FALSE_POSITIVE_PATTERN = "false_positive_pattern"
     FALSE_NEGATIVE_PATTERN = "false_negative_pattern"
-    # Structural / inverse-solver hypotheses (Commit 4). Still observational —
+    # Structural / inverse-solver hypotheses. Still observational —
     # these describe what the inverse solver thinks the model was missing.
     ADD_MISSING_EDGE_TYPE = "add_missing_edge_type"
     ADD_CONSTRAINT_TYPE = "add_constraint_type"

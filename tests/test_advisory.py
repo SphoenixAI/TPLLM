@@ -1,4 +1,4 @@
-"""Tests for Commit 8 — Asymmetric Advisory & Outcome-Gated Evidence.
+"""Asymmetric Advisory & Outcome-Gated Evidence.
 
 The advisory layer runs live and visible as a recommendation, never decides
 anything, and earns trust by accumulating an honest, two-sided track record.

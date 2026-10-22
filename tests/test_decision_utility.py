@@ -1,4 +1,4 @@
-"""Tests for Commit 27 — outcome utility and expected value."""
+"""Outcome utility and expected value."""
 
 from __future__ import annotations
 

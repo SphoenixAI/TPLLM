@@ -1,4 +1,4 @@
-"""Portfolio and organizational topology intelligence (Commit 28).
+"""Portfolio and organizational topology intelligence.
 
 Project-level intelligence can report three separate problems when there
 is only one. Four projects waiting on the same approval authority will

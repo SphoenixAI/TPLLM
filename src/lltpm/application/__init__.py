@@ -2,7 +2,7 @@
 
 The only layer permitted to mutate. A governed-approved calibration becomes
 *active* and actually changes which intervention is chosen — guarded by the
-single green light (Commit 7), a kill switch, bounded autonomy, mandatory
+single green light, a kill switch, bounded autonomy, mandatory
 reversibility, governed outcome monitoring, and removal-only auto-revert.
 
 It never grants governance authority and never edits the live ranker source.

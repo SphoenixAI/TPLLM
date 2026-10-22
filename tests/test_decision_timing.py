@@ -1,4 +1,4 @@
-"""Tests for Commit 27 — decide now versus learn first."""
+"""Decide now versus learn first."""
 
 from __future__ import annotations
 

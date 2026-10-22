@@ -1,4 +1,4 @@
-"""Collision windows and shared failure domains (Commit 28).
+"""Collision windows and shared failure domains.
 
 Two launches in the same week that depend on the same migration are one
 risk, not two. This module finds the windows where projects collide.

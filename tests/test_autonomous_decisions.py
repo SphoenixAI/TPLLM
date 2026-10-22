@@ -1,4 +1,4 @@
-"""Tests for Commit 22 — autonomous finalization, agent authority
+"""Autonomous finalization, agent authority
 identity, snapshots, review, and reopen/supersede."""
 
 from __future__ import annotations
@@ -93,7 +93,7 @@ class TestAgentAuthorityIdentity:
         )
         actor_ref = ref.as_actor_reference()
         assert actor_ref.actor_id == AGENT_AUTHORITY_ACTOR_ID
-        assert actor_ref.display_name == "TPLLM"
+        assert actor_ref.display_name == "LLTPM"
         assert "delegated policy" in actor_ref.role
         # No human team is impersonated.
         assert actor_ref.team_id is None

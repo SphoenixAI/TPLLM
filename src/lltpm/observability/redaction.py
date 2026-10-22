@@ -61,7 +61,7 @@ SECRET_VALUE_MARKERS: tuple[str, ...] = (
 _JWT = re.compile(r"^eyJ[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]*$")
 
 #: Credential shapes matched *anywhere* in a value, not only at its
-#: start. Commit 44 found that a field like
+#: start. The security review found that a field like
 #: ``reason="Authorization: ghp_…"`` passed through this layer intact
 #: while the evidence layer redacted the same string — so a reader's
 #: failure message naming a header would have leaked where a pull

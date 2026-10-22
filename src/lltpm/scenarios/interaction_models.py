@@ -1,4 +1,4 @@
-"""Organizational interaction models (Commit 25).
+"""Organizational interaction models.
 
 Many project failures are not technical. They happen because teams
 believe different things, a conclusive decision never propagates, a

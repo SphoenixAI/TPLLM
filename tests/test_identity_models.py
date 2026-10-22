@@ -1,4 +1,4 @@
-"""Tests for Commit 19 — identity models, policy, normalization, and
+"""Identity models, policy, normalization, and
 source-level guardrails."""
 
 from __future__ import annotations

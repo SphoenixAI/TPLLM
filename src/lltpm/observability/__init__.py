@@ -1,4 +1,4 @@
-"""Operational logging for LLTPM (Commit 36).
+"""Operational logging for LLTPM.
 
 The journal and the log answer different questions, and collapsing them
 would damage both:

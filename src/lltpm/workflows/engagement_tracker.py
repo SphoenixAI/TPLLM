@@ -4,7 +4,7 @@ A logistics concern: which channel reaches someone, when they are
 reachable, whether one-click options work for them, and how long to
 allow for a reply.
 
-Commit 41 removed the responsiveness grade this module used to assign
+An earlier release removed the responsiveness grade this module used to assign
 and the escalation it drove ("loop in their lead for important
 requests"). What is left routes outreach and cannot rank anybody: there
 is no rate, no ignored count and no grade to sort on.

@@ -1,4 +1,4 @@
-"""Tests for Commit 5 — Calibration Regression & Evidence Bundle Suite.
+"""Calibration Regression & Evidence Bundle Suite.
 
 Calibration proposals are treated as configuration patches that must pass
 a deterministic regression suite against historical cases before they are

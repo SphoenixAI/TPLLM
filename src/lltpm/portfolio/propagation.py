@@ -1,4 +1,4 @@
-"""Cross-project failure propagation (Commit 29).
+"""Cross-project failure propagation.
 
 A slip in one project is rarely contained inside it. If project A holds
 the Platform approval slot longer than expected, B and C do not simply
