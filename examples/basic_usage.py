@@ -1,7 +1,7 @@
 """Basic usage example — set up a program and run the daily brief.
 
 Run with:
-    ANTHROPIC_API_KEY=sk-... python examples/basic_usage.py
+    python examples/basic_usage.py  # offline; no model or API key required
 """
 
 from pathlib import Path

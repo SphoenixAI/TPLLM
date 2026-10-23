@@ -18,38 +18,16 @@ PROVIDER_ANTHROPIC = "anthropic"
 PROVIDER_OPENAI = "openai"
 SUPPORTED_PROVIDERS = [PROVIDER_ANTHROPIC, PROVIDER_OPENAI]
 
-# ── Models ────────────────────────────────────────────────
-# Curated list shown in the config wizard.  Any model ID the
-# provider accepts will work — these are just the defaults.
+# Model IDs are supplied explicitly by the user. Provider catalogs change,
+# and selecting a vendor or a paid model is a deployment decision.
+# Keep the catalog names available for existing library imports.
+SUPPORTED_MODELS: list[dict[str, str]] = []
+ANTHROPIC_MODEL_IDS: list[str] = []
+OPENAI_MODEL_IDS: list[str] = []
+MODEL_IDS: list[str] = []
 
-SUPPORTED_MODELS: list[dict[str, str]] = [
-    # Anthropic
-    {"id": "claude-opus-4-6", "provider": "anthropic", "label": "Opus 4.6 — most capable, highest cost"},
-    {"id": "claude-opus-4-5-20250520", "provider": "anthropic", "label": "Opus 4.5 — strong reasoning, previous gen"},
-    {"id": "claude-sonnet-4-6", "provider": "anthropic", "label": "Sonnet 4.6 — best cost/capability balance"},
-    {"id": "claude-sonnet-4-5-20250514", "provider": "anthropic", "label": "Sonnet 4.5 — capable, previous gen"},
-    {"id": "claude-haiku-4-5-20251001", "provider": "anthropic", "label": "Haiku 4.5 — fastest Anthropic option"},
-    # OpenAI-compatible (cheap / open-source)
-    {"id": "deepseek-chat", "provider": "openai", "label": "DeepSeek V3 — very cheap, strong reasoning"},
-    {"id": "deepseek-reasoner", "provider": "openai", "label": "DeepSeek R1 — deep reasoning, low cost"},
-    {"id": "gemini-2.5-flash", "provider": "openai", "label": "Gemini 2.5 Flash — ultra-cheap, fast (Google direct)"},
-    {"id": "google/gemini-2.5-flash", "provider": "openai", "label": "Gemini 2.5 Flash — via OpenRouter/DeepInfra/Together"},
-    {"id": "meta-llama/llama-4-maverick", "provider": "openai", "label": "Llama 4 Maverick — open-weight, self-hostable"},
-    {"id": "qwen/qwen3-235b", "provider": "openai", "label": "Qwen 3 235B — open-weight, very capable"},
-    {"id": "mistralai/mistral-large-latest", "provider": "openai", "label": "Mistral Large — strong European option"},
-    {"id": "moonshotai/kimi-k2.5", "provider": "openai", "label": "Kimi K2.5 — strong agentic tool-calling, low cost"},
-]
-
-ANTHROPIC_MODEL_IDS: list[str] = [
-    m["id"] for m in SUPPORTED_MODELS if m["provider"] == "anthropic"
-]
-OPENAI_MODEL_IDS: list[str] = [
-    m["id"] for m in SUPPORTED_MODELS if m["provider"] == "openai"
-]
-MODEL_IDS: list[str] = [m["id"] for m in SUPPORTED_MODELS]
-
-DEFAULT_MODEL: str = "claude-sonnet-4-6"
-DEFAULT_PROVIDER: str = PROVIDER_ANTHROPIC
+DEFAULT_MODEL: str = ""
+DEFAULT_PROVIDER: str = ""
 
 # Well-known base URLs for OpenAI-compatible providers.
 KNOWN_OPENAI_BASE_URLS: dict[str, str] = {

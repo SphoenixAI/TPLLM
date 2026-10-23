@@ -522,7 +522,7 @@ class TestNoInternalScaffolding:
     def test_the_engineering_handbook_is_where_the_readme_says(self):
         handbook = _ROOT / "docs" / "engineering-handbook.md"
         assert handbook.exists(), (
-            "the README and docs/assistant-development-guide.md both point at this file"
+            "the README and CONTRIBUTING.md both point at this file"
         )
         text = handbook.read_text()
         assert "Architectural invariants" in text

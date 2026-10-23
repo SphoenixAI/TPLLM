@@ -10,8 +10,11 @@ services:
     volumes:
       - tpllm-data:/data
     environment:
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - TPLLM_MODEL=${TPLLM_MODEL:-claude-opus-4-6}
+      - TPLLM_PROVIDER=${TPLLM_PROVIDER:-}
+      - TPLLM_MODEL=${TPLLM_MODEL:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-}
       - TPLLM_DATA_DIR=/data
       # Optional integrations
       - GITHUB_TOKEN=${GITHUB_TOKEN:-}

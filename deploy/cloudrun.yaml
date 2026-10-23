@@ -30,13 +30,13 @@ spec:
           env:
             - name: TPLLM_DATA_DIR
               value: /data
+            # Offline/dashboard operation needs no model credentials.
+            # For agent use, choose a provider and model, then add its API
+            # key through Secret Manager (ANTHROPIC_API_KEY or OPENAI_API_KEY).
+            - name: TPLLM_PROVIDER
+              value: ""
             - name: TPLLM_MODEL
-              value: claude-opus-4-6
-            - name: ANTHROPIC_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: anthropic-api-key
-                  key: latest
+              value: ""
           volumeMounts:
             - name: data
               mountPath: /data

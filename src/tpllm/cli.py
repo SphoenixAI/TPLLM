@@ -17,12 +17,9 @@ from rich.table import Table
 from rich.markdown import Markdown
 
 from tpllm.config import (
-    ANTHROPIC_MODEL_IDS,
     DEFAULT_MODEL,
     DEFAULT_PROVIDER,
     KNOWN_OPENAI_BASE_URLS,
-    MODEL_IDS,
-    OPENAI_MODEL_IDS,
     PROVIDER_ANTHROPIC,
     PROVIDER_OPENAI,
     SUPPORTED_PROVIDERS,
@@ -125,7 +122,6 @@ def run_config_wizard(data_dir: Path | None = None) -> dict[str, str]:
     provider = Prompt.ask(
         "LLM provider",
         choices=SUPPORTED_PROVIDERS,
-        default=DEFAULT_PROVIDER,
     )
     env_vars["TPLLM_PROVIDER"] = provider
 
@@ -136,12 +132,6 @@ def run_config_wizard(data_dir: Path | None = None) -> dict[str, str]:
         if api_key:
             env_vars["ANTHROPIC_API_KEY"] = api_key
 
-        model = Prompt.ask(
-            "Claude model",
-            choices=ANTHROPIC_MODEL_IDS,
-            default=DEFAULT_MODEL,
-        )
-        env_vars["TPLLM_MODEL"] = model
     else:
         # OpenAI-compatible provider
         console.print(f"\n[bold yellow]OpenAI-compatible API[/bold yellow]")
@@ -159,12 +149,10 @@ def run_config_wizard(data_dir: Path | None = None) -> dict[str, str]:
         if base_url:
             env_vars["OPENAI_BASE_URL"] = base_url
 
-        model = Prompt.ask(
-            "Model ID",
-            choices=OPENAI_MODEL_IDS,
-            default=OPENAI_MODEL_IDS[0],
-        )
-        env_vars["TPLLM_MODEL"] = model
+    model = ""
+    while not model:
+        model = Prompt.ask("Model ID accepted by your provider").strip()
+    env_vars["TPLLM_MODEL"] = model
 
     console.print()
 
@@ -208,6 +196,7 @@ def save_json_config(env_vars: dict[str, str], data_dir: Path) -> None:
     config_path = data_dir / "config.json"
 
     config_data = {
+        "provider": env_vars.get("TPLLM_PROVIDER", DEFAULT_PROVIDER),
         "model": env_vars.get("TPLLM_MODEL", DEFAULT_MODEL),
     }
 
@@ -224,7 +213,7 @@ def run_onboarding(config: TPLLMConfig) -> None:
         "[bold]Welcome to TPLLM[/bold]\n"
         "[italic]AI-powered Technical Program Manager[/italic]\n\n"
         "TPLLM replaces manual program tracking with intelligent,\n"
-        "automated program management using the configured model.\n",
+        "automated program management using your configured model.\n",
         title="TPLLM",
         border_style="cyan",
     ))
@@ -247,7 +236,12 @@ def run_onboarding(config: TPLLMConfig) -> None:
     # Quick setup check
     console.print("[bold]Quick Setup Check:[/bold]")
     checks = [
-        ("Anthropic API key", bool(config.anthropic_api_key)),
+        ("LLM provider", config.provider in SUPPORTED_PROVIDERS),
+        ("Model ID", bool(config.model.strip())),
+        ("Provider API key", bool(
+            config.anthropic_api_key if config.provider == PROVIDER_ANTHROPIC
+            else config.openai_api_key
+        )),
         ("Data directory", config.data_dir.exists()),
         ("GitHub integration", config.github.enabled),
         ("Slack integration", config.slack.enabled),
@@ -260,11 +254,12 @@ def run_onboarding(config: TPLLMConfig) -> None:
         table.add_row(name, status)
     console.print(table)
 
-    if not config.anthropic_api_key:
+    api_key = (config.anthropic_api_key if config.provider == PROVIDER_ANTHROPIC
+               else config.openai_api_key)
+    if config.provider not in SUPPORTED_PROVIDERS or not config.model.strip() or not api_key:
         console.print(
             "\n[yellow]To get started, run:[/yellow]\n"
-            "  [bold]tpllm init[/bold]  — Configure integrations\n"
-            "  [bold]export ANTHROPIC_API_KEY=your-key[/bold]  — Or set directly"
+            "  [bold]tpllm init[/bold]  — Choose a provider, model, and credentials"
         )
     else:
         console.print(

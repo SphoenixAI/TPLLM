@@ -10,7 +10,7 @@ Works with any meeting source:
 - Manual notes
 - Any text-based meeting record
 
-The engine uses the Claude API to perform deep analysis of meeting
+The engine uses the configured LLM to perform deep analysis of meeting
 content and extract structured data that feeds into all other TPM
 artifacts (RAID log, action tracker, milestone plan, decision log).
 """
@@ -40,7 +40,7 @@ from tpllm.models.meeting_intel import (
 
 MEETING_INTEL_ARTIFACT = "meeting_intelligence"
 
-# The prompt template for Claude to analyze meeting content
+# The prompt template for the model to analyze meeting content
 MEETING_ANALYSIS_PROMPT = """\
 You are analyzing meeting notes/transcript for a Technical Program Manager.
 Extract ALL actionable intelligence from this meeting content.
@@ -169,8 +169,8 @@ class MeetingIntelligenceEngine:
     """Engine that extracts structured intelligence from raw meeting content.
 
     Two modes of operation:
-    1. **AI-powered**: Pass raw meeting text through Claude to extract
-       structured intelligence (requires Anthropic API key).
+    1. **AI-powered**: Pass raw meeting text through the configured model to extract
+       structured intelligence (requires provider configuration).
     2. **Manual/pre-parsed**: Accept pre-structured meeting data from
        AI meeting tools (Otter.ai, Fireflies, etc.) that already
        provide structured output.
@@ -191,7 +191,7 @@ class MeetingIntelligenceEngine:
         """Analyze raw meeting content and extract intelligence.
 
         This method prepares the meeting for AI analysis. The actual
-        Claude API call is made by the agent — the analysis prompt is
+        LLM API call is made by the agent — the analysis prompt is
         returned as part of the tool result so the agent can process it
         in its own agentic loop.
 

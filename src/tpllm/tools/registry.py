@@ -1,7 +1,7 @@
 """Tool registry — maps tool names to definitions and executors.
 
-Each tool is a Claude API tool definition (JSON schema) paired with a
-Python function that executes the tool when Claude calls it.
+Each tool is a tool definition in Anthropic-compatible JSON schema (JSON schema) paired with a
+Python function that executes the tool when the model calls it.
 """
 
 from __future__ import annotations

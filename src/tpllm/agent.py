@@ -26,7 +26,7 @@ from tpllm.tools.registry import ToolRegistry, build_tool_registry
 
 
 class AgentTurn:
-    """One turn of the agent loop — what the model said and did."""
+    """One turn of the agent loop — what the configured model said and did."""
 
     def __init__(
         self,
@@ -43,6 +43,13 @@ class TPMAgent:
     """The AI TPM agent — works with Anthropic or OpenAI-compatible APIs."""
 
     def __init__(self, config: TPLLMConfig) -> None:
+        if config.provider not in (PROVIDER_ANTHROPIC, PROVIDER_OPENAI):
+            raise ValueError(
+                "Choose TPLLM_PROVIDER=anthropic or TPLLM_PROVIDER=openai "
+                "before starting the agent. Run tpllm init to configure it."
+            )
+        if not config.model.strip():
+            raise ValueError("Set TPLLM_MODEL to a model ID accepted by your provider.")
         self._config = config
         self._store = ArtifactStore(config.ensure_data_dir())
         self._registry = build_tool_registry(config, self._store)

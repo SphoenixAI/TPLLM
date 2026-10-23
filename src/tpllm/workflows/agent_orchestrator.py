@@ -8,7 +8,7 @@ specialized sub-agents handle specific domains:
 - Communication Agent: channel-optimized outreach
 - Analysis Agent: meeting intelligence and transcript processing
 
-Built on patterns compatible with the Claude Agent SDK for
+Built on explicit worker and tool patterns for
 easy integration into any company's infrastructure.
 """
 
@@ -76,7 +76,7 @@ class AgentOrchestrator:
     """Multi-agent orchestrator for TPLLM.
 
     Routes tasks to specialized sub-agents based on the task type.
-    Compatible with Claude Agent SDK patterns for deployment.
+    Compatible with agent-worker patterns for deployment.
     """
 
     # Default agent configurations
@@ -245,8 +245,8 @@ class AgentOrchestrator:
     def get_deployment_config(self) -> dict[str, Any]:
         """Generate Agent SDK deployment configuration.
 
-        Returns a configuration dict that can be used with the
-        Claude Agent SDK to deploy the multi-agent system.
+        Returns a configuration dict for a deployment runner to deploy
+        the multi-agent system after explicit model configuration.
         """
         return {
             "name": "TPLLM Multi-Agent System",

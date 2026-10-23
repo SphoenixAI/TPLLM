@@ -13,7 +13,7 @@ guarantee. For what TPLLM is and what it does, start with the
 The entire stack is Python today, deliberately, while the agent logic,
 workflows and integrations are still moving quickly:
 
-- Fast iteration on AI/LLM integration (Anthropic SDK, prompt engineering)
+- Fast iteration on AI/LLM integration (provider adapters, prompt engineering)
 - Rich ecosystem for integrations (GitHub, Jira, Slack, Google Calendar)
 - Pydantic v2 for data validation
 - FastAPI for the dashboard API
@@ -44,7 +44,7 @@ This is not urgent — TypeScript handles significant scale. Rust migration is a
 ## Tech stack
 
 - **Language**: Python 3.11+
-- **AI**: Anthropic Claude (manual tool-use loop, not Agent SDK)
+- **AI**: User-configured Anthropic or OpenAI-compatible API (manual tool-use loop)
 - **Models**: Pydantic v2
 - **API**: FastAPI with JWT authentication (PyJWT ≥2.11.0)
 - **Auth**: RBAC (4 roles, 14 permissions), HMAC-SHA256 JWTs, API key → JWT bridge

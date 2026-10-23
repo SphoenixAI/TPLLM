@@ -77,14 +77,17 @@ def welcome(ctx: click.Context) -> None:
 def status(ctx: click.Context) -> None:
     """Show agent status and loaded integrations."""
     from tpllm.cli import display_integrations_table
+    from tpllm.artifacts.store import ArtifactStore
+    from tpllm.tools.registry import build_tool_registry
 
     config: TPLLMConfig = ctx.obj["config"]
-    agent = TPMAgent(config)
+    registry = build_tool_registry(config, ArtifactStore(config.ensure_data_dir()))
 
     console.print(Panel(
-        f"Model: {config.model}\n"
+        f"Provider: {config.provider or 'not configured'}\n"
+        f"Model: {config.model or 'not configured'}\n"
         f"Data dir: {config.data_dir}\n"
-        f"Tools loaded: {agent.tool_count}",
+        f"Tools loaded: {len(registry.definitions)}",
         title="TPLLM Agent Status",
         border_style="blue",
     ))
@@ -97,10 +100,12 @@ def status(ctx: click.Context) -> None:
 def tools(ctx: click.Context) -> None:
     """List all available tools."""
     from tpllm.cli import display_tool_table
+    from tpllm.artifacts.store import ArtifactStore
+    from tpllm.tools.registry import build_tool_registry
 
     config: TPLLMConfig = ctx.obj["config"]
-    agent = TPMAgent(config)
-    display_tool_table(agent._registry.definitions)
+    registry = build_tool_registry(config, ArtifactStore(config.ensure_data_dir()))
+    display_tool_table(registry.definitions)
 
 
 # ── Interactive Modes ─────────────────────────────────────
@@ -112,7 +117,10 @@ def tools(ctx: click.Context) -> None:
 def ask(ctx: click.Context, message: tuple[str, ...]) -> None:
     """Send a one-shot message to the TPM agent."""
     config: TPLLMConfig = ctx.obj["config"]
-    agent = TPMAgent(config)
+    try:
+        agent = TPMAgent(config)
+    except ValueError as error:
+        raise click.ClickException(str(error)) from error
 
     user_msg = " ".join(message)
     console.print(f"\n[bold]You:[/bold] {user_msg}\n")
@@ -133,7 +141,10 @@ def ask(ctx: click.Context, message: tuple[str, ...]) -> None:
 def chat(ctx: click.Context, program: str) -> None:
     """Start an interactive chat session with the TPM agent."""
     config: TPLLMConfig = ctx.obj["config"]
-    agent = TPMAgent(config)
+    try:
+        agent = TPMAgent(config)
+    except ValueError as error:
+        raise click.ClickException(str(error)) from error
 
     console.print(Panel(
         "[bold]TPLLM Interactive Mode[/bold]\n\n"

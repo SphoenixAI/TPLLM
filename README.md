@@ -512,12 +512,17 @@ check rather than implying more than it verified.
 
 ## The TPM agent surface
 
-The agent runs a manual Claude tool-use loop over the workflow engines.
-This part needs an API key.
+The agent runs a tool-use loop over the workflow engines using your chosen
+provider and model. Set `TPLLM_PROVIDER` to `anthropic` or `openai` (for an
+OpenAI-compatible API), and set `TPLLM_MODEL` to a model ID your endpoint
+accepts. Neither has a default. Anthropic uses `ANTHROPIC_API_KEY`;
+OpenAI-compatible endpoints use `OPENAI_API_KEY` and optionally
+`OPENAI_BASE_URL`. Install `tpllm[openai]` for the OpenAI-compatible backend.
+The offline runtime needs none of these settings.
 
 ```bash
-read -rs ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY
-python -m tpllm init          # configuration wizard
+python -m tpllm init          # choose provider/model and enter credentials
+source .env                  # load the generated environment
 python -m tpllm chat          # interactive
 python -m tpllm ask "Set up a program called Atlas V2 to rebuild auth"
 python -m tpllm daily atlas   # the daily cadence brief

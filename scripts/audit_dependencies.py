@@ -96,7 +96,7 @@ def audit(pinned: list[str]) -> list[dict]:
         requirements = pathlib.Path(directory) / "requirements.txt"
         requirements.write_text("\n".join(pinned) + "\n")
         output = pathlib.Path(directory) / "audit.json"
-        subprocess.run(
+        result = subprocess.run(
             [
                 sys.executable, "-m", "pip_audit",
                 "--requirement", str(requirements),
@@ -105,9 +105,15 @@ def audit(pinned: list[str]) -> list[dict]:
             ],
             capture_output=True, text=True,
         )
-        if not output.exists():
-            return []
+        if result.returncode not in (0, 1) or not output.exists():
+            raise RuntimeError("dependency audit did not produce a valid report")
         data = json.loads(output.read_text())
+        if not isinstance(data, dict) or not isinstance(data.get("dependencies"), list):
+            raise RuntimeError("dependency audit returned an unsupported report")
+        if result.returncode == 1 and not any(p.get("vulns") for p in data["dependencies"]):
+            raise RuntimeError("dependency audit failed without reporting vulnerabilities")
+        if any(p.get("skip_reason") for p in data["dependencies"]):
+            raise RuntimeError("dependency audit skipped one or more packages")
 
     packages = data.get("dependencies", data)
     return [
@@ -145,22 +151,24 @@ def main() -> int:
     ]:
         try:
             pinned = resolve_closure(target)
+            vulnerable = audit(pinned)
         except RuntimeError as error:
             results[label] = {"error": str(error)}
             continue
         results[label] = {
             "packages_resolved": len(pinned),
-            "vulnerable": audit(pinned),
+            "vulnerable": vulnerable,
         }
 
     blocking = results.get("base", {}).get("vulnerable") or []
+    incomplete = any("error" in result for result in results.values())
 
     if args.json:
         print(json.dumps({
-            "blocking": bool(blocking),
+            "blocking": bool(blocking) or incomplete,
             "closures": results,
         }, indent=2))
-        return 1 if blocking else 0
+        return 1 if blocking or incomplete else 0
 
     for label, result in results.items():
         if "error" in result:
@@ -180,6 +188,9 @@ def main() -> int:
             )
 
     print()
+    if incomplete:
+        print("INCOMPLETE: at least one dependency closure could not be audited.")
+        return 1
     if blocking:
         print(
             "BLOCKING: the base install has a known vulnerability. Every "

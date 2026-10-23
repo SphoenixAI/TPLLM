@@ -3,6 +3,11 @@
 Thanks for looking. This document is short on ceremony and specific
 about the few things that actually matter in this codebase.
 
+The [engineering handbook](docs/engineering-handbook.md) documents the
+layering rules and invariants. Read it before changing package boundaries.
+The [research alignment](docs/research-alignment.md) and
+[threat model](docs/threat-model.md) explain the evidence and deployment limits.
+
 ## Getting set up
 
 ```bash
