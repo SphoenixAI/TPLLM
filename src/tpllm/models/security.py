@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Optional
 
@@ -156,18 +156,24 @@ class JWTClaims(BaseModel):
 
     @property
     def is_expired(self) -> bool:
-        return datetime.utcnow() > self.exp
+        expiry = self.exp if self.exp.tzinfo else self.exp.replace(tzinfo=timezone.utc)
+        return datetime.now(timezone.utc) > expiry
 
     def to_payload(self) -> dict:
         """Convert to JWT-encodable dict."""
+        # Existing persisted claims use naive UTC. timestamp() interprets a
+        # naive datetime in the host timezone, making valid tokens appear to
+        # be issued hours in the future on hosts outside UTC.
+        issued = self.iat if self.iat.tzinfo else self.iat.replace(tzinfo=timezone.utc)
+        expiry = self.exp if self.exp.tzinfo else self.exp.replace(tzinfo=timezone.utc)
         return {
             "sub": self.sub,
             "role": self.role.value,
             "scopes": self.scopes,
             "iss": self.iss,
             "aud": self.aud,
-            "iat": int(self.iat.timestamp()),
-            "exp": int(self.exp.timestamp()),
+            "iat": int(issued.timestamp()),
+            "exp": int(expiry.timestamp()),
             "jti": self.jti,
             "token_type": self.token_type,
         }

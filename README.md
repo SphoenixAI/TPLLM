@@ -1,5 +1,7 @@
 # TPLLM — an AI Technical Program Manager
 
+Created and maintained by [Sphoenix](https://github.com/SphoenixAI).
+
 TPLLM reads what a program's source systems already know — pull
 requests, tickets, messages, meeting notes — and maintains a current,
 explainable account of where the program stands, what changed, and what

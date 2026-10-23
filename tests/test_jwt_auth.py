@@ -94,6 +94,28 @@ def test_jwt_claims_jti_unique():
     assert claims1.jti != claims2.jti
 
 
+@pytest.mark.parametrize("zone", ["UTC", "America/Los_Angeles", "Asia/Tokyo"])
+def test_jwt_numeric_dates_do_not_depend_on_host_timezone(monkeypatch, zone):
+    if not hasattr(time, "tzset"):
+        pytest.skip("platform does not support changing the process timezone")
+    try:
+        with monkeypatch.context() as context:
+            context.setenv("TZ", zone)
+            time.tzset()
+            claims = JWTClaims(
+                sub="user", role=Role.VIEWER,
+                iat=datetime(2026, 1, 1), exp=datetime(2026, 1, 1, 0, 30),
+            )
+            payload = claims.to_payload()
+            assert payload["iat"] == 1767225600
+            assert payload["exp"] - payload["iat"] == 1800
+            manager = _make_manager()
+            pair = manager.issue_token_pair("user", Role.VIEWER)
+            assert manager.validate_jwt(pair.access_token) is not None
+    finally:
+        time.tzset()
+
+
 # ── Token Pair Model ──────────────────────────────────────
 
 

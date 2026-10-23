@@ -1,5 +1,29 @@
 # Security audit
 
+## Migration recheck — 2026-10-22
+
+The sections below record the earlier audit, not a current release verdict.
+The migration recheck rewrites attribution and assistant branding, excludes
+obsolete pull-request histories, and scans both the resulting history and
+current tree. No live credential was found in the fetched histories; the
+previously reported JWT signing-key exposure remains a rotation requirement
+whose deployment status has not been verified. Removing Git objects does
+not rotate a key or establish deletion from other clones or caches.
+
+The current dependency resolution found no known advisories in the base,
+integrations, dashboard, email, openai, pdf, or dev closures. The optional
+voice closure still resolves vulnerable versions of diffusers, gradio,
+pillow, starlette, torch, and transformers. It is not release-cleared.
+The audit now fails visibly if a closure cannot be resolved or audited.
+
+Local tests also found and fixed a non-UTC JWT timestamp conversion bug.
+Claims issued as naive UTC are now serialized as UTC rather than interpreted
+in the host timezone. Regression tests cover UTC, Los Angeles, and Tokyo.
+CI installs the dashboard test client and wheel build dependencies so those
+checks execute instead of being skipped for missing packages.
+
+## Earlier audit
+
 The release audit listed what it had *not* covered. This closes
 those gaps, re-run against the tree that includes the Slack and Jira
 integrations. `docs/threat-model.md` states the boundary; this records
