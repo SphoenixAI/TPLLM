@@ -56,3 +56,4 @@ history.json
 *.swp
 .DS_Store
 Thumbs.db
+.vercel/

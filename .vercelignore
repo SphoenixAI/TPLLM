@@ -1,0 +1,13 @@
+.git
+.venv
+.tpllm
+.tpllm-example
+.env*
+tests
+docs
+dist
+build
+*.png
+*.db
+*.sqlite*
+__pycache__

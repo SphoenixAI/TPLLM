@@ -638,18 +638,20 @@ class TestDashboardHTMLFrontend:
     def test_root_contains_dashboard_ui(self, client):
         resp = client.get("/")
         html = resp.text
-        assert "<!DOCTYPE html>" in html
+        assert "<!doctype html>" in html.lower()
         assert "TPLLM" in html
         assert "<script>" in html or "<script " in html
 
     def test_root_has_program_selector(self, client):
-        resp = client.get("/")
-        assert "program" in resp.text.lower()
+        # The selector now renders from the packaged SPA script.
+        script = client.get("/assets/app.js")
+        assert script.status_code == 200
+        assert 'id="program-filter"' in script.text
 
     def test_root_has_task_table(self, client):
-        resp = client.get("/")
-        # The dashboard should reference tasks
-        assert "task" in resp.text.lower()
+        script = client.get("/assets/app.js")
+        assert 'class="data-table"' in script.text
+        assert "renderTasks" in script.text
 
     def test_alerts_endpoint_exists(self, client, tmp_path):
         # Create a task to ensure board exists

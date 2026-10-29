@@ -243,7 +243,9 @@ Carried forward from the release audit, plus what this review added.
 - **No fuzzing** beyond the hostile cases in
   `tests/test_provider_security.py`.
 - **Multi-tenancy is absent**, not partial. `docs/threat-model.md` §5.
-- **The CSP cannot mitigate XSS** while the dashboard script is inline.
+- **Dashboard CSP follow-up completed:** the product UI serves an external
+  script with `script-src 'self'`. Dynamic renderer escaping remains tested.
+  See `docs/threat-model.md` for the added local product API and demo boundary.
 
 ---
 

@@ -23,6 +23,7 @@ try:
     from fastapi import Depends, FastAPI, HTTPException, Query, Request
     from fastapi.responses import HTMLResponse, JSONResponse
     from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+    from fastapi.staticfiles import StaticFiles
     HAS_FASTAPI = True
 except ImportError:
     HAS_FASTAPI = False
@@ -71,7 +72,7 @@ UNAUTHENTICATED_READ_ROUTES: tuple[str, ...] = (
 logger = logging.getLogger(__name__)
 
 
-def create_app(config: TPLLMConfig | None = None) -> Any:
+def create_app(config: TPLLMConfig | None = None, *, checkpoint=None, collect_in_background=True) -> Any:
     """Create the FastAPI dashboard application."""
     if not HAS_FASTAPI:
         raise ImportError(
@@ -153,33 +154,16 @@ def create_app(config: TPLLMConfig | None = None) -> Any:
 
     @app.middleware("http")
     async def security_headers(request: Request, call_next):
-        """Response headers for the reference dashboard.
+        """Restrict scripts to packaged assets and reject framing/remote loads.
 
-        **What the CSP here does and does not do.** The page carries its
-        script and styles inline, so `script-src` must allow
-        `'unsafe-inline'` — and that means this policy does *not*
-        mitigate cross-site scripting. Saying otherwise would be the
-        decorative kind of CSP that reads as a control and is not one.
-        The actual XSS control is the escaping at the render sites, which
-        `tests/test_dashboard_security.py` executes against live
-        payloads.
-
-        What the policy does achieve is worth having: no external
-        script, style, frame or object origin is reachable, so an
-        injected tag cannot load a remote payload or exfiltrate to one;
-        `base-uri 'none'` stops a `<base>` tag redirecting every
-        relative URL; and `frame-ancestors 'none'` blocks clickjacking.
-
-        Dropping `'unsafe-inline'` means serving the script as a
-        separate file so `script-src 'self'` suffices. That is recorded
-        as named debt in docs/security-audit.md rather than left as an
-        implied future.
+        Dynamic source text is escaped at the browser render boundary. Script
+        handlers are registered in app.js; there are no inline handlers.
         """
         response = await call_next(request)
         response.headers.setdefault(
             "Content-Security-Policy",
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline'; "
+            "script-src 'self'; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data:; "
             "connect-src 'self'; "
@@ -666,257 +650,21 @@ def create_app(config: TPLLMConfig | None = None) -> Any:
             ],
         }
 
+    from tpllm.product_api import create_product_router
+    product_router = create_product_router(
+        cfg, get_current_user, require_auth, require_permission,
+        checkpoint=checkpoint, collect_in_background=collect_in_background,
+    )
+    app.state.product_workspaces = product_router.product_workspaces
+    app.state.product_space = product_router.product_space
+    app.include_router(product_router)
+    app.mount("/assets", StaticFiles(directory=Path(__file__).parent / "web"), name="assets")
     return app
 
 
 # ── Dashboard HTML Frontend ────────────────────────────────────────
 
-_DASHBOARD_HTML = """<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TPLLM Dashboard</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-     background:#0f172a;color:#e2e8f0;line-height:1.5}
-.container{max-width:1200px;margin:0 auto;padding:20px}
-header{display:flex;justify-content:space-between;align-items:center;padding:16px 0;
-       border-bottom:1px solid #1e293b;margin-bottom:24px}
-header h1{font-size:20px;color:#f8fafc}
-header .health{padding:4px 12px;border-radius:6px;font-size:13px;font-weight:600}
-.green{background:#166534;color:#dcfce7}
-.yellow{background:#854d0e;color:#fef9c3}
-.red{background:#991b1b;color:#fee2e2}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:24px}
-.card{background:#1e293b;border-radius:10px;padding:20px;border:1px solid #334155}
-.card h2{font-size:14px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px}
-.card .value{font-size:28px;font-weight:700;color:#f8fafc}
-.card .sub{font-size:12px;color:#64748b;margin-top:4px}
-.section{background:#1e293b;border-radius:10px;padding:20px;border:1px solid #334155;margin-bottom:16px}
-.section h2{font-size:16px;margin-bottom:12px;color:#f1f5f9}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;padding:8px 12px;border-bottom:1px solid #334155;color:#94a3b8;font-weight:500}
-td{padding:8px 12px;border-bottom:1px solid #1e293b}
-.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
-.badge.CRITICAL{background:#7f1d1d;color:#fecaca}
-.badge.HIGH{background:#991b1b;color:#fee2e2}
-.badge.MEDIUM{background:#854d0e;color:#fef9c3}
-.badge.LOW{background:#1e3a5f;color:#bfdbfe}
-.badge.DONE{background:#166534;color:#dcfce7}
-.badge.IN_PROGRESS{background:#1e40af;color:#dbeafe}
-.badge.BLOCKED{background:#7f1d1d;color:#fecaca}
-.badge.TODO{background:#475569;color:#e2e8f0}
-.badge.BACKLOG{background:#334155;color:#94a3b8}
-.badge.IN_REVIEW{background:#854d0e;color:#fef9c3}
-.empty{color:#475569;font-style:italic;padding:20px;text-align:center}
-.tabs{display:flex;gap:8px;margin-bottom:16px}
-.tab{padding:6px 16px;border-radius:6px;cursor:pointer;font-size:13px;
-     background:#334155;color:#94a3b8;border:none}
-.tab.active{background:#2563eb;color:#fff}
-#alerts .alert{padding:8px 12px;border-radius:6px;margin-bottom:8px;font-size:13px}
-.alert.critical{background:#450a0a;border:1px solid #7f1d1d}
-.alert.high{background:#451a03;border:1px solid #854d0e}
-.alert.medium{background:#172554;border:1px solid #1e40af}
-select{background:#334155;color:#e2e8f0;border:1px solid #475569;border-radius:6px;
-       padding:6px 12px;font-size:13px}
-.refresh-btn{background:#2563eb;color:#fff;border:none;padding:6px 16px;
-             border-radius:6px;cursor:pointer;font-size:13px}
-.refresh-btn:hover{background:#1d4ed8}
-</style>
-</head>
-<body>
-<div class="container">
-<header>
-  <h1>TPLLM Dashboard</h1>
-  <div>
-    <select id="program-select" onchange="loadProgram()"><option value="">Select program...</option></select>
-    <button class="refresh-btn" onclick="loadProgram()">Refresh</button>
-  </div>
-</header>
-
-<div class="grid" id="stats">
-  <div class="card"><h2>Open Tasks</h2><div class="value" id="stat-open">—</div><div class="sub" id="stat-open-sub"></div></div>
-  <div class="card"><h2>Overdue</h2><div class="value" id="stat-overdue">—</div><div class="sub" id="stat-overdue-sub"></div></div>
-  <div class="card"><h2>Blocked</h2><div class="value" id="stat-blocked">—</div></div>
-  <div class="card"><h2>Sprint Progress</h2><div class="value" id="stat-sprint">—</div><div class="sub" id="stat-sprint-sub"></div></div>
-</div>
-
-<div id="alerts" class="section" style="display:none">
-  <h2>Alerts</h2>
-  <div id="alerts-list"></div>
-</div>
-
-<div class="section">
-  <h2>Task Board</h2>
-  <div class="tabs">
-    <button class="tab active" onclick="filterTasks('')" data-f="">All</button>
-    <button class="tab" onclick="filterTasks('TODO')" data-f="TODO">To Do</button>
-    <button class="tab" onclick="filterTasks('IN_PROGRESS')" data-f="IN_PROGRESS">In Progress</button>
-    <button class="tab" onclick="filterTasks('BLOCKED')" data-f="BLOCKED">Blocked</button>
-    <button class="tab" onclick="filterTasks('DONE')" data-f="DONE">Done</button>
-  </div>
-  <table>
-    <thead><tr><th>ID</th><th>Title</th><th>Priority</th><th>Status</th><th>Assignee</th><th>Due</th></tr></thead>
-    <tbody id="task-table"><tr><td colspan="6" class="empty">Select a program to view tasks</td></tr></tbody>
-  </table>
-</div>
-
-<div class="grid">
-  <div class="section">
-    <h2>Workload</h2>
-    <table>
-      <thead><tr><th>Person</th><th>Tasks</th><th>Health</th></tr></thead>
-      <tbody id="workload-table"><tr><td colspan="3" class="empty">—</td></tr></tbody>
-    </table>
-  </div>
-  <div class="section">
-    <h2>Sprints</h2>
-    <div id="sprint-info" class="empty">—</div>
-  </div>
-</div>
-
-<div class="section">
-  <h2>RAID Summary</h2>
-  <div id="raid-summary" class="empty">—</div>
-</div>
-</div>
-
-<script>
-let allTasks = [];
-const api = path => fetch(path).then(r => r.json());
-
-async function init() {
-  const data = await api('/api/programs');
-  const sel = document.getElementById('program-select');
-  (data.programs || []).forEach(p => {
-    const opt = document.createElement('option');
-    opt.value = p.id; opt.textContent = p.name || p.id;
-    sel.appendChild(opt);
-  });
-}
-
-async function loadProgram() {
-  const pid = document.getElementById('program-select').value;
-  if (!pid) return;
-
-  const [tasks, workload, sprints, raid] = await Promise.all([
-    api(`/api/programs/${pid}/tasks`),
-    api(`/api/programs/${pid}/tasks/workload`),
-    api(`/api/programs/${pid}/sprints`),
-    api(`/api/programs/${pid}/raid`),
-  ]);
-
-  allTasks = tasks.tasks || [];
-  const open = allTasks.filter(t => !['DONE','CANCELLED'].includes(t.status));
-  const overdue = allTasks.filter(t => t.is_overdue);
-  const blocked = allTasks.filter(t => t.status === 'BLOCKED');
-
-  document.getElementById('stat-open').textContent = open.length;
-  document.getElementById('stat-open-sub').textContent = `${allTasks.length} total`;
-  document.getElementById('stat-overdue').textContent = overdue.length;
-  document.getElementById('stat-overdue-sub').textContent = overdue.length > 0 ? 'Needs attention' : 'All clear';
-  document.getElementById('stat-blocked').textContent = blocked.length;
-
-  // Sprint
-  const active = (sprints.sprints || []).find(s => s.is_active);
-  if (active) {
-    const metrics = await api(`/api/programs/${pid}/sprints/${active.id}/metrics`);
-    const pct = Math.round((metrics.completion_rate || 0) * 100);
-    document.getElementById('stat-sprint').textContent = pct + '%';
-    document.getElementById('stat-sprint-sub').textContent =
-      `${active.name} — ${metrics.days_remaining}d left`;
-    document.getElementById('sprint-info').innerHTML =
-      `<strong>${esc(active.name)}</strong><br>` +
-      `Done: ${esc(metrics.done)}/${esc(metrics.total_tasks)} | ` +
-      `Blocked: ${esc(metrics.blocked)} | ` +
-      `${metrics.on_track ? '<span class="badge DONE">On Track</span>' : '<span class="badge CRITICAL">At Risk</span>'}`;
-  } else {
-    document.getElementById('stat-sprint').textContent = '—';
-    document.getElementById('stat-sprint-sub').textContent = 'No active sprint';
-    document.getElementById('sprint-info').innerHTML = '<span class="empty">No active sprint</span>';
-  }
-
-  // Alerts (overdue + blocked)
-  const alertsDiv = document.getElementById('alerts');
-  const alertsList = document.getElementById('alerts-list');
-  const alertItems = [];
-  overdue.forEach(t => alertItems.push({sev:'critical',msg:`Overdue: ${esc(t.title)} (${esc(t.assignee||'unassigned')})`}));
-  blocked.forEach(t => alertItems.push({sev:'high',msg:`Blocked: ${esc(t.title)} (${esc(t.assignee||'unassigned')})`}));
-  if (alertItems.length) {
-    alertsDiv.style.display = 'block';
-    alertsList.innerHTML = alertItems.map(a =>
-      `<div class="alert ${a.sev}">${a.msg}</div>`
-    ).join('');
-  } else { alertsDiv.style.display = 'none'; }
-
-  filterTasks('');
-
-  // Workload
-  const wt = document.getElementById('workload-table');
-  const wl = workload.workload || {};
-  if (Object.keys(wl).length) {
-    wt.innerHTML = Object.entries(wl).map(([p, d]) =>
-      `<tr><td>${esc(p)}</td><td>${esc(d.total_tasks)}</td><td><span class="badge ${
-        cls(d.health==='healthy'?'DONE':d.health==='heavy'?'MEDIUM':d.health==='at_risk'?'HIGH':'CRITICAL')
-      }">${esc(String(d.health).toUpperCase())}</span></td></tr>`
-    ).join('');
-  } else { wt.innerHTML = '<tr><td colspan="3" class="empty">No assigned tasks</td></tr>'; }
-
-  // RAID
-  const rs = document.getElementById('raid-summary');
-  if (raid.message) { rs.textContent = raid.message; }
-  else { rs.innerHTML = `Risks: <strong>${esc(raid.open_risks||0)}</strong> open | Issues: <strong>${esc(raid.open_issues||0)}</strong> | Dependencies: <strong>${esc(raid.open_dependencies||0)}</strong>`; }
-}
-
-// ── Escaping ─────────────────────────────────────────────────────────
-// Every value below reaches the DOM through innerHTML, and every one of
-// them is program data somebody typed: a task title, an assignee, a
-// sprint name. A task called `<img src=x onerror=alert(1)>` executed
-// before this was fixed. Escaping happens here, at the point of rendering,
-// because that is the only place that knows the value is about to
-// become HTML.
-function esc(value) {
-  if (value === null || value === undefined) return '';
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-// A value going into a class attribute is whitelisted rather than
-// escaped. Escaping would be enough today, but an attribute context is
-// one quoting mistake away from breakout, and these values are a closed
-// enum — so anything unrecognized becomes a neutral class instead.
-const KNOWN_CLASSES = new Set([
-  'BACKLOG', 'TODO', 'IN_PROGRESS', 'IN_REVIEW', 'BLOCKED', 'DONE',
-  'CANCELLED', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL',
-]);
-function cls(value) {
-  const name = String(value === null || value === undefined ? '' : value);
-  return KNOWN_CLASSES.has(name) ? name : 'MEDIUM';
-}
-
-function filterTasks(status) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.f === status));
-  const filtered = status ? allTasks.filter(t => t.status === status) : allTasks;
-  const tbody = document.getElementById('task-table');
-  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">No tasks</td></tr>'; return; }
-  tbody.innerHTML = filtered.map(t =>
-    `<tr><td>${esc(t.id)}</td><td>${esc(t.title)}</td>` +
-    `<td><span class="badge ${cls(t.priority)}">${esc(t.priority)}</span></td>` +
-    `<td><span class="badge ${cls(t.status)}">${esc(t.status)}</span></td>` +
-    `<td>${esc(t.assignee||'—')}</td><td>${esc(t.due_date||'—')}</td></tr>`
-  ).join('');
-}
-
-init();
-</script>
-</body>
-</html>"""
+_DASHBOARD_HTML = (Path(__file__).parent / "web" / "index.html").read_text()
 
 
 # Default app instance for uvicorn

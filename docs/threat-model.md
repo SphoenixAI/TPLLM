@@ -172,25 +172,51 @@ not read it as a capability.
 clickjacking; MIME sniffing; an unauthenticated read surface reachable
 beyond the host.
 
-**Controls.** Every value interpolated into the page is escaped at the
-render site, and `priority`/`status` are whitelisted because they land
-in a `class` attribute. `tests/test_dashboard_security.py` executes the
-escaping in Node against live payloads rather than grepping for it, and
-a structural test catches a newly unescaped field.
+**Controls.** Dynamic values are escaped at the browser render boundary; status
+styles are selected from fixed application choices. The renderer tests execute
+actual task, project, decision, and evidence templates with hostile source text.
+Source links accept only HTTP(S). Responses include CSP, MIME-sniffing, referrer,
+framing, and permissions headers.
 
-Response headers: `Content-Security-Policy`, `X-Content-Type-Options`,
-`Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy`.
+The product frontend loads `/assets/app.js` and `/assets/flow.js`. `script-src 'self'` denies
+inline scripts and handlers; `unsafe-eval` remains absent. Inline CSS remains
+allowed for the packaged styles. Escaping is still required alongside CSP.
 
-**What the CSP does not do.** The page carries its script inline, so
-`script-src` must allow `'unsafe-inline'`, and the policy therefore does
-**not** mitigate XSS. The escaping is the control. What the policy does
-buy is real: no external script, style, frame or object origin is
-reachable, `base-uri 'none'` stops a `<base>` tag redirecting relative
-URLs, and `frame-ancestors 'none'` blocks framing. `unsafe-eval` is
-asserted absent.
+The original read surface remains local and unauthenticated. The added product
+reads are explicitly listed in `product_api.PRODUCT_UNAUTHENTICATED_READ_ROUTES`:
+state, action catalogue, decision detail, and journal. They are not a tenant
+boundary. Static assets and generated API documentation are also public.
 
-**Named debt.** Serving the script as a separate file would allow
-`script-src 'self'` and drop `'unsafe-inline'`. Not done.
+Live product mutations require access JWTs and program-write permission;
+provider calls and connection configuration require administrator permission.
+Scoped credentials cannot run global mutations. Decision reviews require the
+configured decision authority. Changing live authority requires an administrator.
+A required custom request header and same-origin checks guard browser writes.
+
+The explicit demo writes are an exception to live authentication: they operate
+only inside `product-demo/`, receive no provider credentials, and never call a
+live integration. Restart archives the previous demo directory. Legacy artifact
+filenames are constrained at the browser store boundary, including filenames
+built from recipient names. Security-key tools, arbitrary filesystem exporters,
+and approval operations without browser authority adapters are not executable.
+
+Recurring collection is disabled until an administrator authorizes a source
+mapping. Mapping changes disable its collector. An in-flight result is discarded
+if that mapping or permission changes before persistence. Provider text is redacted
+and journaled as evidence, not executable instructions or authority.
+
+The coordination gateway permits only prepared internal Slack delivery-status
+updates covered by an unexpired project/destination/purpose/source-visibility
+grant. Evidence versions, uncertainty, freshness, pause, revocation and frequency
+are checked at execution. Durable attempts fence duplicate and ambiguous delivery.
+The action catalogue and ToolRegistry reject direct external mutations. This is a
+bounded adapter, not a general authority implementation for every legacy tool.
+Its grants and receipts are operational SQLite records, not immutable domain events.
+
+The optional model answer endpoint requires authentication and explicit consent
+to send project context. Its tool registry contains only a scoped context reader.
+It cannot execute workflow mutations. Provider and model network behavior still
+needs separate integration verification; local tests do not establish it.
 
 **HSTS is deliberately not set.** The reference deployment is local
 HTTP, where the header is ignored; served once over HTTPS it would pin

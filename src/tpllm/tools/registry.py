@@ -45,12 +45,21 @@ from tpllm.tools.notion_tools import get_notion_tools
 from tpllm.tools.task_board_tools import get_task_board_tools
 
 
+EXTERNAL_READ_TOOLS = frozenset({
+    "list_open_prs", "get_build_status", "find_meeting_slot", "list_calendar_events",
+    "list_gchat_spaces", "linear_search_issues", "linear_get_issue", "linear_list_teams",
+    "notion_list_databases", "notion_query_database", "notion_search", "notion_database_summary",
+    "list_drive_exports", "get_gdrive_summary", "list_voice_backends", "get_voice_summary", "slack_get_bot_summary",
+})
+
+
 class ToolRegistry:
     """Registry of all tools available to the TPM agent."""
 
     def __init__(self) -> None:
         self._definitions: list[dict[str, Any]] = []
         self._executors: dict[str, Callable[..., str]] = {}
+        self._external_changes: set[str] = set()
 
     def register(
         self,
@@ -66,6 +75,11 @@ class ToolRegistry:
         })
         self._executors[name] = executor
 
+    def register_external(self, **tool) -> None:
+        self.register(**tool)
+        if tool["name"] not in EXTERNAL_READ_TOOLS:
+            self._external_changes.add(tool["name"])
+
     @property
     def definitions(self) -> list[dict[str, Any]]:
         return self._definitions
@@ -74,6 +88,8 @@ class ToolRegistry:
         executor = self._executors.get(tool_name)
         if executor is None:
             return json.dumps({"error": f"Unknown tool: {tool_name}"})
+        if tool_name in self._external_changes:
+            return json.dumps({"error": "External changes require a prepared action through the scoped coordination gateway. Direct tool execution cannot bypass standing authority."})
         try:
             return executor(**tool_input)
         except Exception as e:
@@ -171,41 +187,41 @@ def build_tool_registry(config: TPLLMConfig, store: ArtifactStore) -> ToolRegist
     # Conditional — email tools
     if config.email.enabled:
         for tool in get_email_tools(config):
-            registry.register(**tool)
+            registry.register_external(**tool)
 
     # Conditional — voice/TTS tools
     if config.voice.enabled:
         for tool in get_voice_tools(config):
-            registry.register(**tool)
+            registry.register_external(**tool)
 
     # Conditional — communication tools (need Slack)
     if config.slack.enabled:
         for tool in get_communication_tools(config):
-            registry.register(**tool)
+            registry.register_external(**tool)
 
         # Slack bot interactive tools
         for tool in get_slack_bot_tools(config):
-            registry.register(**tool)
+            registry.register_external(**tool)
 
     # Conditional — Google Chat tools
     if config.gchat.enabled:
         for tool in get_gchat_tools(config):
-            registry.register(**tool)
+            registry.register_external(**tool)
 
     # Conditional — GitHub tools
     if config.github.enabled:
         for tool in get_github_tools(config):
-            registry.register(**tool)
+            registry.register_external(**tool)
 
     # Conditional — calendar tools (legacy — use smart_calendar for new scheduling)
     if config.calendar.enabled:
         for tool in get_calendar_tools(config):
-            registry.register(**tool)
+            registry.register_external(**tool)
 
     # Conditional — Google Drive export tools
     if config.gdrive.enabled:
         for tool in get_gdrive_tools(config, store):
-            registry.register(**tool)
+            registry.register_external(**tool)
 
     # Always available — intelligent task board tools
     for tool in get_task_board_tools(store):
@@ -214,11 +230,11 @@ def build_tool_registry(config: TPLLMConfig, store: ArtifactStore) -> ToolRegist
     # Conditional — Notion tools
     if config.notion.enabled:
         for tool in get_notion_tools(config):
-            registry.register(**tool)
+            registry.register_external(**tool)
 
     # Conditional — Linear tools
     if config.linear.enabled:
         for tool in get_linear_tools(config):
-            registry.register(**tool)
+            registry.register_external(**tool)
 
     return registry

@@ -97,6 +97,49 @@ replay; the result is the same, with external effects fenced off.
 
 ---
 
+## Working product UI
+
+The dashboard follows connected evidence through relational context, maintained
+project state, prepared interventions and scoped execution. Dedicated KPI and
+Engineering areas show reported metrics, targets, PR diffs, reviews, checks and
+bug-bash findings. Meetings, AI notes, commitments and briefs are sourced and
+maintained automatically from authorized Google Calendar, Slack, Zoom and GitHub
+collection. It uses the existing Python workflows and SQLite runtime.
+
+```bash
+python -m pip install -e ".[dashboard]"
+python -m tpllm dashboard --port 8765
+```
+
+Open `http://127.0.0.1:8765`. Choose **Explore demo workspace** for an isolated,
+editable example with no provider credentials. **Restart demo** archives the
+previous run and restores the sample. The supplied design image remains a
+reference asset; example records are explicitly marked as demo data.
+
+For live writes, run `python -m tpllm dashboard-key --owner your-name`, then
+enter the generated key in **Authenticate**. The command prints the key's
+account identifier for decision authority. Keys default to the manager role;
+provider operations and changing live authority require an administrator.
+
+Connections controls recurring reads while the local server runs. Settings grants
+standing authority for bounded internal Slack status updates, with source visibility,
+frequency, expiry, revocation and duplicate suppression. Other outbound action
+classes remain unavailable until their scoped adapters are implemented. Advanced
+manual controls are for exceptions. Source mapping does not claim live verification;
+inference is deterministic and estimates are not calibrated delivery forecasts.
+
+See [UI workflows and test guide](docs/ui-workflows.md) for the supported flows,
+storage mappings, and the remaining integration boundaries.
+
+For private hosting on Vercel with durable Supabase storage, install the
+`dashboard,hosted` extras and follow the [hosting guide](docs/vercel-supabase.md).
+The adapter preserves the existing SQLite and JSON workspace format in private
+PostgreSQL snapshots; it requires production access protection and a session-mode
+database connection. Provider credentials and live source collection are configured
+separately from deployment.
+
+---
+
 ## Five minutes, offline
 
 No API key, no account, one file. The two engines that would otherwise
@@ -394,9 +437,9 @@ reasonably assume.
   below the query layer enforces it.
   [`docs/threat-model.md`](docs/threat-model.md) §5 lists what a hosted
   mode would need.
-- **Not safe to expose to a network.** 25 of the dashboard's 28 routes
-  enforce no authentication, the set is enumerated in code, and a test
-  fails if it changes. The shipped container binds `0.0.0.0`; the CLI
+- **Not safe to expose to a network.** The original dashboard read routes
+  and the product UI read routes are unauthenticated. Both sets are enumerated
+  in code and covered by route-inventory tests. The shipped container binds `0.0.0.0`; the CLI
   binds loopback. See [`docs/threat-model.md`](docs/threat-model.md) §1.
 - **Not a forecasting engine that hides its uncertainty.** Probability
   and confidence are separate numbers and both are displayed. Pruned

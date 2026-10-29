@@ -69,6 +69,10 @@ pdf = [
 dashboard = [
     "fastapi>=0.133.0",
     "uvicorn>=0.30.0",
+    "jsonschema>=4.0",
+]
+hosted = [
+    "psycopg[binary]>=3.2,<4",
 ]
 all = [
     "tpllm[integrations,email,openai,dashboard]",

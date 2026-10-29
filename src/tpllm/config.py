@@ -90,7 +90,7 @@ class TPLLMConfig:
     # ── factories ──────────────────────────────────────────────
 
     @classmethod
-    def from_env(cls) -> TPLLMConfig:
+    def from_env(cls, *, data_dir: Path | None = None) -> TPLLMConfig:
         """Build config from environment variables and an optional JSON file."""
         cfg = cls()
         cfg.provider = os.getenv("TPLLM_PROVIDER", cfg.provider)
@@ -98,7 +98,7 @@ class TPLLMConfig:
         cfg.openai_api_key = os.getenv("OPENAI_API_KEY", "")
         cfg.openai_base_url = os.getenv("OPENAI_BASE_URL", "")
         cfg.model = os.getenv("TPLLM_MODEL", cfg.model)
-        cfg.data_dir = Path(os.getenv("TPLLM_DATA_DIR", str(cfg.data_dir)))
+        cfg.data_dir = data_dir if data_dir is not None else Path(os.getenv("TPLLM_DATA_DIR", str(cfg.data_dir)))
 
         # GitHub
         gh_token = os.getenv("GITHUB_TOKEN", "")

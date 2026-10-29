@@ -39,6 +39,31 @@ cli.add_command(runtime_cli)
 cli.add_command(integrations_cli)
 
 
+@cli.command("dashboard-key")
+@click.option("--owner", required=True, help="Owner label for the key; its generated ID is the decision authority.")
+@click.option("--name", default="Local dashboard", show_default=True)
+@click.option("--role", type=click.Choice(["manager", "admin", "engineer", "viewer"]), default="manager")
+@click.option("--hosted", is_flag=True, help="Store the key in the Supabase workspace using TPLLM_DATABASE_URL.")
+@click.pass_context
+def dashboard_key(ctx: click.Context, owner: str, name: str, role: str, hosted: bool = False) -> None:
+    """Create a dashboard sign-in key locally; display it once in your terminal."""
+    from tpllm.artifacts.store import ArtifactStore
+    from tpllm.models.security import Role
+    from tpllm.workflows.security_manager import SecurityManager
+
+    if hosted:
+        from tpllm.hosted import create_hosted_key
+        key, raw_key = create_hosted_key(name=name, role=Role(role), owner=owner)
+    else:
+        config = ctx.obj["config"]
+        key, raw_key = SecurityManager(ArtifactStore(config.ensure_data_dir())).create_api_key(
+            name=name, role=Role(role), owner=owner,
+        )
+    click.echo("Enter this key in the dashboard's Authenticate panel. Store it securely.")
+    click.echo(f"Decision authority identifier: {key.id}")
+    click.echo(raw_key)
+
+
 # ── Init & Onboarding ────────────────────────────────────
 
 

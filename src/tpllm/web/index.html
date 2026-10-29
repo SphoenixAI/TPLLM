@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#20272b" />
+    <title>TPLLM · Project intelligence</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23293237'/%3E%3Cpath d='M16 18h32v7H36v24h-8V25H16' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/assets/app.css" />
+    <script src="/assets/flow.js" defer></script>
+    <script src="/assets/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar" aria-label="Workspace navigation">
+        <a class="wordmark" href="#dashboard" aria-label="TPLLM home"
+          >TPLLM<span class="wordmark-dot"></span
+        ></a>
+        <button class="workspace-switch" id="workspace-switch">
+          <span
+            ><span class="workspace-icon">E</span
+            ><span id="workspace-label">My workspace</span></span
+          ><span class="chevron">⌄</span>
+        </button>
+        <div class="nav-label">WORKSPACE</div>
+        <nav id="navigation"></nav>
+        <div class="sidebar-bottom">
+          <nav id="secondary-navigation"></nav>
+          <button class="profile" id="profile">
+            <span class="avatar">S</span
+            ><span
+              ><strong>Local workspace</strong
+              ><small id="session-label">Read-only session</small></span
+            ><span class="profile-dot"></span>
+          </button>
+        </div>
+      </aside>
+      <div class="workspace-main">
+        <header class="topbar">
+          <button
+            class="icon-button menu-toggle"
+            id="menu-toggle"
+            aria-label="Toggle navigation"
+          ></button>
+          <button class="search-trigger" id="search-trigger">
+            <span id="search-icon"></span
+            ><span>Search projects, decisions, evidence…</span><kbd>⌘ K</kbd>
+          </button>
+          <button
+            class="icon-button"
+            id="notifications"
+            aria-label="Open human review queue"
+          ></button>
+          <button class="button ask-button" id="ask-button">
+            <span id="ask-icon"></span>Ask TPLLM
+          </button>
+        </header>
+        <main id="main" tabindex="-1">
+          <div class="loading-state">Opening your workspace…</div>
+        </main>
+        <footer id="footer"></footer>
+      </div>
+    </div>
+    <dialog id="drawer" aria-labelledby="drawer-title">
+      <div class="drawer-header">
+        <div>
+          <div class="eyebrow" id="drawer-eyebrow"></div>
+          <h2 id="drawer-title"></h2>
+        </div>
+        <button class="icon-button" id="close-drawer" aria-label="Close panel">
+          ×
+        </button>
+      </div>
+      <div id="drawer-body"></div>
+    </dialog>
+    <div id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

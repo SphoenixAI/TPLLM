@@ -43,6 +43,7 @@ class TaskSource(str, Enum):
     SCOPE_CHANGE = "SCOPE_CHANGE"         # From approved scope change
     MANUAL = "MANUAL"                     # Created directly by user/agent
     BUG = "BUG"                           # From bug triage
+    GITHUB_ISSUE = "GITHUB_ISSUE"           # Existing assigned source commitment
     ESCALATION = "ESCALATION"             # Escalated from nudge/delegation
 
 
