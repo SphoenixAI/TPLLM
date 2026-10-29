@@ -57,6 +57,21 @@ def test_sources_produce_meeting_intervention_kpis_and_typed_context(ws):
     assert "No external" in data["receipts"][0]["result"]
 
 
+def test_paragraph_kpis_preserve_values_and_target_ownership(ws):
+    raw = next(r for r in ws.get("source_records").values() if r["provider"] == "zoom")
+    record = SourceRecord.model_validate(raw)
+    record.text = "Request match accuracy is 89%. Target is 97% before beta. Recognition accuracy is 96%. Target is 98%. Package alignment is 75%. Target is 100%."
+    record.observed_at = now()
+    accept_collection(ws, Collection(records=[record]))
+    derive(ws)
+    kpis = {k["name"]: k for k in ws.get("coordination")["kpis"]}
+    expected = {"Request match accuracy": (89, 97, "95%"), "Recognition accuracy": (96, 98, "98%"), "Package alignment": (75, 100, "100%")}
+    for name, (value, proposed, committed) in expected.items():
+        assert kpis[name]["trend"]["latest_value"] == value
+        assert {c["target_candidate"] for c in kpis[name]["claims"] if c["claim_type"] == "target"} == {proposed}
+        assert kpis[name]["committed_target"] == committed
+
+
 def test_replay_never_duplicates_notes_commitments_or_action(ws):
     before = ws.snapshot()
     cycle(ws)

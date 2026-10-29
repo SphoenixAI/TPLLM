@@ -92,6 +92,7 @@ def kpi_inputs(ws, records, at):
             if item:
                 item.source.id = r["evidence_id"]
                 evidence.append(item)
+        project_definitions = []
         for metric in program.get("success_metrics", []):
             kid = pid + ":" + digest(metric["name"])
             unit = "%" if "%" in str(metric.get("target", "")) else "value"
@@ -99,12 +100,19 @@ def kpi_inputs(ws, records, at):
                 kpi_type="product", indicator_role="unknown", unit=unit, why_it_matters=program.get("goal") or "Declared project success criterion",
                 expected_refresh_interval_seconds=86400, source_systems=sorted({r["provider"] for r in records if r["project_id"] == pid}), confidence=1)
             definitions.append(definition)
+            project_definitions.append((metric, definition))
+        # Extract with every project KPI in view so a new named metric ends the
+        # previous metric's follow-up target context.
+        project_claims = DeterministicKPIClaimExtractor().extract_kpi_claims(
+            project_id=pid, evidence=evidence, known_kpis=[d for _, d in project_definitions])
+        for metric, definition in project_definitions:
+            kid, unit = definition.id, definition.unit
             match = re.fullmatch(r"\s*(?:>=?|at least)?\s*(\d+(?:\.\d+)?)\s*%?\s*", str(metric.get("target", "")), re.I)
             target = KPITarget(id=kid + ":committed", kpi_id=kid, operator="greater_than_or_equal", target_value=float(match[1]),
                 effective_from=datetime(2000, 1, 1), rationale="Declared program target; conversation claims cannot overwrite it.", evidence_ids=[], confidence=1) if match else None
             if target:
                 targets[kid] = target
-            claims = DeterministicKPIClaimExtractor().extract_kpi_claims(project_id=pid, evidence=evidence, known_kpis=[definition])
+            claims = [c for c in project_claims if c.candidate_kpi_name == definition.canonical_name]
             metric_obs = [KPIObservation(id=c.id + ":" + digest(c.evidence_ids), kpi_id=kid, value=c.parsed_numeric_value, unit=unit,
                 observed_at=utc(c.observed_at), reported_at=at, source_system="communication_claim", source_id=c.evidence_ids[0],
                 evidence_ids=c.evidence_ids, confidence=c.confidence) for c in claims if c.claim_type.value == "current_value" and c.parsed_numeric_value is not None]

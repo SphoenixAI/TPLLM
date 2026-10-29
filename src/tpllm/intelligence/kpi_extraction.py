@@ -52,16 +52,35 @@ _CAUSE_PATTERN = re.compile(
 )
 
 
-def _kpi_mentioned(line: str, definition: KPIDefinition) -> bool:
-    lowered = line.lower()
-    if definition.canonical_name.lower() in lowered:
-        return True
-    return any(alias.lower() in lowered for alias in definition.aliases)
+def _claim_segments(content: str, definitions: list[KPIDefinition]):
+    """Keep each named metric's claims inside its own sentence or clause."""
+    # Require whitespace after sentence punctuation so decimals stay intact.
+    for sentence in re.split(r"(?:\r?\n|(?<=[.!?;])\s+)", content):
+        mentions = []
+        for definition in definitions:
+            for name in [definition.canonical_name, *definition.aliases]:
+                if not name.strip():
+                    continue
+                for match in re.finditer(r"(?<!\w)" + re.escape(name) + r"(?!\w)", sentence, re.I):
+                    mentions.append((match.start(), match.end(), definition))
+        # Prefer the full name over an overlapping shorter alias.
+        selected = []
+        for mention in sorted(mentions, key=lambda m: (m[0], -m[1])):
+            if not selected or mention[0] >= selected[-1][1]:
+                selected.append(mention)
+        if not selected:
+            yield sentence.strip(), None
+            continue
+        if selected[0][0]:
+            yield sentence[:selected[0][0]].strip(), None
+        for index, (start, _, definition) in enumerate(selected):
+            end = selected[index + 1][0] if index + 1 < len(selected) else len(sentence)
+            yield sentence[start:end].strip(), definition
 
 
 class DeterministicKPIClaimExtractor:
     """Regex/alias-based extractor. Tracks the last-mentioned KPI within
-    one evidence item so follow-up lines ("We need 70% before beta")
+    one evidence item so follow-up sentences ("We need 70% before beta")
     attach to the KPI under discussion."""
 
     def extract_kpi_claims(
@@ -105,20 +124,18 @@ class DeterministicKPIClaimExtractor:
 
         for item in evidence:
             current_kpi: KPIDefinition | None = None
-            for line in item.content.splitlines():
-                line = line.strip()
+            for line, mentioned in _claim_segments(item.content, known_kpis):
                 if not line:
                     continue
-
-                mentioned = next(
-                    (d for d in known_kpis if _kpi_mentioned(line, d)), None
-                )
                 if mentioned is not None:
                     current_kpi = mentioned
                 if current_kpi is None:
                     continue
 
-                value_match = _VALUE_PATTERN.search(line)
+                target_matches = list(_TARGET_PATTERN.finditer(line))
+                # "Recognition accuracy target is 98%" is a target only.
+                value_match = next((m for m in _VALUE_PATTERN.finditer(line)
+                    if not any(t.start() <= m.start() < t.end() for t in target_matches)), None)
                 if value_match and mentioned is not None:
                     add(
                         current_kpi.canonical_name,
@@ -130,7 +147,7 @@ class DeterministicKPIClaimExtractor:
                         unit="%" if value_match.group(2) else current_kpi.unit,
                     )
 
-                target_match = _TARGET_PATTERN.search(line)
+                target_match = next(iter(target_matches), None)
                 if target_match:
                     add(
                         current_kpi.canonical_name,

@@ -175,3 +175,13 @@ The demo was then archived and restarted for a fresh user test. Projects fit bot
 1586×992 and 390×844 viewports without page-width overflow; no browser console
 errors were reported. These checks use synthetic evidence, not a measured vision
 model or live provider accounts.
+
+The independent provider fixtures then exposed a paragraph-extraction bug:
+89%, 96% and 75% were all rendered as 89% when reported on one line. Extraction
+now separates sentences and named-metric clauses, preserves decimal values,
+and evaluates all known project KPIs together so follow-up targets cannot leak
+between metrics. Target-only statements do not become current observations.
+The fix passed 113 KPI/product/security tests and the independent full fixture
+replay (24 passed, zero failed, two previously documented gaps). An isolated
+browser run confirmed 89%/96%/75% with committed targets 95%/98%/100%, without
+console errors. The fixture measurements remain synthetic.

@@ -1,0 +1,3309 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "name": "AI visual search release coordination",
+  "purpose": "Test TPLLM on a cloud website feature: 'Find a red backpack, not a handbag'.",
+  "limitations": [
+    "No images are provided or inferred over. Cases are symbolic inputs.",
+    "Accuracy values are calculated from authored synthetic outputs, not measured model performance.",
+    "The adapter runtime remains deterministic; these fixtures do not prove general semantic reasoning.",
+    "All external delivery is simulated. No Slack workspace or provider credentials required."
+  ],
+  "base_time": "2026-10-29T18:00:00Z",
+  "project_ids": [
+    "visual-search",
+    "vision-model",
+    "data-evals",
+    "cloud-serving"
+  ],
+  "people": [
+    {
+      "name": "Alex Chen",
+      "role": "Computer vision engineer",
+      "id": "U_ALEX"
+    },
+    {
+      "name": "Riley Shah",
+      "role": "Data package owner",
+      "id": "U_RILEY"
+    },
+    {
+      "name": "Jamie Park",
+      "role": "Evaluation lead",
+      "id": "U_JAMIE"
+    },
+    {
+      "name": "Sam Rivera",
+      "role": "Cloud engineer",
+      "id": "U_SAM"
+    },
+    {
+      "name": "Local operator",
+      "role": "Release decision owner",
+      "id": "U_RELEASE"
+    }
+  ],
+  "committed_targets": {
+    "Request match accuracy": 95,
+    "Recognition accuracy": 98,
+    "Package alignment": 100
+  },
+  "proposed_unapproved_target": {
+    "Request match accuracy": 97
+  },
+  "release_bundle": {
+    "model": "vision-0.8.2",
+    "catalog_data": "catalog-data-3.2",
+    "label_schema": "3.2",
+    "eval_suite": "request-evals-2.1"
+  },
+  "stages": [
+    {
+      "id": "initial",
+      "minutes": 0,
+      "expected_request_match": 89,
+      "expected_recognition": 96,
+      "expected_alignment": 75,
+      "full_evaluation": "failed",
+      "release_authorized": false
+    },
+    {
+      "id": "regression_fixed",
+      "minutes": 45,
+      "expected_request_match": 89,
+      "expected_recognition": 96,
+      "expected_alignment": 75,
+      "full_evaluation": "queued",
+      "release_authorized": false
+    },
+    {
+      "id": "full_eval_complete",
+      "minutes": 90,
+      "expected_request_match": 96,
+      "expected_recognition": 99,
+      "expected_alignment": 100,
+      "full_evaluation": "passed",
+      "release_authorized": false
+    }
+  ],
+  "expected_product_limits": [
+    "Paraphrasing the launch-date request can miss the meeting intervention.",
+    "A new KPI target conflict does not currently create a human-review question."
+  ],
+  "case_set": [
+    {
+      "id": "heldout-001",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "poor",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-002",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-003",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-004",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "poor",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-005",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-006",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-007",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "poor",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-008",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-009",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-010",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "poor",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-011",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-012",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-013",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "poor",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-014",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-015",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-016",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "poor",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-017",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-018",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-019",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "poor",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-020",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-021",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-022",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "poor",
+        "background": "cluttered"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-023",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-024",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-025",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "poor",
+        "background": "plain"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-026",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-027",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-028",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "poor",
+        "background": "cluttered"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-029",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-030",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-031",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "poor",
+        "background": "plain"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-032",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-033",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-034",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "poor",
+        "background": "cluttered"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-035",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-036",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-037",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "poor",
+        "background": "plain"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-038",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-039",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-040",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "blue",
+        "lighting": "poor",
+        "background": "cluttered"
+      },
+      "request": "Find a blue backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      }
+    },
+    {
+      "id": "heldout-041",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-042",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-043",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "poor",
+        "background": "plain"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-044",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-045",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-046",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "poor",
+        "background": "cluttered"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-047",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-048",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-049",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "poor",
+        "background": "plain"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-050",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-051",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-052",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "poor",
+        "background": "cluttered"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-053",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-054",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-055",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "poor",
+        "background": "plain"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-056",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-057",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-058",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "poor",
+        "background": "cluttered"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-059",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-060",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "handbag",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red handbag, not a backpack",
+      "expected": {
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-061",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "poor",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-062",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-063",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-064",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "poor",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-065",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-066",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-067",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "poor",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-068",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-069",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-070",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "poor",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-071",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-072",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-073",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "poor",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-074",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-075",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-076",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "poor",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-077",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-078",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-079",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "poor",
+        "background": "plain"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-080",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "backpack",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack, not a handbag",
+      "expected": {
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      }
+    },
+    {
+      "id": "heldout-081",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-082",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "poor",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-083",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-084",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-085",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "poor",
+        "background": "plain"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-086",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-087",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-088",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "poor",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-089",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-090",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-091",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "poor",
+        "background": "plain"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-092",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-093",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-094",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "poor",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-095",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-096",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-097",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "poor",
+        "background": "plain"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-098",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "normal",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-099",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "normal",
+        "background": "plain"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    },
+    {
+      "id": "heldout-100",
+      "split": "held_out",
+      "image_spec": {
+        "representation": "symbolic_description_only",
+        "object": "unknown",
+        "color": "red",
+        "lighting": "poor",
+        "background": "cluttered"
+      },
+      "request": "Find a red backpack; ask if the object is unclear.",
+      "expected": {
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    }
+  ],
+  "simulated_outputs": {
+    "initial": [
+      {
+        "case_id": "heldout-001",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-002",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-003",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-004",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-005",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-006",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-007",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-008",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-009",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-010",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-011",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-012",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-013",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-014",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-015",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-016",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-017",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-018",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-019",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-020",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-021",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-022",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-023",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-024",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-025",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-026",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-027",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-028",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-029",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-030",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-031",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-032",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-033",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-034",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-035",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-036",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-037",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-038",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-039",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-040",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-041",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-042",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-043",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-044",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-045",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-046",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-047",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-048",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-049",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-050",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-051",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-052",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-053",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-054",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-055",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-056",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-057",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-058",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-059",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-060",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-061",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-062",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-063",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-064",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-065",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-066",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-067",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-068",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-069",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-070",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-071",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-072",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-073",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-074",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-075",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-076",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-077",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-078",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-079",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-080",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-081",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-082",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-083",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-084",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-085",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-086",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-087",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-088",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-089",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-090",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-091",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-092",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-093",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-094",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-095",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-096",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-097",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-098",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-099",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-100",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    ],
+    "full_eval_complete": [
+      {
+        "case_id": "heldout-001",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-002",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-003",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-004",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-005",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-006",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-007",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-008",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-009",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-010",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-011",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-012",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-013",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-014",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-015",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-016",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-017",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-018",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-019",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-020",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-021",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-022",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-023",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-024",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-025",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-026",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-027",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-028",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-029",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-030",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-031",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-032",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-033",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-034",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-035",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-036",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-037",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-038",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-039",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-040",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "blue"
+      },
+      {
+        "case_id": "heldout-041",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-042",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-043",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-044",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-045",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-046",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-047",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-048",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-049",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-050",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-051",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-052",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-053",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-054",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-055",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-056",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-057",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-058",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-059",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-060",
+        "recognition": "handbag",
+        "decision": "match",
+        "category": "handbag",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-061",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-062",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-063",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-064",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-065",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-066",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-067",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-068",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-069",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-070",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-071",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-072",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-073",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-074",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-075",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-076",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-077",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-078",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-079",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-080",
+        "recognition": "backpack",
+        "decision": "match",
+        "category": "backpack",
+        "color": "red"
+      },
+      {
+        "case_id": "heldout-081",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-082",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-083",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-084",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-085",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-086",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-087",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-088",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-089",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-090",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-091",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-092",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-093",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-094",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-095",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-096",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-097",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-098",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-099",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      },
+      {
+        "case_id": "heldout-100",
+        "recognition": "unknown",
+        "decision": "abstain",
+        "category": null,
+        "color": null
+      }
+    ]
+  },
+  "regression_case": {
+    "id": "backpack-not-handbag-regression",
+    "split": "regression",
+    "request": "Find a red backpack, not a handbag",
+    "expected": "red backpack",
+    "initial": "red handbag",
+    "regression_fixed": "red backpack"
+  }
+}

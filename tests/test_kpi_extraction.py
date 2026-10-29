@@ -3,6 +3,8 @@ meeting transcripts (the spec's activation example)."""
 
 from __future__ import annotations
 
+import pytest
+
 from tpllm.intelligence import (
     DeterministicKPIClaimExtractor,
     KPIClaimType,
@@ -76,3 +78,31 @@ class TestTranscriptExtraction:
         assert [c.model_dump() for c in _claims()] == [
             c.model_dump() for c in _claims()
         ]
+
+
+@pytest.mark.parametrize("separator", [". ", "; ", ", and ", "\n"])
+def test_multiple_kpi_values_bind_to_their_named_metric(separator):
+    names = ["Request match accuracy", "Recognition accuracy", "Package alignment"]
+    known = [definition().model_copy(update={"id": name, "canonical_name": name, "aliases": []}) for name in names]
+    claims = DeterministicKPIClaimExtractor().extract_kpi_claims(
+        project_id=PROJECT,
+        evidence=[meeting_evidence("paragraph", separator.join([
+            "Request match accuracy is 89.5%", "Recognition accuracy is 96%", "Package alignment is 75%",
+        ]))],
+        known_kpis=known,
+    )
+    values = {c.candidate_kpi_name: c.parsed_numeric_value for c in claims if c.claim_type == KPIClaimType.CURRENT_VALUE}
+    assert values == dict(zip(names, [89.5, 96, 75]))
+    assert all(c.evidence_ids == ["paragraph"] for c in claims)
+
+
+def test_followup_targets_switch_with_metric_context_and_are_not_observations():
+    names = ["Request match accuracy", "Recognition accuracy"]
+    known = [definition().model_copy(update={"id": name, "canonical_name": name, "aliases": []}) for name in names]
+    claims = DeterministicKPIClaimExtractor().extract_kpi_claims(
+        project_id=PROJECT,
+        evidence=[meeting_evidence("paragraph", "Request match accuracy is 89%. Target is 95% before beta. Recognition accuracy target is 98%.")],
+        known_kpis=known,
+    )
+    assert [(c.candidate_kpi_name, c.parsed_numeric_value) for c in claims if c.claim_type == KPIClaimType.CURRENT_VALUE] == [(names[0], 89)]
+    assert [(c.candidate_kpi_name, c.target_candidate) for c in claims if c.claim_type == KPIClaimType.TARGET] == [(names[0], 95), (names[1], 98)]

@@ -4,6 +4,7 @@
 .tpllm-example
 .env*
 tests
+evals
 docs
 dist
 build
