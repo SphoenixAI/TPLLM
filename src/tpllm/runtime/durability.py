@@ -917,6 +917,7 @@ class ReconstructionOutcome(BaseModel):
     historical_decisions: list[dict] = Field(default_factory=list)
     historical_recommendations: list[dict] = Field(default_factory=list)
     historical_outcomes: list[dict] = Field(default_factory=list)
+    bounded_decision_history: list[dict] = Field(default_factory=list)
     current_policy_fingerprint: str | None = None
     kill_switch_engaged: bool = False
     unavailable_evidence_ids: list[str] = Field(default_factory=list)
@@ -1032,7 +1033,20 @@ class RuntimeJournalReconstructor:
         event_type = record.event_type
         payload = record.payload
 
-        if event_type == JournalEventType.EVIDENCE_ACCEPTED:
+        if event_type in (
+            JournalEventType.BOUNDED_DECISION_RECORDED,
+            JournalEventType.BOUNDED_DECISION_LABELLED,
+            JournalEventType.BOUNDED_DECISION_EFFECT_RECORDED,
+        ):
+            # Restore exact historical answers; replay never calls a provider
+            # or grants the output operational-decision authority.
+            outcome.bounded_decision_history.append({
+                "event_type": event_type.value,
+                "occurred_at": record.occurred_at.isoformat(),
+                "recorded_at": record.recorded_at.isoformat(), **payload,
+            })
+
+        elif event_type == JournalEventType.EVIDENCE_ACCEPTED:
             evidence = DurableEvidenceRecord.model_validate(
                 payload["evidence"]
             )

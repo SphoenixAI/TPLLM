@@ -31,6 +31,7 @@ PRODUCT_UNAUTHENTICATED_READ_ROUTES = (
     "/api/product/state", "/api/product/catalogue", "/api/product/decisions/{decision_id}",
     "/api/product/history",
 )
+PRODUCT_AUTHENTICATED_READ_ROUTES = ("/api/product/decision-intelligence/{trace_id}",)
 
 
 class BrowserArtifactStore(ArtifactStore):
@@ -152,6 +153,14 @@ class CollectionSettings(BaseModel):
 
 class CoordinationPause(BaseModel):
     paused: bool
+
+
+class BoundedDecisionReview(BaseModel):
+    value: bool | float | str
+    source: Literal["human_review", "observed_outcome", "corrected_classification"] = "human_review"
+    evidence_refs: list[str] = Field(min_length=1, max_length=20)
+    observed_at: datetime
+    supersedes: str | None = None
 
 
 class RecordingServices(LiveIntelligenceServices):
@@ -359,6 +368,7 @@ class ProductWorkspace:
         return result
 
     def snapshot(self):
+        from tpllm.product_decisions import snapshot as decision_snapshot
         from tpllm.runtime.services import coverage_report
         from tpllm.product_flow import snapshot as coordination_snapshot
         evidence = self.evidence()
@@ -383,6 +393,7 @@ class ProductWorkspace:
         artifacts = self.db.artifacts.get_revision_artifacts(revision) if revision else []
         return {"workspace": "demo" if self.demo else "live", "programs": programs,
                 "coordination": coordination_snapshot(self),
+                "decision_intelligence": decision_snapshot(self),
                 "evidence": evidence, "revision": revision,
                 "runtime_artifacts": [{**a, "current": a["revision_id"] == revision} for a in self.get("analysis_outputs", [])] or [a.model_dump(mode="json") for a in artifacts],
                 "last_analysis": self.get("last_analysis"), "coverage": coverage_report().model_dump(),
@@ -488,6 +499,44 @@ def create_product_router(cfg, get_current_user, require_auth, require_permissio
     def catalogue(ws=Depends(space)):
         return ws.catalogue()
 
+    @router.get("/decision-intelligence/{trace_id}")
+    def bounded_detail(trace_id: str, ws=Depends(space), claims=Depends(get_current_user)):
+        from tpllm.runtime.decision_journal import JournalDecisionStore
+        with ws.lock:
+            store = JournalDecisionStore(ws.db.journal, ws.organization)
+            trace = store.get(trace_id)
+            if trace is None:
+                raise HTTPException(404, "Decision trace not found")
+            if not ws.demo:
+                user = require_auth(claims)
+                require_permission(user, Permission.PROGRAM_READ, trace.project_id)
+            return {"trace": trace.model_dump(mode="json"),
+                "effects": [e for e in store.effects(project_id=trace.project_id) if trace_id in e["trace_ids"]],
+                "labels": [l.model_dump(mode="json") for l in store.labels() if l.trace_id == trace_id]}
+
+    @router.post("/decision-intelligence/{trace_id}/labels")
+    def label_bounded(trace_id: str, body: BoundedDecisionReview, request: Request,
+                      ws=Depends(space), claims=Depends(get_current_user)):
+        from tpllm.decisions.models import CalibrationLabel
+        from tpllm.runtime.decision_journal import JournalDecisionStore
+        with ws.lock:
+            store = JournalDecisionStore(ws.db.journal, ws.organization)
+            trace = store.get(trace_id)
+            if trace is None:
+                raise HTTPException(404, "Decision trace not found")
+            actor = authorize(request, ws, claims, trace.project_id)
+            label = CalibrationLabel(trace_id=trace_id, value=body.value,
+                source="fixture" if ws.demo else body.source, reviewer=actor,
+                evidence_refs=tuple(body.evidence_refs), observed_at=body.observed_at,
+                recorded_at=now(), supersedes=body.supersedes)
+            try:
+                store.label(label)
+            except ValueError:
+                raise HTTPException(422, "Label must match the definition, temporal order and latest correction lineage.") from None
+            if ws.checkpoint:
+                ws.checkpoint()
+            return label.model_dump(mode="json")
+
     @router.post("/demo")
     def demo(request: Request, claims=Depends(get_current_user)):
         ws = space("demo")
@@ -590,6 +639,10 @@ def create_product_router(cfg, get_current_user, require_auth, require_permissio
         actor = authorize(request, ws, claims)
         with ws.lock:
             result = ws.analyze()
+            from tpllm.product_decisions import assess
+            projection = ws.get("coordination")
+            if projection:
+                assess(ws, projection, at=now(), force=True)
             ws.audit("Analysis completed" if result["complete"] else "Analysis needs attention", result, actor=actor)
         return result
 

@@ -82,6 +82,13 @@ scope, dates and success targets. PR merge or green checks do not prove product
 readiness. No calibrated completion date or individual performance score is produced.
 
 KPI values currently come from communication claims, not independent instrumentation.
+Unsent drafts, authored scripts, scheduled agendas and records explicitly marked as
+unobserved do not supply KPI observations or target reconciliation. They remain
+available as source context, with exclusion reasons in the KPI detail panel.
+Synthetic records require `data.observation_basis = "simulated_observation"` to
+participate in demo KPI trends; that marker never enables live observations, and
+cannot override draft/script/agenda exclusions. Demo cards label eligible values
+as simulated source claims.
 Conflicting values remain unresolved; target claims cannot overwrite the declared
 program target. One observation cannot establish a trend. Remediation ownership is
 not inferred merely because a person and a metric appear in the same project.
@@ -185,3 +192,12 @@ The fix passed 113 KPI/product/security tests and the independent full fixture
 replay (24 passed, zero failed, two previously documented gaps). An isolated
 browser run confirmed 89%/96%/75% with committed targets 95%/98%/100%, without
 console errors. The fixture measurements remain synthetic.
+
+Connected-capture provenance follow-up: 132 relevant tests passed. Reprocessing
+the 24 captured test records retained every source while producing zero observed
+KPI values and no target claims from the drafts/scripts; committed gates remained
+95%/98%/100%. Browser verification showed Unknown values and linked exclusion
+reasons without console errors. The separate provider-observation simulation
+still passed 25 checks, with zero failures and its two known gaps. This change
+does not add Gmail draft or Zoom Hub collectors or resolve abbreviated KPI names
+in genuinely observed conversations.

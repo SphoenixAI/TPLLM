@@ -87,9 +87,15 @@ class JournalEventType(str, Enum):
     SOURCE_AVAILABILITY_CHANGED = "source_availability_changed"
     INTELLIGENCE_REVISION_PUBLISHED = "intelligence_revision_published"
     DERIVED_ARTIFACT_PUBLISHED = "derived_artifact_published"
+    BOUNDED_DECISION_RECORDED = "bounded_decision_recorded"
+    BOUNDED_DECISION_LABELLED = "bounded_decision_labelled"
+    BOUNDED_DECISION_EFFECT_RECORDED = "bounded_decision_effect_recorded"
 
 
 EVENT_TYPE_CATEGORY: dict[JournalEventType, JournalRecordCategory] = {
+    JournalEventType.BOUNDED_DECISION_RECORDED: JournalRecordCategory.AGENT_OUTPUT,
+    JournalEventType.BOUNDED_DECISION_LABELLED: JournalRecordCategory.OUTCOME,
+    JournalEventType.BOUNDED_DECISION_EFFECT_RECORDED: JournalRecordCategory.AGENT_OUTPUT,
     JournalEventType.EVIDENCE_ACCEPTED: JournalRecordCategory.INGEST,
     JournalEventType.IDENTITY_LINKED: JournalRecordCategory.ORGANIZATIONAL_STATE,
     JournalEventType.IDENTITY_UNLINKED: (

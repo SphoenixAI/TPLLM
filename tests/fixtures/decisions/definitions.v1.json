@@ -1,0 +1,12 @@
+{
+  "evidence.contradictory.v1": "88fdd70c4ad93ade63a4359b0e6e0b3d65b4bf5370ea42c1c7435eeb6a25dad3",
+  "evidence.sufficient.v1": "ebfd0de33bcd77e253229b8a2e09780894774c2a995450a4300f22141bfdcb0d",
+  "impact.scope.v1": "c113034d69a39f3e167f4661d60c51527933ef9ac8f0ad982f709bf66f64ccb6",
+  "intervention.value.v1": "d54d0bdb919aff061abaab8324732917eaa75caefc7983e428f08efc4e4c9098",
+  "review.human_recommended.v1": "b007f1a177b6139e4ac028f5ea64e786d1d2bcf43b084526e39471ae17849c24",
+  "risk.family.v1": "6d09a94d08efb2c6a293f2744ca9dc0faba1d5033405b17f5d3abd27edcd2121",
+  "risk.present.v1": "4851cc278eb7abc37e69f66f60613b57cd5b31b404976c7d483eb7e476474895",
+  "risk.severity.v1": "cc26c0c24ee94272b81425d8d75055d506ace793eb224942aead8e2baf413ef2",
+  "trend.direction.v1": "7ab5a4c3b996c6abb518225efe119718f16725befb11ace6f7a07e943c1fd663",
+  "trend.materiality.v1": "ec2cc180d7fea0094505314173bc615c0577ec74cf82207608b8aebc1af56275"
+}

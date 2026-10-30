@@ -678,3 +678,9 @@ checked, what the result means, and what was not checked.
 ## Licence
 
 MIT. See [`LICENSE`](LICENSE).
+
+## Bounded decision intelligence
+
+TypeSafe Jev is available behind a provider-neutral decision layer, disabled by
+default. Start in shadow mode; calibrated advisory use can only prioritize insight
+review. See [architecture, configuration, evaluation and authority boundaries](docs/decision-intelligence.md).

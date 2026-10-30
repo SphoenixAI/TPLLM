@@ -71,6 +71,24 @@ def recover_sources(ws):
     return current
 
 
+def kpi_exclusion_reason(record, *, demo):
+    """Source availability does not establish that its claims were observed."""
+    data = record.get("data", {})
+    kind = str(record.get("kind", "")).lower()
+    labels = data.get("labels", []) or []
+    if isinstance(labels, str):
+        labels = [labels]
+    if (kind in {"draft", "email_draft", "authored_script"}
+            or str(data.get("delivery_state", "")).lower() in {"draft", "unsent_draft", "unsent"}
+            or any(str(label).upper() == "DRAFT" for label in labels)):
+        return "Unsent draft or authored script; not an observed report."
+    if kind == "meeting" or data.get("meeting_occurred") is False:
+        return "Scheduled agenda or unobserved meeting; not a measurement report."
+    if data.get("synthetic") and not (demo and data.get("observation_basis") == "simulated_observation"):
+        return "Synthetic content is not an observed result; explicit observation replay is demo-only."
+    return None
+
+
 def kpi_inputs(ws, records, at):
     from tpllm.intelligence.kpi import KPIDefinition, KPITarget, KPIObservation, KPIHealthStatus, assess_kpi_health
     from tpllm.intelligence.kpi_extraction import DeterministicKPIClaimExtractor
@@ -82,9 +100,13 @@ def kpi_inputs(ws, records, at):
             continue
         artifacts = ws.artifacts(pid)
         program = artifacts.get("program", {})
-        evidence = []
+        evidence, excluded = [], []
         for r in records:
             if r["project_id"] != pid:
+                continue
+            reason = kpi_exclusion_reason(r, demo=ws.demo)
+            if reason:
+                excluded.append((r, reason))
                 continue
             envelope = make_envelope(source_system=r["provider"], source_type="document", source_id=r["key"], event_type="supporting_evidence",
                 observed_at=utc(r["observed_at"]), project_ids=[pid], content=r["text"], title=r["title"], received_at=utc(r["collected_at"]))
@@ -114,7 +136,7 @@ def kpi_inputs(ws, records, at):
                 targets[kid] = target
             claims = [c for c in project_claims if c.candidate_kpi_name == definition.canonical_name]
             metric_obs = [KPIObservation(id=c.id + ":" + digest(c.evidence_ids), kpi_id=kid, value=c.parsed_numeric_value, unit=unit,
-                observed_at=utc(c.observed_at), reported_at=at, source_system="communication_claim", source_id=c.evidence_ids[0],
+                observed_at=utc(c.observed_at), reported_at=at, source_system="simulation_claim" if ws.demo else "communication_claim", source_id=c.evidence_ids[0],
                 evidence_ids=c.evidence_ids, confidence=c.confidence) for c in claims if c.claim_type.value == "current_value" and c.parsed_numeric_value is not None]
             observations.extend(metric_obs)
             trend = assess_kpi_health(definition=definition, target=target, observations=metric_obs, profile=None, as_of=at)
@@ -135,7 +157,10 @@ def kpi_inputs(ws, records, at):
             views.append({"id": kid, "project_id": pid, "name": metric["name"], "unit": unit, "committed_target": metric.get("target", "Unknown"),
                 "meaning": definition.why_it_matters, "trend": trend.model_dump(mode="json"), "response": stewardship.model_dump(mode="json"),
                 "claims": [c.model_dump(mode="json") for c in claims], "reconciliation": [r.model_dump(mode="json") for r in reconciliation],
-                "measurement_basis": "Extracted source claims; instrumentation has not independently verified these values.",
+                "observation_label": ("Simulated source claims" if ws.demo else "Reported by connected sources") if metric_obs else "No eligible source observations",
+                "measurement_basis": ("Simulated source claims for testing; no real-world performance is established. " if ws.demo else "Extracted source claims; instrumentation has not independently verified these values. ") + "Drafts, authored scripts and scheduled agendas are excluded from observations and target reconciliation.",
+                "excluded_sources": [{"key": r["key"], "title": r["title"], "kind": r["kind"], "reason": reason}
+                    for r, reason in excluded if metric["name"].lower() in r["text"].lower()],
                 "source_keys": [r["key"] for r in records if r["project_id"] == pid and metric["name"].lower() in r["text"].lower()]})
     ws.put("collected_kpi_inputs", {"definitions": [d.model_dump(mode="json") for d in definitions],
         "observations": [o.model_dump(mode="json") for o in observations], "targets": {k: t.model_dump(mode="json") for k, t in targets.items()}})
@@ -320,6 +345,8 @@ def derive(ws, *, at=None):
     projection = {"at": at.isoformat(), "records": records, "kpis": kpis, "engineering": prs, "relationships": edges,
         "meetings": meetings, "actions": actions, "briefs": briefs, "method": "Deterministic extraction and structural inference; no calibrated delivery prediction."}
     ws.put("coordination", projection)
+    from tpllm.product_decisions import assess
+    assess(ws, projection, at=at)
     if changed_tasks:
         ws.audit("Source commitments synchronized", {"updated": changed_tasks}, actor="tpllm")
     return projection

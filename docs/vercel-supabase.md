@@ -23,11 +23,12 @@ Authentication before adding data or publishing the application.
    use the isolated demo. Test an edit across separate invocations before claiming
    durable persistence.
 
-The database role must have schema usage, SELECT, INSERT and UPDATE on the
-workspace table, and be the table owner or have BYPASSRLS. The schema is outside
-the public Data API; public, anonymous and authenticated API roles have no access.
-Use a dedicated login and a server-side secret. Do not use a browser publishable
-key as a database credential.
+The schema script creates `tpllm_runtime` with schema usage, SELECT, INSERT and
+UPDATE on the workspace table and a policy limited to that server role. It has no
+DELETE, DDL, role-management or RLS-bypass privileges. Set LOGIN and its generated
+password separately, storing the password only as a server secret. The schema is
+outside the public Data API; public, anonymous and authenticated API roles have no
+access. Do not use a browser publishable key as a database credential.
 
 ## Durability and execution
 

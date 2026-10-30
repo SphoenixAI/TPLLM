@@ -53,6 +53,55 @@ def token(client, root, role=Role.MANAGER, scopes=None):
     return {"Authorization": "Bearer " + response.json()["access_token"]}
 
 
+def bounded_trace(client, workspace="live"):
+    from tests._decision_fixtures import setup
+    from tpllm.runtime.decision_journal import JournalDecisionStore
+    ws = client.app.state.product_space(workspace)
+    store = JournalDecisionStore(ws.db.journal, ws.organization)
+    engine, _, _, snapshot = setup(store=store)
+    engine.clock = lambda: datetime.now(timezone.utc)-timedelta(seconds=1)
+    return engine.evaluate(provider="mock", model="fixture-model", state=snapshot)[0]
+
+
+def test_bounded_decision_trace_and_labels_enforce_existing_permissions(client, tmp_path):
+    trace = bounded_trace(client)
+    path = f"/decision-intelligence/{trace.id}"
+    body = {"value": True, "evidence_refs": ["review-evidence-1"],
+        "observed_at": datetime.now(timezone.utc).isoformat()}
+    def read(headers=None):
+        return client.get(f"/api/product{path}?workspace=live", headers=headers)
+    assert read().status_code == 401
+    assert post(client, path+"/labels", body, workspace="live").status_code == 401
+    wrong_scope = token(client, tmp_path, scopes=["different-program"])
+    assert read(wrong_scope).status_code == 403
+    assert post(client, path+"/labels", body, workspace="live", headers=wrong_scope).status_code == 403
+    viewer = token(client, tmp_path, Role.VIEWER, scopes=[trace.project_id])
+    assert read(viewer).status_code == 200
+    assert post(client, path+"/labels", body, workspace="live", headers=viewer).status_code == 403
+    manager = token(client, tmp_path, scopes=[trace.project_id])
+    assert client.post(f"/api/product{path}/labels?workspace=live", json=body, headers=manager).status_code == 403
+    assert post(client, path+"/labels", body, workspace="live",
+        headers={**manager, "Origin": "https://untrusted.example"}).status_code == 403
+    assert read(manager).json()["labels"] == []
+    saved = post(client, path+"/labels", body, workspace="live", headers=manager)
+    assert saved.status_code == 200, saved.text
+    assert saved.json()["reviewer"].startswith("key_") and saved.json()["source"] == "human_review"
+    assert post(client, path+"/labels", body, workspace="live", headers=manager).status_code == 422
+    corrected = post(client, path+"/labels", {**body, "value":False, "supersedes":saved.json()["id"]},
+        workspace="live", headers=manager)
+    assert corrected.status_code == 200, corrected.text
+    assert len(read(manager).json()["labels"]) == 2
+
+
+def test_bounded_demo_labels_remain_fixture_data(client):
+    trace = bounded_trace(client, "demo")
+    response = post(client, f"/decision-intelligence/{trace.id}/labels", {
+        "value": True, "source": "observed_outcome", "evidence_refs": ["demo-evidence"],
+        "observed_at": datetime.now(timezone.utc).isoformat()})
+    assert response.status_code == 200, response.text
+    assert response.json()["source"] == "fixture"
+
+
 def test_demo_is_explicit_isolated_and_idempotent(client, tmp_path):
     assert state(client)["programs"] == []
     first = seed(client)
@@ -287,7 +336,7 @@ def test_demo_restart_archives_previous_run_and_does_not_touch_live(client, tmp_
 
 
 def test_product_route_inventory_and_mutation_auth_dependencies(client):
-    from tpllm.product_api import PRODUCT_UNAUTHENTICATED_READ_ROUTES
+    from tpllm.product_api import PRODUCT_UNAUTHENTICATED_READ_ROUTES, PRODUCT_AUTHENTICATED_READ_ROUTES
     reads = set()
     routes = []
     for candidate in client.app.routes:
@@ -298,6 +347,8 @@ def test_product_route_inventory_and_mutation_auth_dependencies(client):
             continue
         if "GET" in route.methods:
             reads.add(route.path)
+            if route.path in PRODUCT_AUTHENTICATED_READ_ROUTES:
+                assert any(d.call.__name__ == "get_current_user" for d in route.dependant.dependencies)
         if "POST" in route.methods:
             assert any(d.call.__name__ == "get_current_user" for d in route.dependant.dependencies), route.path
-    assert reads == set(PRODUCT_UNAUTHENTICATED_READ_ROUTES)
+    assert reads == set(PRODUCT_UNAUTHENTICATED_READ_ROUTES) | set(PRODUCT_AUTHENTICATED_READ_ROUTES)

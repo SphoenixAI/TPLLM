@@ -27,6 +27,8 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
+from tpllm.decisions.models import DecisionCalibrationProfile
+
 
 # ── Enums ──────────────────────────────────────────────────────────────
 
@@ -136,6 +138,8 @@ class ActiveCalibrationRegistry(BaseModel):
     max_total_adjustment: float = 0.25
     max_single_adjustment: float = 0.15
     kill_switch_engaged: bool = False
+    # Exact definition/model/project segments. Metrics alone never promote one.
+    decision_profiles: dict[str, DecisionCalibrationProfile] = Field(default_factory=dict)
 
     model_config = {"arbitrary_types_allowed": True}
 

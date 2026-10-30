@@ -81,3 +81,38 @@ extractor passes the independent 89/96/75 expectation.
 Simulated receipts prove gateway behavior only. Communication intervals can hold
 later drafts when stages are replayed rapidly. Source claims remain claims;
 historical disagreements are not silently resolved into independent measurements.
+
+## Connected workflow scenario
+
+`engagement_workflow.json` extends the same project into four scheduled meetings
+and sixteen scripted email engagements: contract, clarification, investigation,
+targeted questions, engineering replies, full evaluation, bounded canary decision,
+outcomes, and unresolved follow-up. Its run marker is `VSIM-20261030`.
+
+For the authorized connected run, the records were created in Google Calendar,
+Zoom, and Gmail: four 30-minute meetings on October 30, 2026 at 09:00, 10:00,
+11:00 and 12:00 America/Los_Angeles, matching private/free Calendar events with
+no guests or reminders, four authored Zoom Hub scripts with a navigation index,
+and sixteen unsent Gmail drafts with no recipients. The scripts are not recordings or completed meetings;
+the drafts are not delivered conversations. Fictional authority never authorizes
+an actual release. Provider IDs, account details and meeting links are retained
+only in the private local run manifest, outside this repository.
+
+`connected_replay.py` evaluates saved **live connector readbacks**. It verifies
+the records and their content, then uses an explicit capture bridge to feed the
+production evidence journal, derivation and authority checks in a fresh workspace:
+
+```sh
+.venv/bin/python evals/visual_search/connected_replay.py \
+  --capture /private/path/connected-workflow-readbacks.json \
+  --manifest /private/path/connected-workflow-manifest.json \
+  --output /tmp/tpllm-connected-workflow-run
+```
+
+This command does not create or send anything and forbids network access during
+evaluation. It does not claim unattended collection: TPLLM lacks Gmail-draft and
+Zoom-Hub-document collectors, and the Calendar connector readback omits the
+provider modification timestamp expected by the native Calendar adapter. The
+bridge records capture time explicitly instead of fabricating that timestamp.
+The resulting `report.json` separates verified behavior, product gaps, and
+authored expectations. `snapshot.json` contains the actual engine output.

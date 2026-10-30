@@ -72,6 +72,63 @@ def test_paragraph_kpis_preserve_values_and_target_ownership(ws):
         assert kpis[name]["committed_target"] == committed
 
 
+@pytest.mark.parametrize("demo", [False, True])
+@pytest.mark.parametrize("kind,metadata", [
+    ("email_draft", {}),
+    ("authored_script", {}),
+    ("conversation", {"delivery_state": "unsent_draft"}),
+    ("conversation", {"labels": ["DRAFT"]}),
+    ("meeting_notes", {"meeting_occurred": False}),
+    ("meeting", {}),
+    ("conversation", {"synthetic": True, "observation_basis": "connector_read_time"}),
+    ("email_draft", {"synthetic": True, "observation_basis": "simulated_observation"}),
+])
+def test_unobserved_sources_cannot_supply_kpi_values_or_targets(tmp_path, demo, kind, metadata):
+    from tpllm.models.program import Program, SuccessMetric
+    space = ProductWorkspace(TPLLMConfig(data_dir=tmp_path), demo=demo)
+    space.store.save("visual-search", "program", Program(id="visual-search", name="Visual search", goal="Respect the shopper request",
+        success_metrics=[SuccessMetric(name="Request match accuracy", target="95%"), SuccessMetric(name="Package alignment", target="100%")]))
+    record = SourceRecord(provider="test", scope="scenario", project_id="visual-search", source_id="unobserved",
+        kind=kind, title="Authored release scenario", observed_at=now(), data=metadata,
+        text="Keep Request match accuracy at 95%. Package alignment is 100%. Proposed request target 97% is not approved.")
+    accept_collection(space, Collection(records=[record]))
+    data = space.get("coordination")
+    assert len(data["records"]) == 1  # Preserve the original evidence and provenance.
+    assert space.get("collected_kpi_inputs")["observations"] == []
+    for kpi in data["kpis"]:
+        assert kpi["trend"]["latest_value"] is None
+        assert kpi["trend"]["health"] == "unknown"
+        assert kpi["claims"] == []
+        assert kpi["excluded_sources"][0]["key"] == record.key
+        assert kpi["excluded_sources"][0]["reason"]
+
+
+@pytest.mark.parametrize("demo", [False, True])
+def test_explicit_simulated_observations_are_demo_only(tmp_path, demo):
+    from tpllm.models.program import Program, SuccessMetric
+    space = ProductWorkspace(TPLLMConfig(data_dir=tmp_path), demo=demo)
+    space.store.save("visual-search", "program", Program(id="visual-search", name="Visual search", goal="Respect the shopper request",
+        success_metrics=[SuccessMetric(name="Request match accuracy", target="95%")]))
+    record = SourceRecord(provider="test", scope="scenario", project_id="visual-search", source_id="simulation-result",
+        kind="meeting_notes", title="Simulated result", text="Request match accuracy is 89%.", observed_at=now(),
+        data={"synthetic": True, "observation_basis": "simulated_observation"})
+    accept_collection(space, Collection(records=[record]))
+    kpi = space.get("coordination")["kpis"][0]
+    assert kpi["trend"]["latest_value"] == (89 if demo else None)
+    assert kpi["observation_label"] == ("Simulated source claims" if demo else "No eligible source observations")
+
+
+def test_excluded_draft_cannot_conflict_with_reported_observation(ws):
+    draft = SourceRecord(provider="gmail", scope="drafts", project_id="visual-search", source_id="unposted",
+        kind="email_draft", title="Unsent proposed update", text="Request match accuracy is 100%. Target is 80%.", observed_at=now())
+    accept_collection(ws, Collection(records=[draft]))
+    kpi = ws.get("coordination")["kpis"][0]
+    assert kpi["trend"]["latest_value"] == 89
+    assert kpi["committed_target"] == "95%"
+    assert not any(c["parsed_numeric_value"] == 100 or c["target_candidate"] == 80 for c in kpi["claims"])
+    assert any(r["key"] == draft.key for r in kpi["excluded_sources"])
+
+
 def test_replay_never_duplicates_notes_commitments_or_action(ws):
     before = ws.snapshot()
     cycle(ws)

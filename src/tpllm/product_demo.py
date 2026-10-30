@@ -125,6 +125,7 @@ def seed_coordination(ws):
     scopes = []
     batch = Collection()
     for spec in specs:
+        spec["data"].update(synthetic=True, observation_basis="simulated_observation")
         record = SourceRecord(project_id="visual-search", observed_at=stamp, **spec)
         batch.records.append(record)
         scopes.append(f"{record.provider}:{record.scope}")

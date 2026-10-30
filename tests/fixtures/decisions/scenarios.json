@@ -1,0 +1,844 @@
+[
+  {
+    "id": "schedule_risk",
+    "description": "Three dependent tasks slipped. A critical dependency missed two delivery dates. Velocity remains stable; release date unchanged.",
+    "data": {
+      "dependent_tasks_slipped": 3,
+      "missed_delivery_dates": 2,
+      "blocked": true
+    },
+    "answers": {
+      "evidence.contradictory.v1": {
+        "type": "noul",
+        "noul": 0.12
+      },
+      "evidence.sufficient.v1": {
+        "type": "noul",
+        "noul": 0.96
+      },
+      "impact.scope.v1": {
+        "type": "choice",
+        "choice": "project",
+        "confidence": 0.85,
+        "probabilities": {
+          "local": 0.030000000000000006,
+          "project": 0.85,
+          "cross_team": 0.030000000000000006,
+          "organization": 0.030000000000000006,
+          "external": 0.030000000000000006,
+          "unknown": 0.030000000000000006
+        }
+      },
+      "intervention.value.v1": {
+        "type": "score",
+        "score": 3.4,
+        "confidence": 0.9,
+        "probabilities": {
+          "0": 0,
+          "1": 0.01,
+          "2": 0.08,
+          "3": 0.41,
+          "4": 0.5
+        },
+        "legend": {
+          "0": "no_value",
+          "1": "monitor",
+          "2": "review",
+          "3": "attention",
+          "4": "urgent"
+        }
+      },
+      "review.human_recommended.v1": {
+        "type": "noul",
+        "noul": 0.74
+      },
+      "risk.family.v1": {
+        "type": "choice",
+        "choice": "dependency",
+        "confidence": 0.81,
+        "probabilities": {
+          "schedule": 0.14,
+          "dependency": 0.81,
+          "security": 0.0,
+          "reliability": 0.0,
+          "staffing": 0.0,
+          "cost": 0.0,
+          "scope": 0.0,
+          "compliance": 0.0,
+          "quality": 0.0,
+          "unknown": 0.05
+        }
+      },
+      "risk.present.v1": {
+        "type": "noul",
+        "noul": 0.93
+      },
+      "risk.severity.v1": {
+        "type": "score",
+        "score": 3.4,
+        "confidence": 0.9,
+        "probabilities": {
+          "0": 0,
+          "1": 0.01,
+          "2": 0.08,
+          "3": 0.41,
+          "4": 0.5
+        },
+        "legend": {
+          "0": "negligible",
+          "1": "low",
+          "2": "material",
+          "3": "high",
+          "4": "critical"
+        }
+      },
+      "trend.direction.v1": {
+        "type": "choice",
+        "choice": "deteriorating",
+        "confidence": 0.85,
+        "probabilities": {
+          "improving": 0.05000000000000001,
+          "stable": 0.05000000000000001,
+          "deteriorating": 0.85,
+          "ambiguous": 0.05000000000000001
+        }
+      },
+      "trend.materiality.v1": {
+        "type": "score",
+        "score": 3.4,
+        "confidence": 0.9,
+        "probabilities": {
+          "0": 0,
+          "1": 0.01,
+          "2": 0.08,
+          "3": 0.41,
+          "4": 0.5
+        },
+        "legend": {
+          "0": "negligible",
+          "1": "minor",
+          "2": "material",
+          "3": "major",
+          "4": "critical"
+        }
+      }
+    },
+    "expected": {
+      "evidence.contradictory.v1": false,
+      "evidence.sufficient.v1": true,
+      "impact.scope.v1": "project",
+      "intervention.value.v1": 3,
+      "review.human_recommended.v1": true,
+      "risk.family.v1": "dependency",
+      "risk.present.v1": true,
+      "risk.severity.v1": 3,
+      "trend.direction.v1": "deteriorating",
+      "trend.materiality.v1": 3
+    },
+    "label_provenance": "Author-authored fixture rubric; not an observed human or production outcome.",
+    "sources": [
+      {
+        "source": "jira",
+        "text": "Three dependent tasks slipped.",
+        "data": {
+          "dependent_tasks_slipped": 3
+        }
+      },
+      {
+        "source": "github",
+        "text": "Critical upstream dependency missed two expected delivery dates.",
+        "data": {
+          "missed_delivery_dates": 2,
+          "blocked": true
+        }
+      },
+      {
+        "source": "slack",
+        "text": "Velocity remains stable. Release date unchanged.",
+        "data": {
+          "status": "release_date_unchanged"
+        }
+      }
+    ],
+    "kpi": {
+      "name": "Slipped dependent tasks",
+      "value": 3,
+      "target": 0
+    },
+    "baseline_origin": "Executed TPLLM assess_kpi_health over the fixture KPI, mapped to risk.present by the product adapter."
+  },
+  {
+    "id": "noisy_signal",
+    "description": "One deployment failed, immediate retry passed; no correlated failures and error rate within baseline.",
+    "data": {
+      "retry_passed": true,
+      "correlated_failures": 0,
+      "error_rate_within_baseline": true
+    },
+    "answers": {
+      "evidence.contradictory.v1": {
+        "type": "noul",
+        "noul": 0.08
+      },
+      "evidence.sufficient.v1": {
+        "type": "noul",
+        "noul": 0.72
+      },
+      "impact.scope.v1": {
+        "type": "choice",
+        "choice": "local",
+        "confidence": 0.85,
+        "probabilities": {
+          "local": 0.85,
+          "project": 0.030000000000000006,
+          "cross_team": 0.030000000000000006,
+          "organization": 0.030000000000000006,
+          "external": 0.030000000000000006,
+          "unknown": 0.030000000000000006
+        }
+      },
+      "intervention.value.v1": {
+        "type": "score",
+        "score": 0.31,
+        "confidence": 0.55,
+        "probabilities": {
+          "0": 0.75,
+          "1": 0.2,
+          "2": 0.04,
+          "3": 0.01,
+          "4": 0
+        },
+        "legend": {
+          "0": "no_value",
+          "1": "monitor",
+          "2": "review",
+          "3": "attention",
+          "4": "urgent"
+        }
+      },
+      "review.human_recommended.v1": {
+        "type": "noul",
+        "noul": 0.15
+      },
+      "risk.family.v1": {
+        "type": "choice",
+        "choice": "reliability",
+        "confidence": 0.55,
+        "probabilities": {
+          "schedule": 0.049999999999999996,
+          "dependency": 0.049999999999999996,
+          "security": 0.049999999999999996,
+          "reliability": 0.55,
+          "staffing": 0.049999999999999996,
+          "cost": 0.049999999999999996,
+          "scope": 0.049999999999999996,
+          "compliance": 0.049999999999999996,
+          "quality": 0.049999999999999996,
+          "unknown": 0.049999999999999996
+        }
+      },
+      "risk.present.v1": {
+        "type": "noul",
+        "noul": 0.12
+      },
+      "risk.severity.v1": {
+        "type": "score",
+        "score": 0.31,
+        "confidence": 0.55,
+        "probabilities": {
+          "0": 0.75,
+          "1": 0.2,
+          "2": 0.04,
+          "3": 0.01,
+          "4": 0
+        },
+        "legend": {
+          "0": "negligible",
+          "1": "low",
+          "2": "material",
+          "3": "high",
+          "4": "critical"
+        }
+      },
+      "trend.direction.v1": {
+        "type": "choice",
+        "choice": "stable",
+        "confidence": 0.85,
+        "probabilities": {
+          "improving": 0.05000000000000001,
+          "stable": 0.85,
+          "deteriorating": 0.05000000000000001,
+          "ambiguous": 0.05000000000000001
+        }
+      },
+      "trend.materiality.v1": {
+        "type": "score",
+        "score": 0.31,
+        "confidence": 0.55,
+        "probabilities": {
+          "0": 0.75,
+          "1": 0.2,
+          "2": 0.04,
+          "3": 0.01,
+          "4": 0
+        },
+        "legend": {
+          "0": "negligible",
+          "1": "minor",
+          "2": "material",
+          "3": "major",
+          "4": "critical"
+        }
+      }
+    },
+    "expected": {
+      "evidence.contradictory.v1": false,
+      "evidence.sufficient.v1": false,
+      "impact.scope.v1": "local",
+      "intervention.value.v1": 0,
+      "review.human_recommended.v1": false,
+      "risk.family.v1": "reliability",
+      "risk.present.v1": false,
+      "risk.severity.v1": 0,
+      "trend.direction.v1": "stable",
+      "trend.materiality.v1": 0
+    },
+    "label_provenance": "Author-authored fixture rubric; not an observed human or production outcome.",
+    "sources": [
+      {
+        "source": "github",
+        "text": "A deployment failed; the immediate retry passed.",
+        "data": {
+          "retry_passed": true
+        }
+      },
+      {
+        "source": "telemetry",
+        "text": "No correlated failure; error rate remains within baseline.",
+        "data": {
+          "correlated_failures": 0,
+          "error_rate_within_baseline": true
+        }
+      },
+      {
+        "source": "slack",
+        "text": "No ongoing incident reported after the retry.",
+        "data": {
+          "status": "recovered"
+        }
+      }
+    ],
+    "kpi": {
+      "name": "Unrecovered deployments",
+      "value": 0,
+      "target": 0
+    },
+    "baseline_origin": "Executed TPLLM assess_kpi_health over the fixture KPI, mapped to risk.present by the product adapter."
+  },
+  {
+    "id": "contradictory_evidence",
+    "description": "Jira blocked; GitHub fix merged; Slack deployment pending; production still old. These may be lifecycle stages rather than contradiction.",
+    "data": {
+      "blocked": true,
+      "merged": true,
+      "deployment_status": "pending",
+      "version_current": false
+    },
+    "answers": {
+      "evidence.contradictory.v1": {
+        "type": "noul",
+        "noul": 0.64
+      },
+      "evidence.sufficient.v1": {
+        "type": "noul",
+        "noul": 0.54
+      },
+      "impact.scope.v1": {
+        "type": "choice",
+        "choice": "project",
+        "confidence": 0.85,
+        "probabilities": {
+          "local": 0.030000000000000006,
+          "project": 0.85,
+          "cross_team": 0.030000000000000006,
+          "organization": 0.030000000000000006,
+          "external": 0.030000000000000006,
+          "unknown": 0.030000000000000006
+        }
+      },
+      "intervention.value.v1": {
+        "type": "score",
+        "score": 2.0,
+        "confidence": 0.55,
+        "probabilities": {
+          "0": 0.02,
+          "1": 0.18,
+          "2": 0.6,
+          "3": 0.18,
+          "4": 0.02
+        },
+        "legend": {
+          "0": "no_value",
+          "1": "monitor",
+          "2": "review",
+          "3": "attention",
+          "4": "urgent"
+        }
+      },
+      "review.human_recommended.v1": {
+        "type": "noul",
+        "noul": 0.95
+      },
+      "risk.family.v1": {
+        "type": "choice",
+        "choice": "dependency",
+        "confidence": 0.55,
+        "probabilities": {
+          "schedule": 0.049999999999999996,
+          "dependency": 0.55,
+          "security": 0.049999999999999996,
+          "reliability": 0.049999999999999996,
+          "staffing": 0.049999999999999996,
+          "cost": 0.049999999999999996,
+          "scope": 0.049999999999999996,
+          "compliance": 0.049999999999999996,
+          "quality": 0.049999999999999996,
+          "unknown": 0.049999999999999996
+        }
+      },
+      "risk.present.v1": {
+        "type": "noul",
+        "noul": 0.67
+      },
+      "risk.severity.v1": {
+        "type": "score",
+        "score": 2.0,
+        "confidence": 0.55,
+        "probabilities": {
+          "0": 0.02,
+          "1": 0.18,
+          "2": 0.6,
+          "3": 0.18,
+          "4": 0.02
+        },
+        "legend": {
+          "0": "negligible",
+          "1": "low",
+          "2": "material",
+          "3": "high",
+          "4": "critical"
+        }
+      },
+      "trend.direction.v1": {
+        "type": "choice",
+        "choice": "ambiguous",
+        "confidence": 0.85,
+        "probabilities": {
+          "improving": 0.05000000000000001,
+          "stable": 0.05000000000000001,
+          "deteriorating": 0.05000000000000001,
+          "ambiguous": 0.85
+        }
+      },
+      "trend.materiality.v1": {
+        "type": "score",
+        "score": 2.0,
+        "confidence": 0.55,
+        "probabilities": {
+          "0": 0.02,
+          "1": 0.18,
+          "2": 0.6,
+          "3": 0.18,
+          "4": 0.02
+        },
+        "legend": {
+          "0": "negligible",
+          "1": "minor",
+          "2": "material",
+          "3": "major",
+          "4": "critical"
+        }
+      }
+    },
+    "expected": {
+      "evidence.contradictory.v1": false,
+      "evidence.sufficient.v1": false,
+      "impact.scope.v1": "project",
+      "intervention.value.v1": 2,
+      "review.human_recommended.v1": true,
+      "risk.family.v1": "dependency",
+      "risk.present.v1": true,
+      "risk.severity.v1": 2,
+      "trend.direction.v1": "ambiguous",
+      "trend.materiality.v1": 2
+    },
+    "label_provenance": "Author-authored fixture rubric; not an observed human or production outcome.",
+    "sources": [
+      {
+        "source": "jira",
+        "text": "Task reports blocked.",
+        "data": {
+          "blocked": true
+        }
+      },
+      {
+        "source": "github",
+        "text": "Associated fix merged.",
+        "data": {
+          "merged": true
+        }
+      },
+      {
+        "source": "slack",
+        "text": "Deployment pending.",
+        "data": {
+          "deployment_status": "pending"
+        }
+      },
+      {
+        "source": "telemetry",
+        "text": "Production still serves old version.",
+        "data": {
+          "version_current": false
+        }
+      }
+    ],
+    "kpi": {
+      "name": "Blocked tasks",
+      "value": 1,
+      "target": 0
+    },
+    "baseline_origin": "Executed TPLLM assess_kpi_health over the fixture KPI, mapped to risk.present by the product adapter."
+  },
+  {
+    "id": "security_sensitive",
+    "description": "A source reports possible unauthorized access; scope and validity remain unverified. No containment authority.",
+    "data": {
+      "status": "possible_security_exposure"
+    },
+    "answers": {
+      "evidence.contradictory.v1": {
+        "type": "noul",
+        "noul": 0.05
+      },
+      "evidence.sufficient.v1": {
+        "type": "noul",
+        "noul": 0.91
+      },
+      "impact.scope.v1": {
+        "type": "choice",
+        "choice": "project",
+        "confidence": 0.85,
+        "probabilities": {
+          "local": 0.030000000000000006,
+          "project": 0.85,
+          "cross_team": 0.030000000000000006,
+          "organization": 0.030000000000000006,
+          "external": 0.030000000000000006,
+          "unknown": 0.030000000000000006
+        }
+      },
+      "intervention.value.v1": {
+        "type": "score",
+        "score": 3.6799999999999997,
+        "confidence": 0.9,
+        "probabilities": {
+          "0": 0,
+          "1": 0,
+          "2": 0.02,
+          "3": 0.28,
+          "4": 0.7
+        },
+        "legend": {
+          "0": "no_value",
+          "1": "monitor",
+          "2": "review",
+          "3": "attention",
+          "4": "urgent"
+        }
+      },
+      "review.human_recommended.v1": {
+        "type": "noul",
+        "noul": 0.95
+      },
+      "risk.family.v1": {
+        "type": "choice",
+        "choice": "security",
+        "confidence": 0.94,
+        "probabilities": {
+          "schedule": 0.006666666666666672,
+          "dependency": 0.006666666666666672,
+          "security": 0.94,
+          "reliability": 0.006666666666666672,
+          "staffing": 0.006666666666666672,
+          "cost": 0.006666666666666672,
+          "scope": 0.006666666666666672,
+          "compliance": 0.006666666666666672,
+          "quality": 0.006666666666666672,
+          "unknown": 0.006666666666666672
+        }
+      },
+      "risk.present.v1": {
+        "type": "noul",
+        "noul": 0.96
+      },
+      "risk.severity.v1": {
+        "type": "score",
+        "score": 3.6799999999999997,
+        "confidence": 0.9,
+        "probabilities": {
+          "0": 0,
+          "1": 0,
+          "2": 0.02,
+          "3": 0.28,
+          "4": 0.7
+        },
+        "legend": {
+          "0": "negligible",
+          "1": "low",
+          "2": "material",
+          "3": "high",
+          "4": "critical"
+        }
+      },
+      "trend.direction.v1": {
+        "type": "choice",
+        "choice": "deteriorating",
+        "confidence": 0.85,
+        "probabilities": {
+          "improving": 0.05000000000000001,
+          "stable": 0.05000000000000001,
+          "deteriorating": 0.85,
+          "ambiguous": 0.05000000000000001
+        }
+      },
+      "trend.materiality.v1": {
+        "type": "score",
+        "score": 3.6799999999999997,
+        "confidence": 0.9,
+        "probabilities": {
+          "0": 0,
+          "1": 0,
+          "2": 0.02,
+          "3": 0.28,
+          "4": 0.7
+        },
+        "legend": {
+          "0": "negligible",
+          "1": "minor",
+          "2": "material",
+          "3": "major",
+          "4": "critical"
+        }
+      }
+    },
+    "expected": {
+      "evidence.contradictory.v1": false,
+      "evidence.sufficient.v1": true,
+      "impact.scope.v1": "project",
+      "intervention.value.v1": 4,
+      "review.human_recommended.v1": true,
+      "risk.family.v1": "security",
+      "risk.present.v1": true,
+      "risk.severity.v1": 4,
+      "trend.direction.v1": "deteriorating",
+      "trend.materiality.v1": 4
+    },
+    "label_provenance": "Author-authored fixture rubric; not an observed human or production outcome.",
+    "sources": [
+      {
+        "source": "github",
+        "text": "Possible unauthorized access was reported.",
+        "data": {
+          "status": "possible_security_exposure"
+        }
+      },
+      {
+        "source": "telemetry",
+        "text": "Confirmed incident counter remains zero; the new report is unverified.",
+        "data": {
+          "status": "no_confirmed_incident"
+        }
+      },
+      {
+        "source": "slack",
+        "text": "Scope needs review; no containment authority recorded.",
+        "data": {
+          "status": "unverified_report"
+        }
+      }
+    ],
+    "kpi": {
+      "name": "Confirmed security incidents",
+      "value": 0,
+      "target": 0
+    },
+    "baseline_origin": "Executed TPLLM assess_kpi_health over the fixture KPI, mapped to risk.present by the product adapter."
+  },
+  {
+    "id": "high_uncertainty",
+    "description": "Delivery is late and upstream work is incomplete; schedule and dependency explanations have similar support.",
+    "data": {
+      "state": "blocked",
+      "dependent_tasks_slipped": 1
+    },
+    "answers": {
+      "evidence.contradictory.v1": {
+        "type": "noul",
+        "noul": 0.38
+      },
+      "evidence.sufficient.v1": {
+        "type": "noul",
+        "noul": 0.6
+      },
+      "impact.scope.v1": {
+        "type": "choice",
+        "choice": "project",
+        "confidence": 0.85,
+        "probabilities": {
+          "local": 0.030000000000000006,
+          "project": 0.85,
+          "cross_team": 0.030000000000000006,
+          "organization": 0.030000000000000006,
+          "external": 0.030000000000000006,
+          "unknown": 0.030000000000000006
+        }
+      },
+      "intervention.value.v1": {
+        "type": "score",
+        "score": 2.0,
+        "confidence": 0.55,
+        "probabilities": {
+          "0": 0.05,
+          "1": 0.2,
+          "2": 0.5,
+          "3": 0.2,
+          "4": 0.05
+        },
+        "legend": {
+          "0": "no_value",
+          "1": "monitor",
+          "2": "review",
+          "3": "attention",
+          "4": "urgent"
+        }
+      },
+      "review.human_recommended.v1": {
+        "type": "noul",
+        "noul": 0.95
+      },
+      "risk.family.v1": {
+        "type": "choice",
+        "choice": "schedule",
+        "confidence": 0.47,
+        "probabilities": {
+          "schedule": 0.47,
+          "dependency": 0.44,
+          "security": 0.04,
+          "reliability": 0.0,
+          "staffing": 0.0,
+          "cost": 0.0,
+          "scope": 0.0,
+          "compliance": 0.0,
+          "quality": 0.0,
+          "unknown": 0.05
+        }
+      },
+      "risk.present.v1": {
+        "type": "noul",
+        "noul": 0.71
+      },
+      "risk.severity.v1": {
+        "type": "score",
+        "score": 2.0,
+        "confidence": 0.55,
+        "probabilities": {
+          "0": 0.05,
+          "1": 0.2,
+          "2": 0.5,
+          "3": 0.2,
+          "4": 0.05
+        },
+        "legend": {
+          "0": "negligible",
+          "1": "low",
+          "2": "material",
+          "3": "high",
+          "4": "critical"
+        }
+      },
+      "trend.direction.v1": {
+        "type": "choice",
+        "choice": "ambiguous",
+        "confidence": 0.85,
+        "probabilities": {
+          "improving": 0.05000000000000001,
+          "stable": 0.05000000000000001,
+          "deteriorating": 0.05000000000000001,
+          "ambiguous": 0.85
+        }
+      },
+      "trend.materiality.v1": {
+        "type": "score",
+        "score": 2.0,
+        "confidence": 0.55,
+        "probabilities": {
+          "0": 0.05,
+          "1": 0.2,
+          "2": 0.5,
+          "3": 0.2,
+          "4": 0.05
+        },
+        "legend": {
+          "0": "negligible",
+          "1": "minor",
+          "2": "material",
+          "3": "major",
+          "4": "critical"
+        }
+      }
+    },
+    "expected": {
+      "evidence.contradictory.v1": false,
+      "evidence.sufficient.v1": false,
+      "impact.scope.v1": "project",
+      "intervention.value.v1": 2,
+      "review.human_recommended.v1": true,
+      "risk.family.v1": "unknown",
+      "risk.present.v1": true,
+      "risk.severity.v1": 2,
+      "trend.direction.v1": "ambiguous",
+      "trend.materiality.v1": 2
+    },
+    "label_provenance": "Author-authored fixture rubric; not an observed human or production outcome.",
+    "sources": [
+      {
+        "source": "jira",
+        "text": "Work is late.",
+        "data": {
+          "dependent_tasks_slipped": 1
+        }
+      },
+      {
+        "source": "github",
+        "text": "Upstream work is incomplete.",
+        "data": {
+          "blocked": true
+        }
+      },
+      {
+        "source": "slack",
+        "text": "Schedule and dependency explanations remain plausible.",
+        "data": {
+          "state": "blocked"
+        }
+      }
+    ],
+    "kpi": {
+      "name": "Late work items",
+      "value": 1,
+      "target": 0
+    },
+    "baseline_origin": "Executed TPLLM assess_kpi_health over the fixture KPI, mapped to risk.present by the product adapter."
+  }
+]

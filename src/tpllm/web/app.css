@@ -2197,3 +2197,10 @@ fieldset label {
   gap: 16px;
   min-width: 0;
 }
+.decision-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-top: 14px; }
+.decision-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; text-align: left; padding: 14px; border: 1px solid var(--border, #ddd); border-radius: 10px; background: transparent; color: inherit; cursor: pointer; }
+.decision-tile:hover, .decision-tile:focus-visible { background: rgba(130, 160, 180, .15); outline: 2px solid #aab7c5; }
+.decision-tile strong, .decision-value { font-size: 22px; }
+.decision-probability { display: grid; grid-template-columns: minmax(85px, 1fr) minmax(60px, 2fr) 60px; gap: 10px; align-items: center; margin: 9px 0; }
+.decision-probability meter { width: 100%; }
+.trace-hash { overflow-wrap: anywhere; font-family: monospace; font-size: 11px; }

@@ -1,0 +1,225 @@
+{
+  "schema_version": 1,
+  "run": "VSIM-20261030",
+  "synthetic": true,
+  "provenance": "Authored workflow. Real provider records will be scheduled meetings and unsent drafts, not real participant engagements.",
+  "meeting_scripts": [
+    {
+      "key": "M01",
+      "title": "Kickoff and release contract",
+      "script": [
+        "09:00 — Local operator: The user task is to upload a product photo, then ask 'Find a red backpack, not a handbag.' Success requires the returned category, color and exclusion to match the request.",
+        "09:04 — Jamie: The approved contract is Request match accuracy >=95%, Recognition accuracy >=98%, Package alignment =100%. The initial authored scenario results are 89%, 96% and 75%. These are fixture values, not measured model performance.",
+        "09:09 — Alex: A red handbag can currently be returned for a backpack request. Issue 73 and PR 42 are fictional trace identifiers for the negation and category regression.",
+        "09:14 — Riley: Candidate catalog-data-3.2 uses label schema 3.2. Sam's simulated cloud environment still has catalog-data-3.1.",
+        "09:19 — Sam: I own package parity. Alex owns the code fix, Riley the mapping, and Jamie the held-out run. A merged PR will not establish overall readiness.",
+        "09:24 — TPLLM expected engagement: Link the four workstreams, prepare an evidence packet, and ask Jamie whether the proposed 97% request target has decision-owner approval.",
+        "09:28 — Local operator: Keep the approved 95% target. Hold release while the full suite, package parity and explicit release decision are unresolved. This scripted statement applies only to the fictional scenario.",
+        "Actions: Alex fix regression before 10:30; Riley validate mappings before 10:20; Sam report exact bundle before 11:00; Jamie independently score the 100 symbolic cases before 11:15."
+      ]
+    },
+    {
+      "key": "M02",
+      "title": "Engineering investigation",
+      "script": [
+        "10:00 — Alex: I reproduced the fictional failure: input red backpack, exclusion handbag; response selects a red handbag. The retriever applies color before the exclusion filter.",
+        "10:05 — Riley: Three labels in catalog-data-3.1 alias backpack and handbag. Catalog-data-3.2 plus schema 3.2 separates those classes.",
+        "10:09 — Sam: I can stage the corrected bundle, but I cannot claim package parity until all four package identifiers are checked.",
+        "10:12 — Fictional stakeholder interruption: When can customers use the feature? Can you give a launch status update in this engineering review?",
+        "10:13 — TPLLM expected engagement: Preserve the technical agenda. Prepare an asynchronous update from the existing issue, PR, eval and package evidence. Ask Alex only whether negation is filtered before ranking; ask Sam only for the deployed package tuple.",
+        "10:18 — Alex: PR 42 moves exclusions before ranking. The focused red-backpack regression passes. This does not replace the held-out suite.",
+        "10:23 — Jamie: Full request-evals-2.1 remains queued under issue 74. Do not update the overall metrics from a single passing case.",
+        "10:28 — Decision: Merge the fictional regression fix, keep the release on HOLD, and run the full held-out suite against the exact candidate bundle. Owners Alex, Jamie and Sam retain their respective actions."
+      ]
+    },
+    {
+      "key": "M03",
+      "title": "Held-out evaluation review",
+      "script": [
+        "11:00 — Jamie: Scope is the fixed 100-case held-out symbolic suite. We score request decision/category/color separately from recognition. These are authored simulated outcomes.",
+        "11:04 — Sam: Scripted package audit finds vision-0.8.2, catalog-data-3.2, label schema 3.2 and request-evals-2.1 aligned. Package alignment is 100%.",
+        "11:09 — Jamie: The final authored totals are Request match accuracy 96/100 (96%) and Recognition accuracy 99/100 (99%). Four request cases and one recognition case still fail.",
+        "11:14 — Riley: Keep the failed cases visible. The four request errors concern ambiguous color or occlusion. They are follow-up work, not evidence for a 100% claim.",
+        "11:18 — Jamie: Someone proposed Request match accuracy 97%, but no approved target change exists. We meet 95% and miss the proposal; report both without silently changing the commitment.",
+        "11:22 — TPLLM expected engagement: Attach raw scenario provenance, the exact package tuple and unresolved cases to a decision packet. Passing synthetic scores cannot prove real customer performance.",
+        "11:27 — Decision: Mark the fictional full-eval task complete; keep release authorization absent. Carry HOLD and a bounded canary option to the release owner at noon."
+      ]
+    },
+    {
+      "key": "M04",
+      "title": "Release and canary decision",
+      "script": [
+        "12:00 — TPLLM expected engagement: Present two options: remain on HOLD, or a simulated 5% canary for the exact candidate bundle. Show 96/99/100 against approved 95/98/100, the unapproved 97% proposal, failed cases and the synthetic evidence limitation.",
+        "12:06 — Local operator: For this role-play only, authorize a 5% simulated canary, not a broad release. This authored script provides no real deployment authority.",
+        "12:11 — Sam: The scenario starts the canary at 13:00 and checks it at 15:00. Roll back if request match falls below 95%, recognition below 98%, package parity differs, or error rate exceeds the fictional 1% guardrail. No actual traffic will be changed.",
+        "12:17 — Jamie: The canary metrics will be another explicitly authored test packet. A no-signal interval must stay UNKNOWN; absence of alerts is not a successful observation.",
+        "12:22 — Riley: Retain the previous package tuple for simulated rollback. Link each follow-up to an owner, due time and source.",
+        "12:27 — Decision: Record limited fictional authority, prepare the canary checklist, schedule an asynchronous outcome report, and require a separate human decision for any expansion.",
+        "15:00 follow-up script: The synthetic canary packet reports 97/100 request matches, 99/100 recognition, package alignment 100%, error rate 0.4%. All values are invented scenario inputs; no production traffic was observed.",
+        "15:15 closure script: Keep the fictional canary at 5%. Broad rollout remains unapproved. Alex and Riley own the four residual request errors; Jamie owns a separate evaluation plan."
+      ]
+    }
+  ],
+  "emails": [
+    {
+      "id": "E01",
+      "scenario_time": "2026-10-30T08:30:00-07:00",
+      "fictional_role": "Local operator",
+      "intended_fictional_audience": "All fictional workstream owners",
+      "meeting": "M01",
+      "subject": "Release contract and ownership",
+      "body": "The visual-search feature must answer 'Find a red backpack, not a handbag' after a photo upload. Approved targets: Request match accuracy 95%; Recognition accuracy 98%; Package alignment 100%. Proposed request target 97% is not approved. Alex owns the regression, Riley the catalog labels, Jamie the held-out evaluation, and Sam cloud parity. The exact candidate is vision-0.8.2 / catalog-data-3.2 / schema 3.2 / request-evals-2.1. No release is authorized.",
+      "reply_to": "none"
+    },
+    {
+      "id": "E02",
+      "scenario_time": "2026-10-30T09:35:00-07:00",
+      "fictional_role": "TPLLM expected intervention",
+      "intended_fictional_audience": "Jamie Park and local operator",
+      "meeting": "M01",
+      "subject": "Clarify the 97 percent target conflict",
+      "body": "The kickoff contract says 95% request match; a planning proposal says 97%. Please identify whether an authorized target-change decision exists and link its source. Until then, retain 95% as the commitment and surface 97% as a proposal. Current authored metrics remain 89/96/75. This is a prepared question, not an actual TPLLM-generated or delivered message.",
+      "reply_to": "E01"
+    },
+    {
+      "id": "E03",
+      "scenario_time": "2026-10-30T09:40:00-07:00",
+      "fictional_role": "Jamie Park",
+      "intended_fictional_audience": "TPLLM and local operator",
+      "meeting": "M01",
+      "subject": "Target clarification response",
+      "body": "There is no approved target change. Keep Request match accuracy at 95%. Record 97% as an unapproved stretch proposal. Recognition remains 98%, package alignment 100%. Do not attribute the 97% proposal to the other KPIs. This reply is a scripted engagement.",
+      "reply_to": "E02"
+    },
+    {
+      "id": "E04",
+      "scenario_time": "2026-10-30T09:45:00-07:00",
+      "fictional_role": "Alex Chen",
+      "intended_fictional_audience": "Riley Shah, Jamie Park and Sam Rivera",
+      "meeting": "M02",
+      "subject": "Regression found in exclusion handling",
+      "body": "Fictional issue 73: a red handbag is returned for a red-backpack request excluding handbags. PR 42 moves the exclusion filter before ranking. Riley should check backpack/handbag aliases; Sam should report deployed catalog and schema. The focused regression will be rerun before the engineering review concludes.",
+      "reply_to": "E01"
+    },
+    {
+      "id": "E05",
+      "scenario_time": "2026-10-30T09:50:00-07:00",
+      "fictional_role": "Riley Shah",
+      "intended_fictional_audience": "Alex Chen and Sam Rivera",
+      "meeting": "M02",
+      "subject": "Catalog mismatch confirmed",
+      "body": "The scenario's cloud package is catalog-data-3.1, while the candidate is 3.2 with schema 3.2. Three aliases collapse backpack and handbag. I prepared the corrected mapping. Sam, verify model, catalog, schema and suite as one tuple before claiming 100% parity.",
+      "reply_to": "E04"
+    },
+    {
+      "id": "E06",
+      "scenario_time": "2026-10-30T10:05:00-07:00",
+      "fictional_role": "Fictional launch stakeholder",
+      "intended_fictional_audience": "Engineering review participants",
+      "meeting": "M02",
+      "subject": "Launch status request during technical review",
+      "body": "When can customers use the feature? Please give a launch status update in today's engineering review. This deliberate interruption tests whether TPLLM can preserve technical meeting scope and prepare an evidence-backed asynchronous answer.",
+      "reply_to": "E04"
+    },
+    {
+      "id": "E07",
+      "scenario_time": "2026-10-30T10:14:00-07:00",
+      "fictional_role": "TPLLM expected intervention",
+      "intended_fictional_audience": "Fictional launch stakeholder, Alex Chen and Sam Rivera",
+      "meeting": "M02",
+      "subject": "Prepared asynchronous status and targeted questions",
+      "body": "Release remains on HOLD. The negation/category regression is being fixed; full held-out evaluation is queued; cloud package parity is unverified. A merged PR alone cannot establish launch readiness. Preserve the engineering agenda. Alex: does the exclusion filter run before ranking? Sam: what exact package tuple is staged? Route a consolidated status update asynchronously when these answers arrive. This text is a scripted expected intervention, not proof the engine produced it.",
+      "reply_to": "E06"
+    },
+    {
+      "id": "E08",
+      "scenario_time": "2026-10-30T10:30:00-07:00",
+      "fictional_role": "Alex Chen",
+      "intended_fictional_audience": "Jamie Park and TPLLM",
+      "meeting": "M02",
+      "subject": "Focused regression passes; full suite still pending",
+      "body": "PR 42 is merged in the fictional scenario and issue 73 is closed. The single red-backpack regression passes. Issue 74, the full held-out request-evals-2.1 run, remains queued. Overall metrics must stay at the prior authored 89/96/75 until new comparable full-run evidence exists.",
+      "reply_to": "E07"
+    },
+    {
+      "id": "E09",
+      "scenario_time": "2026-10-30T10:45:00-07:00",
+      "fictional_role": "Sam Rivera",
+      "intended_fictional_audience": "Jamie Park and TPLLM",
+      "meeting": "M03",
+      "subject": "Candidate package parity response",
+      "body": "The scripted candidate audit confirms vision-0.8.2, catalog-data-3.2, schema 3.2, request-evals-2.1. Four of four package identifiers align, so Package alignment is 100% within this fictional audit. No deployment or actual cloud configuration was changed.",
+      "reply_to": "E05"
+    },
+    {
+      "id": "E10",
+      "scenario_time": "2026-10-30T10:50:00-07:00",
+      "fictional_role": "Jamie Park",
+      "intended_fictional_audience": "Alex Chen, Riley Shah and Sam Rivera",
+      "meeting": "M03",
+      "subject": "Held-out evaluation plan and evidence boundary",
+      "body": "Run the unchanged 100 symbolic cases with separate request and recognition scoring. Request correctness requires decision, category and color all matching the expected output. Keep case IDs, failed rows and package tuple. The source dataset contains authored output symbols, not real images or CV inference. Never label these numbers measured customer performance.",
+      "reply_to": "E08"
+    },
+    {
+      "id": "E11",
+      "scenario_time": "2026-10-30T11:20:00-07:00",
+      "fictional_role": "Jamie Park",
+      "intended_fictional_audience": "Local operator and TPLLM",
+      "meeting": "M03",
+      "subject": "Full evaluation results for the fictional candidate",
+      "body": "Authored scenario totals: Request match accuracy 96% (96/100); Recognition accuracy 99% (99/100); Package alignment 100% (4/4). Four request cases and one recognition case still fail. Issue 74 is complete in the scenario. Approved request target is 95%; proposed 97% remains unapproved. These totals are synthetic fixtures and do not grant release authority.",
+      "reply_to": "E10"
+    },
+    {
+      "id": "E12",
+      "scenario_time": "2026-10-30T11:40:00-07:00",
+      "fictional_role": "TPLLM expected intervention",
+      "intended_fictional_audience": "Local operator",
+      "meeting": "M04",
+      "subject": "Decision packet: hold or bounded canary",
+      "body": "Evidence chain: kickoff contract E01, target clarification E03, fix E08, package audit E09, full result E11. Options: remain on HOLD or authorize a simulated 5% canary for the exact candidate tuple. Preserve unresolved cases and provenance. A separate explicit human decision is required; neither the authored metrics nor this prepared packet grants real operational permission.",
+      "reply_to": "E11"
+    },
+    {
+      "id": "E13",
+      "scenario_time": "2026-10-30T12:25:00-07:00",
+      "fictional_role": "Fictional local operator",
+      "intended_fictional_audience": "Sam Rivera and Jamie Park",
+      "meeting": "M04",
+      "subject": "Role-play decision: five percent canary only",
+      "body": "SIMULATED AUTHORITY ONLY. In this authored scenario, approve a 5% canary at 13:00 with a 15:00 checkpoint. No broad rollout. Rollback if request match <95%, recognition <98%, package parity differs, or error rate >1%. This draft is unsent, the speaker is fictional, and the content does not authorize any real deployment, traffic change or external communication.",
+      "reply_to": "E12"
+    },
+    {
+      "id": "E14",
+      "scenario_time": "2026-10-30T13:00:00-07:00",
+      "fictional_role": "Sam Rivera",
+      "intended_fictional_audience": "Jamie Park and fictional local operator",
+      "meeting": "M04",
+      "subject": "Simulated canary start checklist",
+      "body": "Scenario execution checklist: exact candidate tuple confirmed; fictional scope 5%; rollback tuple retained; checkpoint owner Jamie; operations owner Sam. No actual service, package or traffic was changed. If telemetry is unavailable, status remains UNKNOWN rather than successful.",
+      "reply_to": "E13"
+    },
+    {
+      "id": "E15",
+      "scenario_time": "2026-10-30T15:00:00-07:00",
+      "fictional_role": "Jamie Park",
+      "intended_fictional_audience": "Fictional local operator, Sam Rivera and TPLLM",
+      "meeting": "M04",
+      "subject": "Authored canary outcome packet",
+      "body": "Synthetic illustrative packet: 100 requests; request match 97/100; recognition 99/100; package alignment 100%; error rate 0.4%. These values were authored for workflow testing, not sampled from production. Preserve the four residual held-out request errors. The different 100-case canary packet must not overwrite the original held-out 96/100 result.",
+      "reply_to": "E14"
+    },
+    {
+      "id": "E16",
+      "scenario_time": "2026-10-30T15:15:00-07:00",
+      "fictional_role": "TPLLM expected intervention",
+      "intended_fictional_audience": "Fictional local operator and workstream owners",
+      "meeting": "M04",
+      "subject": "Follow-up ledger and unresolved rollout decision",
+      "body": "Keep the fictional canary at 5%; broad rollout remains unapproved. Alex and Riley: investigate the four held-out request errors by the next working day. Jamie: propose the next independent evaluation and retain denominator/provenance. Sam: maintain rollback readiness in the role-play. Mark the target conflict answered by E03, the full suite complete by E11, and the wider release decision still open. All engagements in this run are authored scripts stored as unsent drafts.",
+      "reply_to": "E15"
+    }
+  ]
+}
