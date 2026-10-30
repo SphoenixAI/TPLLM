@@ -173,6 +173,7 @@ async function refresh() {
   S.catalogue = catalogue;
   if (S.program && !data.programs.some((p) => p.id === S.program))
     S.program = "";
+  await IntelligenceUI.load();
   render();
 }
 function programs() {
@@ -290,8 +291,9 @@ function render() {
     `${icon("database")}<span>${count} evidence record${count === 1 ? "" : "s"}</span><span>·</span><span>${S.data.revision ? esc(S.data.revision) : "No analysis yet"}</span><span>│</span><button data-action="navigate" data-page="connections">Review connections</button><span class="footer-right">${S.workspace === "demo" ? "DEMO DATA · ISOLATED WORKSPACE" : S.data.settings.hosted ? "HOSTED WORKSPACE" : "LOCAL WORKSPACE"} &nbsp; · &nbsp; SCOPED AUTHORITY</span>`;
   const filter = $("#program-filter");
   if (filter)
-    filter.onchange = () => {
+    filter.onchange = async () => {
       S.program = filter.value;
+      await IntelligenceUI.load();
       render();
     };
   const status = $("#task-status");
@@ -392,7 +394,7 @@ function renderIntelligence() {
       "Measurements, uncertainty, and the next useful intervention.",
       programSelect() +
         button(icon("play") + "Run analysis", "analyze", "", "primary"),
-    ) + DecisionUI.panel() +
+    ) + IntelligenceUI.panel() +
     `<div class="stat-grid"><div class="panel stat"><div class="eyebrow">Evidence available</div><div class="value">${ev.length}</div><div class="muted">Source observations</div></div><div class="panel stat"><div class="eyebrow">Analysis coverage</div><div class="value">${S.data.coverage.engine_backed.length} <span class="muted">engines</span></div><div class="muted">${S.data.coverage.derived.length} derived projections</div></div><div class="panel stat"><div class="eyebrow">Estimation method</div><div class="value" style="font-size:22px">Structural</div><div class="muted">Baseline · not a calibrated forecast</div></div></div><div class="notice">Probability, confidence, and impact are separate. Baseline scenarios describe structural possibilities. They do not establish a reliable likelihood.</div>${panel("Success criteria", ps.flatMap((p) => (p.success_metrics || []).map((m) => `<div class="list-row"><span class="item-icon">${icon("chart")}</span><div class="grow"><div class="eyebrow">${esc(p.name)}</div><h3>${esc(m.name)}</h3><p>Current: ${esc(m.current || "Unknown")} &nbsp; · &nbsp; Target: ${esc(m.target)}</p><p class="muted">${esc(m.measurement_method || "Measurement source and observation window not defined.")}</p></div>${sourceButton(p.id)}</div>`)).join("") || empty("Define what success means", "Add success metrics when you create a project. A target alone does not establish health."))}<div class="toolbar"><h2>Analysis outputs</h2><span class="spacer"></span>${button("Intelligence actions", "catalogue", 'data-section="Intelligence"')}</div><div class="card-grid">${arts.map((a) => `<article class="panel tool-card"><div class="eyebrow">${esc(a.artifact_id)}</div><h3>${esc(titleCase(a.artifact_type))}</h3><p>${a.current === false ? "Previous revision · not recomputed in the latest pass" : S.data.coverage.engine_backed.includes(a.artifact_type) ? "Dedicated engine output" : "Derived projection · full recommendation engine has not run for this output"}</p>${button("Inspect output", "artifact", `data-id="${esc(a.artifact_id)}" data-type="${esc(a.artifact_type)}"`)}</article>`).join("") || empty("No published analysis", "Add evidence and run analysis to build a coherent revision.")}</div>`
   );
 }
@@ -960,6 +962,13 @@ async function handle(action, el) {
       break;
     case "bounded-trace":
       await DecisionUI.open(d.id);
+      break;
+    case "intelligence-tab":
+      IntelligenceUI.section = d.section;
+      render();
+      break;
+    case "intelligence-record":
+      await IntelligenceUI.open(d.id);
       break;
     case "bounded-label":
       DecisionUI.label(d.id);

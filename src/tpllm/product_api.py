@@ -31,7 +31,8 @@ PRODUCT_UNAUTHENTICATED_READ_ROUTES = (
     "/api/product/state", "/api/product/catalogue", "/api/product/decisions/{decision_id}",
     "/api/product/history",
 )
-PRODUCT_AUTHENTICATED_READ_ROUTES = ("/api/product/decision-intelligence/{trace_id}",)
+PRODUCT_AUTHENTICATED_READ_ROUTES = ("/api/product/decision-intelligence/{trace_id}",
+    "/api/product/intelligence", "/api/product/intelligence/{record_id}")
 
 
 class BrowserArtifactStore(ArtifactStore):
@@ -160,6 +161,23 @@ class BoundedDecisionReview(BaseModel):
     source: Literal["human_review", "observed_outcome", "corrected_classification"] = "human_review"
     evidence_refs: list[str] = Field(min_length=1, max_length=20)
     observed_at: datetime
+    supersedes: str | None = None
+
+
+class IntelligenceReviewInput(BaseModel):
+    model_config = {"extra": "forbid"}
+    label: Literal["agree", "disagree", "ambiguous", "insufficient_evidence", "correct_label",
+        "accept", "partially_correct", "reject", "missing_evidence", "unsupported_inference", "corrected_interpretation"]
+    interpretation: str = Field(default="", max_length=3000)
+    decision_value: str | float | bool | None = None
+    evidence_refs: list[str] = Field(default_factory=list, max_length=40)
+    supersedes: str | None = None
+
+
+class IntelligenceOutcomeInput(BaseModel):
+    model_config = {"extra": "forbid"}
+    source_event_id: str = Field(min_length=1, max_length=240)
+    decision_value: str | float | bool | None = None
     supersedes: str | None = None
 
 
@@ -459,11 +477,25 @@ def create_product_router(cfg, get_current_user, require_auth, require_permissio
                                 ws.put("coordination_cycle", {"at": now().isoformat(), "error": type(exc).__name__})
         worker = threading.Thread(target=work, name="tpllm-source-collection", daemon=True)
         worker.start()
+        def evaluate_shadow():
+            from tpllm.product_intelligence import drain_one
+            while not stop.wait(.5):
+                with creation_lock:
+                    current = list(spaces.values())
+                for ws in current:
+                    try:
+                        drain_one(ws)
+                    except Exception:
+                        # Optional diagnostics cannot stop source collection.
+                        pass
+        intelligence_worker = threading.Thread(target=evaluate_shadow, name="tpllm-intelligence-shadow", daemon=True)
+        intelligence_worker.start()
         try:
             yield
         finally:
             stop.set()
             worker.join(timeout=2)
+            intelligence_worker.join(timeout=2)
     router = APIRouter(prefix="/api/product", lifespan=lifespan)
     router.product_workspaces = spaces
 
@@ -536,6 +568,86 @@ def create_product_router(cfg, get_current_user, require_auth, require_permissio
             if ws.checkpoint:
                 ws.checkpoint()
             return label.model_dump(mode="json")
+
+    @router.get("/intelligence")
+    def intelligence_overview(program_id: str | None = None, ws=Depends(space), claims=Depends(get_current_user)):
+        from tpllm.product_intelligence import snapshot
+        if not ws.demo:
+            user = require_auth(claims)
+            require_permission(user, Permission.PROGRAM_READ, program_id)
+            if user.scopes and not program_id:
+                raise HTTPException(403, "Select a project within this credential's scope.")
+        with ws.lock:
+            return snapshot(ws, project_id=program_id)
+
+    def intelligence_record(ws, identity, claims, request=None):
+        from tpllm.runtime.intelligence_journal import JournalIntelligenceStore
+        store = JournalIntelligenceStore(ws.db.journal, ws.organization)
+        record = store.get(identity)
+        if record is None:
+            raise HTTPException(404, "Intelligence record not found")
+        actor = None
+        if request is not None:
+            actor = authorize(request, ws, claims, record.project_id)
+        elif not ws.demo:
+            require_permission(require_auth(claims), Permission.PROGRAM_READ, record.project_id)
+        return store, record, actor
+
+    @router.get("/intelligence/{record_id}")
+    def intelligence_detail(record_id: str, ws=Depends(space), claims=Depends(get_current_user)):
+        with ws.lock:
+            store, record, _ = intelligence_record(ws, record_id, claims)
+            packet = next(p for p in store.packets() if p.id == record.evidence_packet_id)
+            return {"record": record.model_dump(mode="json"), "packet": packet.model_dump(mode="json"),
+                "reviews": [r.model_dump(mode="json") for r in store.reviews() if r.record_id == record_id],
+                "outcomes": [o.model_dump(mode="json") for o in store.outcomes() if o.record_id == record_id]}
+
+    @router.post("/intelligence/{record_id}/reviews")
+    def intelligence_review(record_id: str, body: IntelligenceReviewInput, request: Request,
+                            ws=Depends(space), claims=Depends(get_current_user)):
+        from tpllm.intelligence_tasks.models import ReviewEvent
+        from tpllm.intelligence_tasks.comparison import compare_reference
+        from tpllm.persistence.protocols import JournalConcurrencyError
+        with ws.lock:
+            store, record, actor = intelligence_record(ws, record_id, claims, request)
+            stamp = now()
+            event = ReviewEvent(record_id=record_id, reviewer=actor, observed_at=stamp, recorded_at=stamp,
+                source="fixture" if ws.demo else "human", **body.model_dump())
+            try:
+                store.review(event)
+                store.compare(compare_reference(record, event, kind="human"))
+            except (ValueError, JournalConcurrencyError):
+                raise HTTPException(422, "Review must match its lane, valid labels, and latest correction lineage.") from None
+            if ws.checkpoint:
+                ws.checkpoint()
+            return event.model_dump(mode="json")
+
+    @router.post("/intelligence/{record_id}/outcomes")
+    def intelligence_outcome(record_id: str, body: IntelligenceOutcomeInput, request: Request,
+                             ws=Depends(space), claims=Depends(get_current_user)):
+        from tpllm.intelligence_tasks.models import OutcomeEvent
+        from tpllm.intelligence_tasks.comparison import compare_reference
+        from tpllm.persistence.models import JournalEventType
+        from tpllm.persistence.protocols import JournalConcurrencyError
+        with ws.lock:
+            store, record, _ = intelligence_record(ws, record_id, claims, request)
+            signal = next((r for r in ws.db.journal.read_from(global_sequence=1)
+                if r.id == body.source_event_id and r.event_type == JournalEventType.OUTCOME_RECORDED
+                and record.project_id in r.project_ids and r.organization_id == ws.organization), None)
+            if signal is None:
+                raise HTTPException(422, "A structured outcome event in this project is required.")
+            stamp = now()
+            try:
+                event = OutcomeEvent(record_id=record.id, outcome=signal.payload.get("outcome_type"),
+                    source_evidence_ref=signal.id, observed_at=signal.occurred_at, recorded_at=stamp,
+                    decision_value=body.decision_value, supersedes=body.supersedes)
+                store.attach_outcome(event)
+                store.compare(compare_reference(record, event, kind="outcome"))
+            except (ValueError, JournalConcurrencyError):
+                raise HTTPException(422, "Outcome must have structured type, temporal provenance, and valid correction lineage.") from None
+            if ws.checkpoint:
+                ws.checkpoint()
+            return event.model_dump(mode="json")
 
     @router.post("/demo")
     def demo(request: Request, claims=Depends(get_current_user)):

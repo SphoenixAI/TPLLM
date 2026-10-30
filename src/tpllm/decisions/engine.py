@@ -66,6 +66,7 @@ class DecisionEngine:
                 return cached
         start = time.monotonic()
         batch, error = None, None
+        error_attempts = 0
         try:
             if cached and all(t.result for t in cached):
                 from tpllm.decisions.models import ProviderBatch
@@ -81,10 +82,12 @@ class DecisionEngine:
                     batch.results[q.definition_id].validate_for(q)
         except DecisionProviderError as exc:
             error = exc.code
+            error_attempts = exc.attempts
             batch = None
         except Exception:
             # Never persist exception text: it can contain headers or payloads.
             error, batch = "provider_failure", None
+            error_attempts = 1
         latency = (time.monotonic() - start) * 1000
         batch_id, traces = str(uuid4()), []
         for q in questions:
@@ -117,6 +120,7 @@ class DecisionEngine:
                 latency_ms=latency, usage=batch.usage if batch else Usage(), question_count=len(questions),
                 result=result, error=error or (batch.errors.get(key, "missing_answer") if result is None else None),
                 inference_performed=not (batch and batch.attempts == 0),
+                attempts=batch.attempts if batch else error_attempts,
                 policy_evaluation=evaluation, baseline_value=base, disagreement=disagrees,
                 policy_parameters=self.policy_gate.policy.model_dump(mode="json"), calibration_profile=(profiles or {}).get(profile_key),
                 supersedes=previous.id if previous else None)

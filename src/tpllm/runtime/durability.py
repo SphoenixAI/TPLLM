@@ -479,12 +479,18 @@ def append_outcome(
     observed_value: str,
     occurred_at: datetime,
     recorded_at: datetime,
+    outcome_type: str | None = None,
 ) -> JournalRecord:
     """What actually happened, linked to what was decided.
 
     The link is what lets calibration and procedural memory learn from
     history rather than from impressions of it.
     """
+    if outcome_type is not None and outcome_type not in {
+        "deployment_recovered", "deployment_rolled_back", "release_slipped", "dependency_delivered",
+        "incident_confirmed", "incident_dismissed", "kpi_returned_to_baseline",
+    }:
+        raise ValueError("Unsupported structured outcome type")
     return journal.append(
         record=build_journal_record(
             event_type=JournalEventType.OUTCOME_RECORDED,
@@ -498,6 +504,7 @@ def append_outcome(
                 "kpi_ids": list(kpi_ids or []),
                 "milestone_ids": list(milestone_ids or []),
                 "observed_value": observed_value,
+                **({"outcome_type": outcome_type} if outcome_type else {}),
             },
             organization_id=organization_id,
             project_ids=[project_id],
@@ -918,6 +925,7 @@ class ReconstructionOutcome(BaseModel):
     historical_recommendations: list[dict] = Field(default_factory=list)
     historical_outcomes: list[dict] = Field(default_factory=list)
     bounded_decision_history: list[dict] = Field(default_factory=list)
+    intelligence_task_history: list[dict] = Field(default_factory=list)
     current_policy_fingerprint: str | None = None
     kill_switch_engaged: bool = False
     unavailable_evidence_ids: list[str] = Field(default_factory=list)
@@ -1043,6 +1051,19 @@ class RuntimeJournalReconstructor:
             outcome.bounded_decision_history.append({
                 "event_type": event_type.value,
                 "occurred_at": record.occurred_at.isoformat(),
+                "recorded_at": record.recorded_at.isoformat(), **payload,
+            })
+
+        elif event_type in (
+            JournalEventType.INTELLIGENCE_PACKET_RECORDED,
+            JournalEventType.INTELLIGENCE_TASK_RECORDED,
+            JournalEventType.INTELLIGENCE_REVIEW_RECORDED,
+            JournalEventType.INTELLIGENCE_OUTCOME_ATTACHED,
+            JournalEventType.INTELLIGENCE_COMPARISON_RECORDED,
+            JournalEventType.INTELLIGENCE_COVERAGE_RECORDED,
+        ):
+            outcome.intelligence_task_history.append({
+                "event_type": event_type.value, "occurred_at": record.occurred_at.isoformat(),
                 "recorded_at": record.recorded_at.isoformat(), **payload,
             })
 

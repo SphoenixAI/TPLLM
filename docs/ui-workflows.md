@@ -201,3 +201,22 @@ reasons without console errors. The separate provider-observation simulation
 still passed 25 checks, with zero failures and its two known gaps. This change
 does not add Gmail draft or Zoom Hub collectors or resolve abbreviated KPI names
 in genuinely observed conversations.
+
+# Phase 2 Intelligence Review
+
+The existing Intelligence page now contains Overview, Decisions, Reasoning,
+Comparisons, Cohorts and Evaluation. Phase 1 distributions remain inspectable.
+Reasoning cards expand into typed synthesis, bounded evidence and temporal lineage.
+Comparisons distinguish compatible interpretations, ambiguity and conflict.
+
+Select **Inspect and review** to append a lane-appropriate review. Corrections
+append another event referencing the latest review; original output is unchanged.
+Live review requires the existing project-write permission. Demo reviews remain
+fixture records and do not enter real human-acceptance statistics.
+
+The evaluation view separates probabilistic calibration from schema/grounding and
+human review metrics. Missing human labels, usage and cost remain Unknown. Mock
+latencies and usage are excluded from provider performance. Evaluation is disabled
+unless explicitly configured on the server; viewing this page does not invoke a
+model. See [the architecture](intelligence-phase2.md) and
+[local synthetic preview](../evals/intelligence/README.md).

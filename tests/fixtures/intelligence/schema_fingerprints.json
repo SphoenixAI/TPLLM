@@ -1,0 +1,17 @@
+{
+  "evidence.contradictory.v1": "8d66d1754f6b0d99206b143f9698fead454b5c5a0c6fbeb365346dfbe4cb6a8c",
+  "evidence.sufficient.v1": "3e1f350e53c570525f8bb1073ac5f14173990a3b8f8e91370ad635891064ab7e",
+  "impact.scope.v1": "513c34b5ee71c9e90eaec74d12c843964c03d1e9dedcced258c8f41e7cdfd659",
+  "intervention.value.v1": "55cc1d04d9afa31bc254a0b5143db2cb98b63d176a5e341595ee14994febce97",
+  "reasoning.dependency_analysis.v1": "72c0d755f9a04ec3d552184d45861e050c815a03c152101aa635bc35555ceea0",
+  "reasoning.insight_explanation.v1": "b0477166a6e60fe3fe9be49d0fa695c998532920f904132624fa1d86c5ee5f62",
+  "reasoning.operational_summary.v1": "1ada47eff2031afa6b9ba1fbfdb0aeebc058fe8218939df3b9dfa4f32718cd1c",
+  "reasoning.recovery_options.v1": "b23cf1ca9720e2c27ed4f440b9711d4a9a3add28e38ca8c334306d7f10e669fa",
+  "reasoning.root_cause_analysis.v1": "917b3177c8f593fa7b417be70188e8af1889102add930e059bf784ae508ce991",
+  "review.human_recommended.v1": "0f295f160a226566e7acba0b047891077e337e308d6ae0f62911960e605e1914",
+  "risk.family.v1": "14eebd762675405b528a899fd064915f37c7f93dda340d7df6552699b040e573",
+  "risk.present.v1": "633567217964bc7ccbd41dd77ee0479ae892145d6aab7469ef2989d5321dab58",
+  "risk.severity.v1": "90f648ead5e7bc14eda784056be74baa5869f33779ab225d4b82e9b615286c19",
+  "trend.direction.v1": "b094191362348467877d39cec0815511e2fcc9ca60de969e88786162cdd1f33f",
+  "trend.materiality.v1": "0b30377bbe852530236f0df13ae30ede57748a7fd50e4d10a7ab28cb7fe576c0"
+}

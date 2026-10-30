@@ -2204,3 +2204,10 @@ fieldset label {
 .decision-probability { display: grid; grid-template-columns: minmax(85px, 1fr) minmax(60px, 2fr) 60px; gap: 10px; align-items: center; margin: 9px 0; }
 .decision-probability meter { width: 100%; }
 .trace-hash { overflow-wrap: anywhere; font-family: monospace; font-size: 11px; }
+/* Phase 2 uses the existing review cards and drawers. */
+.intelligence-tabs { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
+.intelligence-table { overflow-x: auto; margin-top: 1rem; }
+.intelligence-table table { width: 100%; border-collapse: collapse; text-align: left; }
+.intelligence-table th, .intelligence-table td { padding: .65rem; border-bottom: 1px solid var(--border, #ddd); }
+.intelligence-fields dd { overflow-wrap: anywhere; min-width: 0; }
+.intelligence-fields ul { padding-left: 1.2rem; margin: 0; }

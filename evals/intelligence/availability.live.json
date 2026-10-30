@@ -1,0 +1,56 @@
+{
+  "schema_version": "phase2-report.v1",
+  "provider_mode": "live",
+  "fixture_digest": "b26558ad80ca7826bc21399a8caf33fcc362e3b8da6982d3885d66bf4c79b13a",
+  "tasks": [
+    "reasoning.dependency_analysis.v1",
+    "reasoning.insight_explanation.v1",
+    "reasoning.operational_summary.v1",
+    "reasoning.recovery_options.v1",
+    "reasoning.root_cause_analysis.v1",
+    "risk.family.v1",
+    "risk.present.v1",
+    "risk.severity.v1"
+  ],
+  "availability": {
+    "reasoning": "credentials unavailable",
+    "decision": "credentials or feature flag unavailable"
+  },
+  "cases": [
+    {
+      "fixture": "schema-break",
+      "cohort": "software.deployments",
+      "category": "positive",
+      "packet_id": "packet-7c6a1858364c875ebae68c8ee7c54bee8df355a96654387c56bbde25f9a10b44",
+      "record_ids": [],
+      "reference_results": {}
+    }
+  ],
+  "evaluation": {
+    "segments": [],
+    "efficiency": [],
+    "valuable_cases": [],
+    "coverage": {
+      "eligible": 8,
+      "executed": 0,
+      "skipped": 8,
+      "failed": 0,
+      "skip_reasons": {
+        "provider_disabled": 8
+      }
+    },
+    "comparisons": {},
+    "limitations": [
+      "Fixture quality is not production performance.",
+      "Mock latency, usage and cost are not provider measurements.",
+      "Known references do not establish entailment or factual truth.",
+      "No automatic routing or approval."
+    ]
+  },
+  "comparisons": [],
+  "efficiency_conclusion": "No cost/latency ranking: bounded judgment and rich synthesis are different workloads. Mock performance is excluded.",
+  "phase3_recommendation": "Keep explicit task selection and human review until live, cohort-balanced measurements establish benefit against the existing baseline.",
+  "definition_snapshots": {},
+  "records": [],
+  "journal_export": "Omitted in compact report; rerun without --compact for full immutable journal."
+}

@@ -347,6 +347,8 @@ def derive(ws, *, at=None):
     ws.put("coordination", projection)
     from tpllm.product_decisions import assess
     assess(ws, projection, at=at)
+    from tpllm.product_intelligence import schedule
+    schedule(ws, projection, at=at)
     if changed_tasks:
         ws.audit("Source commitments synchronized", {"updated": changed_tasks}, actor="tpllm")
     return projection

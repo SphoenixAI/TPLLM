@@ -187,6 +187,7 @@ class DecisionTrace(FrozenModel):
     usage: Usage
     question_count: int
     inference_performed: bool = True
+    attempts: int = 1
     result: DecisionResult | None
     error: str | None
     policy_evaluation: DecisionEvaluation

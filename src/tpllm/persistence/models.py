@@ -90,9 +90,21 @@ class JournalEventType(str, Enum):
     BOUNDED_DECISION_RECORDED = "bounded_decision_recorded"
     BOUNDED_DECISION_LABELLED = "bounded_decision_labelled"
     BOUNDED_DECISION_EFFECT_RECORDED = "bounded_decision_effect_recorded"
+    INTELLIGENCE_PACKET_RECORDED = "intelligence_packet_recorded"
+    INTELLIGENCE_TASK_RECORDED = "intelligence_task_recorded"
+    INTELLIGENCE_REVIEW_RECORDED = "intelligence_review_recorded"
+    INTELLIGENCE_OUTCOME_ATTACHED = "intelligence_outcome_attached"
+    INTELLIGENCE_COMPARISON_RECORDED = "intelligence_comparison_recorded"
+    INTELLIGENCE_COVERAGE_RECORDED = "intelligence_coverage_recorded"
 
 
 EVENT_TYPE_CATEGORY: dict[JournalEventType, JournalRecordCategory] = {
+    JournalEventType.INTELLIGENCE_PACKET_RECORDED: JournalRecordCategory.RUNTIME_AUDIT,
+    JournalEventType.INTELLIGENCE_TASK_RECORDED: JournalRecordCategory.RUNTIME_AUDIT,
+    JournalEventType.INTELLIGENCE_REVIEW_RECORDED: JournalRecordCategory.RUNTIME_AUDIT,
+    JournalEventType.INTELLIGENCE_OUTCOME_ATTACHED: JournalRecordCategory.RUNTIME_AUDIT,
+    JournalEventType.INTELLIGENCE_COMPARISON_RECORDED: JournalRecordCategory.RUNTIME_AUDIT,
+    JournalEventType.INTELLIGENCE_COVERAGE_RECORDED: JournalRecordCategory.RUNTIME_AUDIT,
     JournalEventType.BOUNDED_DECISION_RECORDED: JournalRecordCategory.AGENT_OUTPUT,
     JournalEventType.BOUNDED_DECISION_LABELLED: JournalRecordCategory.OUTCOME,
     JournalEventType.BOUNDED_DECISION_EFFECT_RECORDED: JournalRecordCategory.AGENT_OUTPUT,

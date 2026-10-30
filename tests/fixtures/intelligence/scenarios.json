@@ -1,0 +1,1531 @@
+[
+  {
+    "id": "schema-break",
+    "cohort": "software.deployments",
+    "category": "positive",
+    "sources": [
+      {
+        "id": "evidence:schema-break:0",
+        "text": "Three deployments failed after the schema migration; rollback restored the service.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation",
+          "deployment_status": "failed"
+        }
+      },
+      {
+        "id": "evidence:schema-break:1",
+        "text": "The migration removed a column still queried by deployed code.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation",
+          "deployment_status": "failed"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": true,
+      "risk_family": "quality",
+      "severity": 3,
+      "required_cause_tags": [
+        "schema_incompatibility"
+      ],
+      "acceptable_alternate_tags": [
+        "configuration_mismatch"
+      ],
+      "required_evidence_refs": [
+        "evidence:schema-break:0",
+        "evidence:schema-break:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "complete"
+    },
+    "mock_decision": {
+      "risk_probability": 0.88,
+      "family_probabilities": {
+        "quality": 0.78,
+        "unknown": 0.1
+      },
+      "severity_level": 3
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "Schema incompatibility after a removed column caused deployment failures.",
+      "cause_tags": [
+        "schema_incompatibility"
+      ],
+      "operational_interpretation": [
+        "quality",
+        "reliability"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "ci-retry",
+    "cohort": "software.deployments",
+    "category": "hard_negative",
+    "sources": [
+      {
+        "id": "evidence:ci-retry:0",
+        "text": "One CI run failed on a transient runner error.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation",
+          "deployment_status": "succeeded"
+        }
+      },
+      {
+        "id": "evidence:ci-retry:1",
+        "text": "The retry passed and the deployment and service telemetry remained normal.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation",
+          "deployment_status": "succeeded"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": false,
+      "risk_family": "unknown",
+      "severity": 0,
+      "required_cause_tags": [
+        "transient_noise",
+        "recovered"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:ci-retry:0",
+        "evidence:ci-retry:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "complete"
+    },
+    "mock_decision": {
+      "risk_probability": 0.12,
+      "family_probabilities": {
+        "unknown": 0.82,
+        "schedule": 0.04
+      },
+      "severity_level": 0
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "One CI run failed on a transient runner error.",
+      "cause_tags": [
+        "transient_noise",
+        "recovered"
+      ],
+      "operational_interpretation": [
+        "unknown"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "release-three-causes",
+    "cohort": "software.deployments",
+    "category": "multi_causal",
+    "sources": [
+      {
+        "id": "evidence:release-three-causes:0",
+        "text": "The upstream dependency is late by two days.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation",
+          "deployment_status": "failed"
+        }
+      },
+      {
+        "id": "evidence:release-three-causes:1",
+        "text": "Team capacity dropped by half this week.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation",
+          "deployment_status": "failed"
+        }
+      },
+      {
+        "id": "evidence:release-three-causes:2",
+        "text": "The shared test environment is unavailable and blocks release verification.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation",
+          "deployment_status": "failed"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": true,
+      "risk_family": "dependency",
+      "severity": 3,
+      "required_cause_tags": [
+        "dependency_delay",
+        "capacity_reduction",
+        "test_outage"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:release-three-causes:0",
+        "evidence:release-three-causes:1",
+        "evidence:release-three-causes:2"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "complete"
+    },
+    "mock_decision": {
+      "risk_probability": 0.88,
+      "family_probabilities": {
+        "dependency": 0.78,
+        "unknown": 0.1
+      },
+      "severity_level": 3
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "Dependency delay, reduced capacity and test outage jointly constrain release.",
+      "cause_tags": [
+        "dependency_delay"
+      ],
+      "operational_interpretation": [
+        "dependency",
+        "staffing",
+        "reliability",
+        "schedule"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "correlated-errors",
+    "cohort": "software.reliability",
+    "category": "positive",
+    "sources": [
+      {
+        "id": "evidence:correlated-errors:0",
+        "text": "Error rates rose in three services during the configuration rollout.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:correlated-errors:1",
+        "text": "Reverting the configuration reduced errors in all three services.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": true,
+      "risk_family": "reliability",
+      "severity": 3,
+      "required_cause_tags": [
+        "configuration_mismatch"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:correlated-errors:0",
+        "evidence:correlated-errors:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "complete"
+    },
+    "mock_decision": {
+      "risk_probability": 0.88,
+      "family_probabilities": {
+        "reliability": 0.78,
+        "unknown": 0.1
+      },
+      "severity_level": 3
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "Error rates rose in three services during the configuration rollout.",
+      "cause_tags": [
+        "configuration_mismatch"
+      ],
+      "operational_interpretation": [
+        "reliability"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "within-variance",
+    "cohort": "software.reliability",
+    "category": "hard_negative",
+    "sources": [
+      {
+        "id": "evidence:within-variance:0",
+        "text": "The latency KPI briefly rose by 2 percent.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:within-variance:1",
+        "text": "The value remains inside historical variance and no dependent service degraded.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": false,
+      "risk_family": "unknown",
+      "severity": 0,
+      "required_cause_tags": [
+        "transient_noise"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:within-variance:0",
+        "evidence:within-variance:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "complete"
+    },
+    "mock_decision": {
+      "risk_probability": 0.12,
+      "family_probabilities": {
+        "unknown": 0.82,
+        "schedule": 0.04
+      },
+      "severity_level": 0
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "The latency KPI briefly rose by 2 percent.",
+      "cause_tags": [
+        "transient_noise"
+      ],
+      "operational_interpretation": [
+        "unknown"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "incident-stale",
+    "cohort": "software.reliability",
+    "category": "contradictory",
+    "sources": [
+      {
+        "id": "evidence:incident-stale:0",
+        "text": "The incident board still says service unavailable.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:incident-stale:1",
+        "text": "More recent telemetry shows normal service after a verified recovery.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": false,
+      "risk_family": "unknown",
+      "severity": 0,
+      "required_cause_tags": [
+        "stale_status",
+        "recovered"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:incident-stale:0",
+        "evidence:incident-stale:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "partial"
+    },
+    "mock_decision": {
+      "risk_probability": 0.12,
+      "family_probabilities": {
+        "unknown": 0.82,
+        "schedule": 0.04
+      },
+      "severity_level": 0
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "The incident board still says service unavailable.",
+      "cause_tags": [
+        "stale_status",
+        "recovered"
+      ],
+      "operational_interpretation": [
+        "unknown"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "upstream-late",
+    "cohort": "project.dependencies",
+    "category": "positive",
+    "sources": [
+      {
+        "id": "evidence:upstream-late:0",
+        "text": "The upstream API has missed two committed dates.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:upstream-late:1",
+        "text": "Two downstream tasks cannot start until that API is delivered.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": true,
+      "risk_family": "dependency",
+      "severity": 3,
+      "required_cause_tags": [
+        "dependency_delay"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:upstream-late:0",
+        "evidence:upstream-late:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "complete"
+    },
+    "mock_decision": {
+      "risk_probability": 0.88,
+      "family_probabilities": {
+        "dependency": 0.78,
+        "unknown": 0.1
+      },
+      "severity_level": 3
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "The upstream API has missed two committed dates.",
+      "cause_tags": [
+        "dependency_delay"
+      ],
+      "operational_interpretation": [
+        "dependency",
+        "schedule"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "jira-vs-merge",
+    "cohort": "project.dependencies",
+    "category": "hard_negative",
+    "sources": [
+      {
+        "id": "evidence:jira-vs-merge:0",
+        "text": "A stale Jira status says the dependency is blocked.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:jira-vs-merge:1",
+        "text": "The code was merged, deployed, and verified by the consuming team after that status.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": false,
+      "risk_family": "unknown",
+      "severity": 0,
+      "required_cause_tags": [
+        "stale_status",
+        "recovered"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:jira-vs-merge:0",
+        "evidence:jira-vs-merge:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "complete"
+    },
+    "mock_decision": {
+      "risk_probability": 0.91,
+      "family_probabilities": {
+        "schedule": 0.9,
+        "unknown": 0.02
+      },
+      "severity_level": 0
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "A stale Jira status says the dependency is blocked.",
+      "cause_tags": [
+        "stale_status",
+        "recovered"
+      ],
+      "operational_interpretation": [
+        "unknown"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "supplier-overlap",
+    "cohort": "project.dependencies",
+    "category": "ambiguous",
+    "sources": [
+      {
+        "id": "evidence:supplier-overlap:0",
+        "text": "One supplier reports a late dependency.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:supplier-overlap:1",
+        "text": "The schedule report says a deadline change is the main issue, but the sequence is unclear.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": true,
+      "risk_family": "dependency",
+      "severity": 3,
+      "required_cause_tags": [
+        "dependency_delay",
+        "schedule_change"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:supplier-overlap:0",
+        "evidence:supplier-overlap:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "partial"
+    },
+    "mock_decision": {
+      "risk_probability": 0.88,
+      "family_probabilities": {
+        "schedule": 0.46,
+        "dependency": 0.44
+      },
+      "severity_level": 3
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "Dependency delay may be causing schedule pressure; their order remains uncertain.",
+      "cause_tags": [
+        "dependency_delay",
+        "schedule_change"
+      ],
+      "operational_interpretation": [
+        "dependency",
+        "schedule"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "release-slipped",
+    "cohort": "project.schedule",
+    "category": "positive",
+    "sources": [
+      {
+        "id": "evidence:release-slipped:0",
+        "text": "The release was moved to next Friday after acceptance work missed its deadline.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:release-slipped:1",
+        "text": "The revised milestone is recorded in the approved project schedule.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": true,
+      "risk_family": "schedule",
+      "severity": 3,
+      "required_cause_tags": [
+        "schedule_change"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:release-slipped:0",
+        "evidence:release-slipped:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "complete"
+    },
+    "mock_decision": {
+      "risk_probability": 0.88,
+      "family_probabilities": {
+        "schedule": 0.78,
+        "unknown": 0.1
+      },
+      "severity_level": 3
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "The release was moved to next Friday after acceptance work missed its deadline.",
+      "cause_tags": [
+        "schedule_change"
+      ],
+      "operational_interpretation": [
+        "schedule"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "buffer-intact",
+    "cohort": "project.schedule",
+    "category": "hard_negative",
+    "sources": [
+      {
+        "id": "evidence:buffer-intact:0",
+        "text": "One task finished a day later than its internal estimate.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:buffer-intact:1",
+        "text": "The task was inside the planned buffer and the committed release date remains supported.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": false,
+      "risk_family": "unknown",
+      "severity": 0,
+      "required_cause_tags": [
+        "transient_noise"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:buffer-intact:0",
+        "evidence:buffer-intact:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "complete"
+    },
+    "mock_decision": {
+      "risk_probability": 0.12,
+      "family_probabilities": {
+        "unknown": 0.82,
+        "schedule": 0.04
+      },
+      "severity_level": 0
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "One task finished a day later than its internal estimate.",
+      "cause_tags": [
+        "transient_noise"
+      ],
+      "operational_interpretation": [
+        "unknown"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "date-conflict",
+    "cohort": "project.schedule",
+    "category": "contradictory",
+    "sources": [
+      {
+        "id": "evidence:date-conflict:0",
+        "text": "The project board shows a Friday delivery date.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:date-conflict:1",
+        "text": "The release owner reports Monday delivery; neither record establishes which plan superseded the other.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": true,
+      "risk_family": "schedule",
+      "severity": 3,
+      "required_cause_tags": [
+        "schedule_change",
+        "unknown"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:date-conflict:0",
+        "evidence:date-conflict:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "partial"
+    },
+    "mock_decision": {
+      "risk_probability": 0.88,
+      "family_probabilities": {
+        "schedule": 0.78,
+        "unknown": 0.1
+      },
+      "severity_level": 3
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "The project board shows a Friday delivery date.",
+      "cause_tags": [
+        "schedule_change",
+        "unknown"
+      ],
+      "operational_interpretation": [
+        "schedule",
+        "unknown"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "access-exposure",
+    "cohort": "security.events",
+    "category": "positive",
+    "sources": [
+      {
+        "id": "evidence:access-exposure:0",
+        "text": "An audit confirmed an unintended public read permission on a test storage bucket.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:access-exposure:1",
+        "text": "The access log shows external reads before the permission was revoked; no secrets are included here.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": true,
+      "risk_family": "security",
+      "severity": 3,
+      "required_cause_tags": [
+        "security_exposure"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:access-exposure:0",
+        "evidence:access-exposure:1"
+      ],
+      "forbidden_cause_tags": [],
+      "expected_completion": "complete"
+    },
+    "mock_decision": {
+      "risk_probability": 0.88,
+      "family_probabilities": {
+        "security": 0.78,
+        "unknown": 0.1
+      },
+      "severity_level": 3
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "An audit confirmed an unintended public read permission on a test storage bucket.",
+      "cause_tags": [
+        "security_exposure"
+      ],
+      "operational_interpretation": [
+        "security"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "scanner-example",
+    "cohort": "security.events",
+    "category": "hard_negative",
+    "sources": [
+      {
+        "id": "evidence:scanner-example:0",
+        "text": "A scanner flagged a documented nonfunctional example credential string.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:scanner-example:1",
+        "text": "Validation confirmed that the sample cannot authenticate and no production credential was exposed.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": false,
+      "risk_family": "unknown",
+      "severity": 0,
+      "required_cause_tags": [
+        "transient_noise"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:scanner-example:0",
+        "evidence:scanner-example:1"
+      ],
+      "forbidden_cause_tags": [],
+      "expected_completion": "complete"
+    },
+    "mock_decision": {
+      "risk_probability": 0.12,
+      "family_probabilities": {
+        "unknown": 0.82,
+        "schedule": 0.04
+      },
+      "severity_level": 0
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "A scanner flagged a documented nonfunctional example credential string.",
+      "cause_tags": [
+        "transient_noise"
+      ],
+      "operational_interpretation": [
+        "unknown"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "security-rumor",
+    "cohort": "security.events",
+    "category": "insufficient",
+    "sources": [
+      {
+        "id": "evidence:security-rumor:0",
+        "text": "One chat message speculates about a security incident.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:security-rumor:1",
+        "text": "No audit logs or corroborating telemetry have been supplied.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": false,
+      "risk_family": "unknown",
+      "severity": 0,
+      "required_cause_tags": [
+        "unknown"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:security-rumor:0",
+        "evidence:security-rumor:1"
+      ],
+      "forbidden_cause_tags": [],
+      "expected_completion": "insufficient_evidence"
+    },
+    "mock_decision": {
+      "risk_probability": 0.12,
+      "family_probabilities": {
+        "unknown": 0.82,
+        "schedule": 0.04
+      },
+      "severity_level": 0
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "One chat message speculates about a security incident.",
+      "cause_tags": [
+        "unknown"
+      ],
+      "operational_interpretation": [
+        "unknown"
+      ],
+      "fault": "unknown_reference"
+    }
+  },
+  {
+    "id": "capacity-cut",
+    "cohort": "team.capacity",
+    "category": "positive",
+    "sources": [
+      {
+        "id": "evidence:capacity-cut:0",
+        "text": "Available delivery capacity dropped from four people to two.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:capacity-cut:1",
+        "text": "The committed work and deadline did not change; dependency review work is accumulating.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": true,
+      "risk_family": "staffing",
+      "severity": 3,
+      "required_cause_tags": [
+        "capacity_reduction"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:capacity-cut:0",
+        "evidence:capacity-cut:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "complete"
+    },
+    "mock_decision": {
+      "risk_probability": 0.88,
+      "family_probabilities": {
+        "cost": 0.88,
+        "staffing": 0.02
+      },
+      "severity_level": 3
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "Available delivery capacity dropped from four people to two.",
+      "cause_tags": [
+        "capacity_reduction"
+      ],
+      "operational_interpretation": [
+        "staffing",
+        "schedule"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "covered-holiday",
+    "cohort": "team.capacity",
+    "category": "hard_negative",
+    "sources": [
+      {
+        "id": "evidence:covered-holiday:0",
+        "text": "A planned holiday reduces team availability for one day.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:covered-holiday:1",
+        "text": "The approved plan already accounts for the holiday and named coverage is in place.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": false,
+      "risk_family": "unknown",
+      "severity": 0,
+      "required_cause_tags": [
+        "transient_noise"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:covered-holiday:0",
+        "evidence:covered-holiday:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "complete"
+    },
+    "mock_decision": {
+      "risk_probability": 0.12,
+      "family_probabilities": {
+        "unknown": 0.82,
+        "schedule": 0.04
+      },
+      "severity_level": 0
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "A planned holiday reduces team availability for one day.",
+      "cause_tags": [
+        "transient_noise"
+      ],
+      "operational_interpretation": [
+        "unknown"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "capacity-and-dependency",
+    "cohort": "team.capacity",
+    "category": "multi_causal",
+    "sources": [
+      {
+        "id": "evidence:capacity-and-dependency:0",
+        "text": "One reviewer now owns three critical approvals after a staffing reduction.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:capacity-and-dependency:1",
+        "text": "Two upstream changes are late and both need that reviewer before release.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": true,
+      "risk_family": "staffing",
+      "severity": 3,
+      "required_cause_tags": [
+        "capacity_reduction",
+        "dependency_delay"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:capacity-and-dependency:0",
+        "evidence:capacity-and-dependency:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "complete"
+    },
+    "mock_decision": {
+      "risk_probability": 0.88,
+      "family_probabilities": {
+        "staffing": 0.78,
+        "unknown": 0.1
+      },
+      "severity_level": 3
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "One reviewer now owns three critical approvals after a staffing reduction.",
+      "cause_tags": [
+        "capacity_reduction",
+        "dependency_delay"
+      ],
+      "operational_interpretation": [
+        "staffing",
+        "dependency",
+        "schedule"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "runaway-compute",
+    "cohort": "cost.variance",
+    "category": "positive",
+    "sources": [
+      {
+        "id": "evidence:runaway-compute:0",
+        "text": "Compute spend doubled for three days after a retry job was enabled.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:runaway-compute:1",
+        "text": "The job continues to retry failed work without a bound.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": true,
+      "risk_family": "cost",
+      "severity": 3,
+      "required_cause_tags": [
+        "cost_growth",
+        "configuration_mismatch"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:runaway-compute:0",
+        "evidence:runaway-compute:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "complete"
+    },
+    "mock_decision": {
+      "risk_probability": 0.88,
+      "family_probabilities": {
+        "cost": 0.78,
+        "unknown": 0.1
+      },
+      "severity_level": 3
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "Compute spend doubled for three days after a retry job was enabled.",
+      "cause_tags": [
+        "cost_growth",
+        "configuration_mismatch"
+      ],
+      "operational_interpretation": [
+        "cost",
+        "reliability"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "planned-load-test",
+    "cohort": "cost.variance",
+    "category": "hard_negative",
+    "sources": [
+      {
+        "id": "evidence:planned-load-test:0",
+        "text": "Compute spend increased during a planned load test.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:planned-load-test:1",
+        "text": "The spend was approved in the budget and returned to baseline when the test ended.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": false,
+      "risk_family": "unknown",
+      "severity": 0,
+      "required_cause_tags": [
+        "transient_noise",
+        "recovered"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:planned-load-test:0",
+        "evidence:planned-load-test:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "complete"
+    },
+    "mock_decision": {
+      "risk_probability": 0.12,
+      "family_probabilities": {
+        "unknown": 0.82,
+        "schedule": 0.04
+      },
+      "severity_level": 0
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "Compute spend increased during a planned load test.",
+      "cause_tags": [
+        "transient_noise",
+        "recovered"
+      ],
+      "operational_interpretation": [
+        "unknown"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "billing-lag",
+    "cohort": "cost.variance",
+    "category": "ambiguous",
+    "sources": [
+      {
+        "id": "evidence:billing-lag:0",
+        "text": "The invoice shows a late increase in charges.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:billing-lag:1",
+        "text": "Usage telemetry is flat; the billing period and usage period are not aligned.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": false,
+      "risk_family": "unknown",
+      "severity": 0,
+      "required_cause_tags": [
+        "unknown"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:billing-lag:0",
+        "evidence:billing-lag:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "partial"
+    },
+    "mock_decision": {
+      "risk_probability": 0.12,
+      "family_probabilities": {
+        "unknown": 0.46,
+        "cost": 0.44
+      },
+      "severity_level": 0
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "The invoice shows a late increase in charges.",
+      "cause_tags": [
+        "unknown"
+      ],
+      "operational_interpretation": [
+        "cost",
+        "unknown"
+      ],
+      "fault": "timeout"
+    }
+  },
+  {
+    "id": "no-observations",
+    "cohort": "general.operations",
+    "category": "insufficient",
+    "sources": [
+      {
+        "id": "evidence:no-observations:0",
+        "text": "A target document describes desired service reliability.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:no-observations:1",
+        "text": "No measured observations or delivery events are available.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": false,
+      "risk_family": "unknown",
+      "severity": 0,
+      "required_cause_tags": [
+        "unknown"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:no-observations:0",
+        "evidence:no-observations:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "insufficient_evidence"
+    },
+    "mock_decision": {
+      "risk_probability": 0.12,
+      "family_probabilities": {
+        "unknown": 0.82,
+        "schedule": 0.04
+      },
+      "severity_level": 0
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "No cause can be established from a target without observations.",
+      "cause_tags": [
+        "unknown"
+      ],
+      "operational_interpretation": [
+        "unknown"
+      ],
+      "fault": null
+    }
+  },
+  {
+    "id": "reports-conflict",
+    "cohort": "general.operations",
+    "category": "contradictory",
+    "sources": [
+      {
+        "id": "evidence:reports-conflict:0",
+        "text": "One status report says the milestone is complete.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:reports-conflict:1",
+        "text": "Another contemporaneous report says acceptance work is incomplete with no supporting artifact.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": true,
+      "risk_family": "unknown",
+      "severity": 3,
+      "required_cause_tags": [
+        "unknown"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:reports-conflict:0",
+        "evidence:reports-conflict:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "partial"
+    },
+    "mock_decision": {
+      "risk_probability": 0.88,
+      "family_probabilities": {
+        "unknown": 0.82,
+        "schedule": 0.04
+      },
+      "severity_level": 3
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "One status report says the milestone is complete.",
+      "cause_tags": [
+        "unknown"
+      ],
+      "operational_interpretation": [
+        "unknown"
+      ],
+      "fault": "missing_field"
+    }
+  },
+  {
+    "id": "recovery-staged",
+    "cohort": "general.operations",
+    "category": "recovery",
+    "sources": [
+      {
+        "id": "evidence:recovery-staged:0",
+        "text": "The dependency was delivered and its consumer passed integration checks.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      },
+      {
+        "id": "evidence:recovery-staged:1",
+        "text": "Capacity remains reduced, but the revised plan accounts for it and no unresolved blocker is recorded.",
+        "kind": "issue",
+        "data": {
+          "synthetic": true,
+          "observation_basis": "simulated_observation"
+        }
+      }
+    ],
+    "reference": {
+      "risk_present": false,
+      "risk_family": "unknown",
+      "severity": 0,
+      "required_cause_tags": [
+        "recovered"
+      ],
+      "acceptable_alternate_tags": [
+        "unknown"
+      ],
+      "required_evidence_refs": [
+        "evidence:recovery-staged:0",
+        "evidence:recovery-staged:1"
+      ],
+      "forbidden_cause_tags": [
+        "security_exposure"
+      ],
+      "expected_completion": "complete"
+    },
+    "mock_decision": {
+      "risk_probability": 0.12,
+      "family_probabilities": {
+        "unknown": 0.82,
+        "schedule": 0.04
+      },
+      "severity_level": 0
+    },
+    "mock_reasoning": {
+      "primary_hypothesis": "The dependency was delivered and its consumer passed integration checks.",
+      "cause_tags": [
+        "recovered"
+      ],
+      "operational_interpretation": [
+        "unknown"
+      ],
+      "fault": null
+    }
+  }
+]

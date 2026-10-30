@@ -21,9 +21,10 @@ class DecisionProvider(Protocol):
 
 class DecisionProviderError(RuntimeError):
     """Only bounded error codes may cross the provider boundary."""
-    def __init__(self, code: str):
+    def __init__(self, code: str, attempts: int = 0):
         super().__init__(code)
         self.code = code
+        self.attempts = attempts
 
 
 class _Envelope(BaseModel):
@@ -129,14 +130,16 @@ class TypeSafeJevProvider:
                 except (ValueError, UnicodeError):
                     raise DecisionProviderError("malformed_response") from None
                 return parse_batch(raw, questions, attempts=attempt)
+            except DecisionProviderError as exc:
+                raise DecisionProviderError(exc.code, attempt) from None
             except urllib.error.HTTPError as exc:
                 code = {401: "invalid_credentials", 403: "forbidden", 404: "model_unavailable", 429: "rate_limited"}.get(exc.code, "api_error")
                 if exc.code not in {408, 429, 500, 502, 503, 504, 529}:
-                    raise DecisionProviderError(code) from None
+                    raise DecisionProviderError(code, attempt) from None
                 retry_after = exc.headers.get("Retry-After", "") if exc.headers else ""
                 if retry_after.isdigit():
                     if int(retry_after) > 2:
-                        raise DecisionProviderError(code) from None  # do not retry earlier than requested
+                        raise DecisionProviderError(code, attempt) from None  # do not retry earlier than requested
                     delay = max(delay, int(retry_after))
             except (TimeoutError, socket.timeout):
                 code = "timeout"
@@ -146,7 +149,7 @@ class TypeSafeJevProvider:
                 code = "network_failure"
             if attempt < self.config.max_attempts:
                 self._sleep(delay)
-        raise DecisionProviderError(code)
+        raise DecisionProviderError(code, self.config.max_attempts)
 
 
 class MockDecisionProvider:

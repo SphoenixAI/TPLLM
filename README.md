@@ -684,3 +684,12 @@ MIT. See [`LICENSE`](LICENSE).
 TypeSafe Jev is available behind a provider-neutral decision layer, disabled by
 default. Start in shadow mode; calibrated advisory use can only prioritize insight
 review. See [architecture, configuration, evaluation and authority boundaries](docs/decision-intelligence.md).
+
+Phase 2 adds an explicit intelligence task layer and a separate Structured Output
+reasoning lane. Both inherit bounded evidence packets and cohorts, while retaining
+different payloads and evaluation metrics. Shadow comparisons, append-only reviews
+and structured outcome attachments are available in Intelligence Review; automatic
+routing and action authority remain out of scope. Evaluation defaults off. See
+[dual-lane architecture](docs/intelligence-phase2.md),
+[evaluation commands](evals/intelligence/README.md), and the
+[Phase 2 measured report](docs/intelligence-phase2-report.md).
